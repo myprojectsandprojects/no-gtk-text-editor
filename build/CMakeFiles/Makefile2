@@ -54,10 +54,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = "/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test"
+CMAKE_SOURCE_DIR = /home/eero/all/no-gtk-text-editor/glfw/text-editor
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = "/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build"
+CMAKE_BINARY_DIR = /home/eero/all/no-gtk-text-editor/glfw/text-editor/build
 
 #=============================================================================
 # Target rules for target CMakeFiles/MyGlfwTest.dir
@@ -66,7 +66,7 @@ CMAKE_BINARY_DIR = "/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake
 CMakeFiles/MyGlfwTest.dir/all: glfw-3.3.8/src/CMakeFiles/glfw.dir/all
 	$(MAKE) -f CMakeFiles/MyGlfwTest.dir/build.make CMakeFiles/MyGlfwTest.dir/depend
 	$(MAKE) -f CMakeFiles/MyGlfwTest.dir/build.make CMakeFiles/MyGlfwTest.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir="/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build/CMakeFiles" --progress-num=1,2 "Built target MyGlfwTest"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/eero/all/no-gtk-text-editor/glfw/text-editor/build/CMakeFiles --progress-num=1,2,3,4 "Built target MyGlfwTest"
 .PHONY : CMakeFiles/MyGlfwTest.dir/all
 
 # Include target in all.
@@ -76,9 +76,9 @@ all: CMakeFiles/MyGlfwTest.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/MyGlfwTest.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start "/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build/CMakeFiles" 19
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/eero/all/no-gtk-text-editor/glfw/text-editor/build/CMakeFiles 21
 	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/MyGlfwTest.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start "/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build/CMakeFiles" 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/eero/all/no-gtk-text-editor/glfw/text-editor/build/CMakeFiles 0
 .PHONY : CMakeFiles/MyGlfwTest.dir/rule
 
 # Convenience name for target.
@@ -122,14 +122,14 @@ glfw-3.3.8/preinstall: glfw-3.3.8/src/preinstall
 glfw-3.3.8/CMakeFiles/uninstall.dir/all:
 	$(MAKE) -f glfw-3.3.8/CMakeFiles/uninstall.dir/build.make glfw-3.3.8/CMakeFiles/uninstall.dir/depend
 	$(MAKE) -f glfw-3.3.8/CMakeFiles/uninstall.dir/build.make glfw-3.3.8/CMakeFiles/uninstall.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir="/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build/CMakeFiles" --progress-num= "Built target uninstall"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/eero/all/no-gtk-text-editor/glfw/text-editor/build/CMakeFiles --progress-num= "Built target uninstall"
 .PHONY : glfw-3.3.8/CMakeFiles/uninstall.dir/all
 
 # Build rule for subdir invocation for target.
 glfw-3.3.8/CMakeFiles/uninstall.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start "/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build/CMakeFiles" 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/eero/all/no-gtk-text-editor/glfw/text-editor/build/CMakeFiles 0
 	$(MAKE) -f CMakeFiles/Makefile2 glfw-3.3.8/CMakeFiles/uninstall.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start "/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build/CMakeFiles" 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/eero/all/no-gtk-text-editor/glfw/text-editor/build/CMakeFiles 0
 .PHONY : glfw-3.3.8/CMakeFiles/uninstall.dir/rule
 
 # Convenience name for target.
@@ -173,14 +173,14 @@ glfw-3.3.8/src/preinstall:
 glfw-3.3.8/src/CMakeFiles/update_mappings.dir/all:
 	$(MAKE) -f glfw-3.3.8/src/CMakeFiles/update_mappings.dir/build.make glfw-3.3.8/src/CMakeFiles/update_mappings.dir/depend
 	$(MAKE) -f glfw-3.3.8/src/CMakeFiles/update_mappings.dir/build.make glfw-3.3.8/src/CMakeFiles/update_mappings.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir="/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build/CMakeFiles" --progress-num=20 "Built target update_mappings"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/eero/all/no-gtk-text-editor/glfw/text-editor/build/CMakeFiles --progress-num=22 "Built target update_mappings"
 .PHONY : glfw-3.3.8/src/CMakeFiles/update_mappings.dir/all
 
 # Build rule for subdir invocation for target.
 glfw-3.3.8/src/CMakeFiles/update_mappings.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start "/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build/CMakeFiles" 1
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/eero/all/no-gtk-text-editor/glfw/text-editor/build/CMakeFiles 1
 	$(MAKE) -f CMakeFiles/Makefile2 glfw-3.3.8/src/CMakeFiles/update_mappings.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start "/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build/CMakeFiles" 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/eero/all/no-gtk-text-editor/glfw/text-editor/build/CMakeFiles 0
 .PHONY : glfw-3.3.8/src/CMakeFiles/update_mappings.dir/rule
 
 # Convenience name for target.
@@ -205,7 +205,7 @@ clean: glfw-3.3.8/src/CMakeFiles/update_mappings.dir/clean
 glfw-3.3.8/src/CMakeFiles/glfw.dir/all:
 	$(MAKE) -f glfw-3.3.8/src/CMakeFiles/glfw.dir/build.make glfw-3.3.8/src/CMakeFiles/glfw.dir/depend
 	$(MAKE) -f glfw-3.3.8/src/CMakeFiles/glfw.dir/build.make glfw-3.3.8/src/CMakeFiles/glfw.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir="/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build/CMakeFiles" --progress-num=3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19 "Built target glfw"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/eero/all/no-gtk-text-editor/glfw/text-editor/build/CMakeFiles --progress-num=5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21 "Built target glfw"
 .PHONY : glfw-3.3.8/src/CMakeFiles/glfw.dir/all
 
 # Include target in all.
@@ -215,9 +215,9 @@ all: glfw-3.3.8/src/CMakeFiles/glfw.dir/all
 
 # Build rule for subdir invocation for target.
 glfw-3.3.8/src/CMakeFiles/glfw.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start "/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build/CMakeFiles" 17
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/eero/all/no-gtk-text-editor/glfw/text-editor/build/CMakeFiles 17
 	$(MAKE) -f CMakeFiles/Makefile2 glfw-3.3.8/src/CMakeFiles/glfw.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start "/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build/CMakeFiles" 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/eero/all/no-gtk-text-editor/glfw/text-editor/build/CMakeFiles 0
 .PHONY : glfw-3.3.8/src/CMakeFiles/glfw.dir/rule
 
 # Convenience name for target.

@@ -1,24 +1,24 @@
 Determining if the pthread_create exist failed with the following output:
-Change Dir: /home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build/CMakeFiles/CMakeTmp
+Change Dir: /home/eero/all/no-gtk-text-editor/glfw/text-editor/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_781af/fast"
-/usr/bin/make -f CMakeFiles/cmTC_781af.dir/build.make CMakeFiles/cmTC_781af.dir/build
-make[1]: Entering directory '/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build/CMakeFiles/CMakeTmp'
-Building C object CMakeFiles/cmTC_781af.dir/CheckSymbolExists.c.o
-/usr/bin/cc     -o CMakeFiles/cmTC_781af.dir/CheckSymbolExists.c.o   -c "/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c"
-Linking C executable cmTC_781af
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_781af.dir/link.txt --verbose=1
-/usr/bin/cc       CMakeFiles/cmTC_781af.dir/CheckSymbolExists.c.o  -o cmTC_781af -rdynamic 
-CMakeFiles/cmTC_781af.dir/CheckSymbolExists.c.o: In function `main':
+Run Build Command:"/usr/bin/make" "cmTC_ed3d3/fast"
+/usr/bin/make -f CMakeFiles/cmTC_ed3d3.dir/build.make CMakeFiles/cmTC_ed3d3.dir/build
+make[1]: Entering directory '/home/eero/all/no-gtk-text-editor/glfw/text-editor/build/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_ed3d3.dir/CheckSymbolExists.c.o
+/usr/bin/cc     -o CMakeFiles/cmTC_ed3d3.dir/CheckSymbolExists.c.o   -c /home/eero/all/no-gtk-text-editor/glfw/text-editor/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+Linking C executable cmTC_ed3d3
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_ed3d3.dir/link.txt --verbose=1
+/usr/bin/cc       CMakeFiles/cmTC_ed3d3.dir/CheckSymbolExists.c.o  -o cmTC_ed3d3 -rdynamic 
+CMakeFiles/cmTC_ed3d3.dir/CheckSymbolExists.c.o: In function `main':
 CheckSymbolExists.c:(.text+0x16): undefined reference to `pthread_create'
 collect2: error: ld returned 1 exit status
-CMakeFiles/cmTC_781af.dir/build.make:97: recipe for target 'cmTC_781af' failed
-make[1]: *** [cmTC_781af] Error 1
-make[1]: Leaving directory '/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build/CMakeFiles/CMakeTmp'
-Makefile:126: recipe for target 'cmTC_781af/fast' failed
-make: *** [cmTC_781af/fast] Error 2
+CMakeFiles/cmTC_ed3d3.dir/build.make:97: recipe for target 'cmTC_ed3d3' failed
+make[1]: *** [cmTC_ed3d3] Error 1
+make[1]: Leaving directory '/home/eero/all/no-gtk-text-editor/glfw/text-editor/build/CMakeFiles/CMakeTmp'
+Makefile:126: recipe for target 'cmTC_ed3d3/fast' failed
+make: *** [cmTC_ed3d3/fast] Error 2
 
-File /home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+File /home/eero/all/no-gtk-text-editor/glfw/text-editor/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
 /* */
 #include <pthread.h>
 
@@ -34,22 +34,22 @@ int main(int argc, char** argv)
 }
 
 Determining if the function pthread_create exists in the pthreads failed with the following output:
-Change Dir: /home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build/CMakeFiles/CMakeTmp
+Change Dir: /home/eero/all/no-gtk-text-editor/glfw/text-editor/build/CMakeFiles/CMakeTmp
 
-Run Build Command:"/usr/bin/make" "cmTC_f2b7a/fast"
-/usr/bin/make -f CMakeFiles/cmTC_f2b7a.dir/build.make CMakeFiles/cmTC_f2b7a.dir/build
-make[1]: Entering directory '/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build/CMakeFiles/CMakeTmp'
-Building C object CMakeFiles/cmTC_f2b7a.dir/CheckFunctionExists.c.o
-/usr/bin/cc    -DCHECK_FUNCTION_EXISTS=pthread_create   -o CMakeFiles/cmTC_f2b7a.dir/CheckFunctionExists.c.o   -c /usr/share/cmake-3.5/Modules/CheckFunctionExists.c
-Linking C executable cmTC_f2b7a
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_f2b7a.dir/link.txt --verbose=1
-/usr/bin/cc   -DCHECK_FUNCTION_EXISTS=pthread_create    CMakeFiles/cmTC_f2b7a.dir/CheckFunctionExists.c.o  -o cmTC_f2b7a -rdynamic -lpthreads 
+Run Build Command:"/usr/bin/make" "cmTC_a465f/fast"
+/usr/bin/make -f CMakeFiles/cmTC_a465f.dir/build.make CMakeFiles/cmTC_a465f.dir/build
+make[1]: Entering directory '/home/eero/all/no-gtk-text-editor/glfw/text-editor/build/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_a465f.dir/CheckFunctionExists.c.o
+/usr/bin/cc    -DCHECK_FUNCTION_EXISTS=pthread_create   -o CMakeFiles/cmTC_a465f.dir/CheckFunctionExists.c.o   -c /usr/share/cmake-3.5/Modules/CheckFunctionExists.c
+Linking C executable cmTC_a465f
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_a465f.dir/link.txt --verbose=1
+/usr/bin/cc   -DCHECK_FUNCTION_EXISTS=pthread_create    CMakeFiles/cmTC_a465f.dir/CheckFunctionExists.c.o  -o cmTC_a465f -rdynamic -lpthreads 
 /usr/bin/ld: cannot find -lpthreads
 collect2: error: ld returned 1 exit status
-CMakeFiles/cmTC_f2b7a.dir/build.make:97: recipe for target 'cmTC_f2b7a' failed
-make[1]: *** [cmTC_f2b7a] Error 1
-make[1]: Leaving directory '/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build/CMakeFiles/CMakeTmp'
-Makefile:126: recipe for target 'cmTC_f2b7a/fast' failed
-make: *** [cmTC_f2b7a/fast] Error 2
+CMakeFiles/cmTC_a465f.dir/build.make:97: recipe for target 'cmTC_a465f' failed
+make[1]: *** [cmTC_a465f] Error 1
+make[1]: Leaving directory '/home/eero/all/no-gtk-text-editor/glfw/text-editor/build/CMakeFiles/CMakeTmp'
+Makefile:126: recipe for target 'cmTC_a465f/fast' failed
+make: *** [cmTC_a465f/fast] Error 2
 
 

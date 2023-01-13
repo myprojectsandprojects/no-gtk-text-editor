@@ -43,10 +43,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = "/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test"
+CMAKE_SOURCE_DIR = /home/eero/all/no-gtk-text-editor/glfw/text-editor
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = "/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build"
+CMAKE_BINARY_DIR = /home/eero/all/no-gtk-text-editor/glfw/text-editor/build
 
 # Utility rule file for update_mappings.
 
@@ -54,8 +54,8 @@ CMAKE_BINARY_DIR = "/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake
 include glfw-3.3.8/src/CMakeFiles/update_mappings.dir/progress.make
 
 glfw-3.3.8/src/CMakeFiles/update_mappings:
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir="/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_1) "Updating gamepad mappings from upstream repository"
-	cd "/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/glfw-3.3.8/src" && /usr/bin/cmake -P "/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/glfw-3.3.8/CMake/GenerateMappings.cmake" mappings.h.in mappings.h
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/eero/all/no-gtk-text-editor/glfw/text-editor/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Updating gamepad mappings from upstream repository"
+	cd /home/eero/all/no-gtk-text-editor/glfw/text-editor/glfw-3.3.8/src && /usr/bin/cmake -P /home/eero/all/no-gtk-text-editor/glfw/text-editor/glfw-3.3.8/CMake/GenerateMappings.cmake mappings.h.in mappings.h
 
 update_mappings: glfw-3.3.8/src/CMakeFiles/update_mappings
 update_mappings: glfw-3.3.8/src/CMakeFiles/update_mappings.dir/build.make
@@ -68,10 +68,10 @@ glfw-3.3.8/src/CMakeFiles/update_mappings.dir/build: update_mappings
 .PHONY : glfw-3.3.8/src/CMakeFiles/update_mappings.dir/build
 
 glfw-3.3.8/src/CMakeFiles/update_mappings.dir/clean:
-	cd "/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build/glfw-3.3.8/src" && $(CMAKE_COMMAND) -P CMakeFiles/update_mappings.dir/cmake_clean.cmake
+	cd /home/eero/all/no-gtk-text-editor/glfw/text-editor/build/glfw-3.3.8/src && $(CMAKE_COMMAND) -P CMakeFiles/update_mappings.dir/cmake_clean.cmake
 .PHONY : glfw-3.3.8/src/CMakeFiles/update_mappings.dir/clean
 
 glfw-3.3.8/src/CMakeFiles/update_mappings.dir/depend:
-	cd "/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build" && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" "/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test" "/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/glfw-3.3.8/src" "/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build" "/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build/glfw-3.3.8/src" "/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build/glfw-3.3.8/src/CMakeFiles/update_mappings.dir/DependInfo.cmake" --color=$(COLOR)
+	cd /home/eero/all/no-gtk-text-editor/glfw/text-editor/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/eero/all/no-gtk-text-editor/glfw/text-editor /home/eero/all/no-gtk-text-editor/glfw/text-editor/glfw-3.3.8/src /home/eero/all/no-gtk-text-editor/glfw/text-editor/build /home/eero/all/no-gtk-text-editor/glfw/text-editor/build/glfw-3.3.8/src /home/eero/all/no-gtk-text-editor/glfw/text-editor/build/glfw-3.3.8/src/CMakeFiles/update_mappings.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : glfw-3.3.8/src/CMakeFiles/update_mappings.dir/depend
 

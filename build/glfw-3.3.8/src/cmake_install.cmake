@@ -1,4 +1,4 @@
-# Install script for directory: /home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/glfw-3.3.8/src
+# Install script for directory: /home/eero/all/no-gtk-text-editor/glfw/text-editor/glfw-3.3.8/src
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -33,6 +33,6 @@ if(NOT DEFINED CMAKE_INSTALL_SO_NO_EXE)
 endif()
 
 if(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified")
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib" TYPE STATIC_LIBRARY FILES "/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build/glfw-3.3.8/src/libglfw3.a")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib" TYPE STATIC_LIBRARY FILES "/home/eero/all/no-gtk-text-editor/glfw/text-editor/build/glfw-3.3.8/src/libglfw3.a")
 endif()
 

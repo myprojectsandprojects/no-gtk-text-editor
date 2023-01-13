@@ -6,7 +6,7 @@ C_FLAGS = -g -fPIC   -Wall -std=gnu99
 
 C_DEFINES = -D_GLFW_USE_CONFIG_H
 
-C_INCLUDES = -I"/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/glfw-3.3.8/include" -I"/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/glfw-3.3.8/src" -I"/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build/glfw-3.3.8/src" 
+C_INCLUDES = -I/home/eero/all/no-gtk-text-editor/glfw/text-editor/glfw-3.3.8/include -I/home/eero/all/no-gtk-text-editor/glfw/text-editor/glfw-3.3.8/src -I/home/eero/all/no-gtk-text-editor/glfw/text-editor/build/glfw-3.3.8/src 
 
 # Custom flags: glfw-3.3.8/src/CMakeFiles/glfw.dir/context.c.o_FLAGS = -Wdeclaration-after-statement
 

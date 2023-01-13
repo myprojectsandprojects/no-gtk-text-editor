@@ -1,22 +1,22 @@
-/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build/CMakeFiles/install.dir
-/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build/CMakeFiles/list_install_components.dir
-/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build/CMakeFiles/rebuild_cache.dir
-/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build/CMakeFiles/MyGlfwTest.dir
-/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build/CMakeFiles/install/strip.dir
-/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build/CMakeFiles/install/local.dir
-/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build/CMakeFiles/edit_cache.dir
-/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build/glfw-3.3.8/CMakeFiles/install.dir
-/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build/glfw-3.3.8/CMakeFiles/list_install_components.dir
-/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build/glfw-3.3.8/CMakeFiles/rebuild_cache.dir
-/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build/glfw-3.3.8/CMakeFiles/uninstall.dir
-/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build/glfw-3.3.8/CMakeFiles/install/strip.dir
-/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build/glfw-3.3.8/CMakeFiles/install/local.dir
-/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build/glfw-3.3.8/CMakeFiles/edit_cache.dir
-/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build/glfw-3.3.8/src/CMakeFiles/rebuild_cache.dir
-/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build/glfw-3.3.8/src/CMakeFiles/edit_cache.dir
-/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build/glfw-3.3.8/src/CMakeFiles/install.dir
-/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build/glfw-3.3.8/src/CMakeFiles/list_install_components.dir
-/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build/glfw-3.3.8/src/CMakeFiles/update_mappings.dir
-/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build/glfw-3.3.8/src/CMakeFiles/glfw.dir
-/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build/glfw-3.3.8/src/CMakeFiles/install/strip.dir
-/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build/glfw-3.3.8/src/CMakeFiles/install/local.dir
+/home/eero/all/no-gtk-text-editor/glfw/text-editor/build/CMakeFiles/install.dir
+/home/eero/all/no-gtk-text-editor/glfw/text-editor/build/CMakeFiles/list_install_components.dir
+/home/eero/all/no-gtk-text-editor/glfw/text-editor/build/CMakeFiles/rebuild_cache.dir
+/home/eero/all/no-gtk-text-editor/glfw/text-editor/build/CMakeFiles/MyGlfwTest.dir
+/home/eero/all/no-gtk-text-editor/glfw/text-editor/build/CMakeFiles/install/strip.dir
+/home/eero/all/no-gtk-text-editor/glfw/text-editor/build/CMakeFiles/install/local.dir
+/home/eero/all/no-gtk-text-editor/glfw/text-editor/build/CMakeFiles/edit_cache.dir
+/home/eero/all/no-gtk-text-editor/glfw/text-editor/build/glfw-3.3.8/CMakeFiles/install.dir
+/home/eero/all/no-gtk-text-editor/glfw/text-editor/build/glfw-3.3.8/CMakeFiles/list_install_components.dir
+/home/eero/all/no-gtk-text-editor/glfw/text-editor/build/glfw-3.3.8/CMakeFiles/rebuild_cache.dir
+/home/eero/all/no-gtk-text-editor/glfw/text-editor/build/glfw-3.3.8/CMakeFiles/uninstall.dir
+/home/eero/all/no-gtk-text-editor/glfw/text-editor/build/glfw-3.3.8/CMakeFiles/install/strip.dir
+/home/eero/all/no-gtk-text-editor/glfw/text-editor/build/glfw-3.3.8/CMakeFiles/install/local.dir
+/home/eero/all/no-gtk-text-editor/glfw/text-editor/build/glfw-3.3.8/CMakeFiles/edit_cache.dir
+/home/eero/all/no-gtk-text-editor/glfw/text-editor/build/glfw-3.3.8/src/CMakeFiles/rebuild_cache.dir
+/home/eero/all/no-gtk-text-editor/glfw/text-editor/build/glfw-3.3.8/src/CMakeFiles/edit_cache.dir
+/home/eero/all/no-gtk-text-editor/glfw/text-editor/build/glfw-3.3.8/src/CMakeFiles/install.dir
+/home/eero/all/no-gtk-text-editor/glfw/text-editor/build/glfw-3.3.8/src/CMakeFiles/list_install_components.dir
+/home/eero/all/no-gtk-text-editor/glfw/text-editor/build/glfw-3.3.8/src/CMakeFiles/update_mappings.dir
+/home/eero/all/no-gtk-text-editor/glfw/text-editor/build/glfw-3.3.8/src/CMakeFiles/glfw.dir
+/home/eero/all/no-gtk-text-editor/glfw/text-editor/build/glfw-3.3.8/src/CMakeFiles/install/strip.dir
+/home/eero/all/no-gtk-text-editor/glfw/text-editor/build/glfw-3.3.8/src/CMakeFiles/install/local.dir

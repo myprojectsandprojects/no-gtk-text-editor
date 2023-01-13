@@ -1,4 +1,4 @@
-# Install script for directory: /home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test
+# Install script for directory: /home/eero/all/no-gtk-text-editor/glfw/text-editor
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -34,7 +34,7 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build/glfw-3.3.8/cmake_install.cmake")
+  include("/home/eero/all/no-gtk-text-editor/glfw/text-editor/build/glfw-3.3.8/cmake_install.cmake")
 
 endif()
 
@@ -46,5 +46,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/home/eero/all/no-gtk-text-editor/glfw/text-editor/build/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

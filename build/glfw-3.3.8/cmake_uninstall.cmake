@@ -1,9 +1,9 @@
 
-if (NOT EXISTS "/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build/glfw-3.3.8/install_manifest.txt")
-  message(FATAL_ERROR "Cannot find install manifest: \"/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build/glfw-3.3.8/install_manifest.txt\"")
+if (NOT EXISTS "/home/eero/all/no-gtk-text-editor/glfw/text-editor/build/glfw-3.3.8/install_manifest.txt")
+  message(FATAL_ERROR "Cannot find install manifest: \"/home/eero/all/no-gtk-text-editor/glfw/text-editor/build/glfw-3.3.8/install_manifest.txt\"")
 endif()
 
-file(READ "/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build/glfw-3.3.8/install_manifest.txt" files)
+file(READ "/home/eero/all/no-gtk-text-editor/glfw/text-editor/build/glfw-3.3.8/install_manifest.txt" files)
 string(REGEX REPLACE "\n" ";" files "${files}")
 
 foreach (file ${files})

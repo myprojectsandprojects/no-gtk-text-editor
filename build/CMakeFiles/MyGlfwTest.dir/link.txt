@@ -1,1 +1,1 @@
-/usr/bin/c++   -g   CMakeFiles/MyGlfwTest.dir/main.cpp.o  -o MyGlfwTest glfw-3.3.8/src/libglfw3.a /usr/lib/x86_64-linux-gnu/librt.so -lm -ldl /usr/lib/x86_64-linux-gnu/libX11.so -lpthread 
+/usr/bin/c++   -g   CMakeFiles/MyGlfwTest.dir/main.cpp.o CMakeFiles/MyGlfwTest.dir/glad/src/glad.c.o CMakeFiles/MyGlfwTest.dir/lib.cpp.o  -o MyGlfwTest glfw-3.3.8/src/libglfw3.a /usr/lib/x86_64-linux-gnu/librt.so -lm -ldl /usr/lib/x86_64-linux-gnu/libX11.so -lpthread 

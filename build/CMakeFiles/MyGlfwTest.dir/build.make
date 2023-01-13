@@ -43,10 +43,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = "/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test"
+CMAKE_SOURCE_DIR = /home/eero/all/no-gtk-text-editor/glfw/text-editor
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = "/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build"
+CMAKE_BINARY_DIR = /home/eero/all/no-gtk-text-editor/glfw/text-editor/build
 
 # Include any dependencies generated for this target.
 include CMakeFiles/MyGlfwTest.dir/depend.make
@@ -59,16 +59,16 @@ include CMakeFiles/MyGlfwTest.dir/flags.make
 
 CMakeFiles/MyGlfwTest.dir/main.cpp.o: CMakeFiles/MyGlfwTest.dir/flags.make
 CMakeFiles/MyGlfwTest.dir/main.cpp.o: ../main.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir="/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/MyGlfwTest.dir/main.cpp.o"
-	/usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/MyGlfwTest.dir/main.cpp.o -c "/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/main.cpp"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/eero/all/no-gtk-text-editor/glfw/text-editor/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/MyGlfwTest.dir/main.cpp.o"
+	/usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/MyGlfwTest.dir/main.cpp.o -c /home/eero/all/no-gtk-text-editor/glfw/text-editor/main.cpp
 
 CMakeFiles/MyGlfwTest.dir/main.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/MyGlfwTest.dir/main.cpp.i"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/main.cpp" > CMakeFiles/MyGlfwTest.dir/main.cpp.i
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/eero/all/no-gtk-text-editor/glfw/text-editor/main.cpp > CMakeFiles/MyGlfwTest.dir/main.cpp.i
 
 CMakeFiles/MyGlfwTest.dir/main.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/MyGlfwTest.dir/main.cpp.s"
-	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/main.cpp" -o CMakeFiles/MyGlfwTest.dir/main.cpp.s
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/eero/all/no-gtk-text-editor/glfw/text-editor/main.cpp -o CMakeFiles/MyGlfwTest.dir/main.cpp.s
 
 CMakeFiles/MyGlfwTest.dir/main.cpp.o.requires:
 
@@ -81,21 +81,73 @@ CMakeFiles/MyGlfwTest.dir/main.cpp.o.provides: CMakeFiles/MyGlfwTest.dir/main.cp
 CMakeFiles/MyGlfwTest.dir/main.cpp.o.provides.build: CMakeFiles/MyGlfwTest.dir/main.cpp.o
 
 
+CMakeFiles/MyGlfwTest.dir/glad/src/glad.c.o: CMakeFiles/MyGlfwTest.dir/flags.make
+CMakeFiles/MyGlfwTest.dir/glad/src/glad.c.o: ../glad/src/glad.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/eero/all/no-gtk-text-editor/glfw/text-editor/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building C object CMakeFiles/MyGlfwTest.dir/glad/src/glad.c.o"
+	/usr/bin/cc  $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/MyGlfwTest.dir/glad/src/glad.c.o   -c /home/eero/all/no-gtk-text-editor/glfw/text-editor/glad/src/glad.c
+
+CMakeFiles/MyGlfwTest.dir/glad/src/glad.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/MyGlfwTest.dir/glad/src/glad.c.i"
+	/usr/bin/cc  $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/eero/all/no-gtk-text-editor/glfw/text-editor/glad/src/glad.c > CMakeFiles/MyGlfwTest.dir/glad/src/glad.c.i
+
+CMakeFiles/MyGlfwTest.dir/glad/src/glad.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/MyGlfwTest.dir/glad/src/glad.c.s"
+	/usr/bin/cc  $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/eero/all/no-gtk-text-editor/glfw/text-editor/glad/src/glad.c -o CMakeFiles/MyGlfwTest.dir/glad/src/glad.c.s
+
+CMakeFiles/MyGlfwTest.dir/glad/src/glad.c.o.requires:
+
+.PHONY : CMakeFiles/MyGlfwTest.dir/glad/src/glad.c.o.requires
+
+CMakeFiles/MyGlfwTest.dir/glad/src/glad.c.o.provides: CMakeFiles/MyGlfwTest.dir/glad/src/glad.c.o.requires
+	$(MAKE) -f CMakeFiles/MyGlfwTest.dir/build.make CMakeFiles/MyGlfwTest.dir/glad/src/glad.c.o.provides.build
+.PHONY : CMakeFiles/MyGlfwTest.dir/glad/src/glad.c.o.provides
+
+CMakeFiles/MyGlfwTest.dir/glad/src/glad.c.o.provides.build: CMakeFiles/MyGlfwTest.dir/glad/src/glad.c.o
+
+
+CMakeFiles/MyGlfwTest.dir/lib.cpp.o: CMakeFiles/MyGlfwTest.dir/flags.make
+CMakeFiles/MyGlfwTest.dir/lib.cpp.o: ../lib.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/eero/all/no-gtk-text-editor/glfw/text-editor/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/MyGlfwTest.dir/lib.cpp.o"
+	/usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/MyGlfwTest.dir/lib.cpp.o -c /home/eero/all/no-gtk-text-editor/glfw/text-editor/lib.cpp
+
+CMakeFiles/MyGlfwTest.dir/lib.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/MyGlfwTest.dir/lib.cpp.i"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/eero/all/no-gtk-text-editor/glfw/text-editor/lib.cpp > CMakeFiles/MyGlfwTest.dir/lib.cpp.i
+
+CMakeFiles/MyGlfwTest.dir/lib.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/MyGlfwTest.dir/lib.cpp.s"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/eero/all/no-gtk-text-editor/glfw/text-editor/lib.cpp -o CMakeFiles/MyGlfwTest.dir/lib.cpp.s
+
+CMakeFiles/MyGlfwTest.dir/lib.cpp.o.requires:
+
+.PHONY : CMakeFiles/MyGlfwTest.dir/lib.cpp.o.requires
+
+CMakeFiles/MyGlfwTest.dir/lib.cpp.o.provides: CMakeFiles/MyGlfwTest.dir/lib.cpp.o.requires
+	$(MAKE) -f CMakeFiles/MyGlfwTest.dir/build.make CMakeFiles/MyGlfwTest.dir/lib.cpp.o.provides.build
+.PHONY : CMakeFiles/MyGlfwTest.dir/lib.cpp.o.provides
+
+CMakeFiles/MyGlfwTest.dir/lib.cpp.o.provides.build: CMakeFiles/MyGlfwTest.dir/lib.cpp.o
+
+
 # Object files for target MyGlfwTest
 MyGlfwTest_OBJECTS = \
-"CMakeFiles/MyGlfwTest.dir/main.cpp.o"
+"CMakeFiles/MyGlfwTest.dir/main.cpp.o" \
+"CMakeFiles/MyGlfwTest.dir/glad/src/glad.c.o" \
+"CMakeFiles/MyGlfwTest.dir/lib.cpp.o"
 
 # External object files for target MyGlfwTest
 MyGlfwTest_EXTERNAL_OBJECTS =
 
 MyGlfwTest: CMakeFiles/MyGlfwTest.dir/main.cpp.o
+MyGlfwTest: CMakeFiles/MyGlfwTest.dir/glad/src/glad.c.o
+MyGlfwTest: CMakeFiles/MyGlfwTest.dir/lib.cpp.o
 MyGlfwTest: CMakeFiles/MyGlfwTest.dir/build.make
 MyGlfwTest: glfw-3.3.8/src/libglfw3.a
 MyGlfwTest: /usr/lib/x86_64-linux-gnu/librt.so
 MyGlfwTest: /usr/lib/x86_64-linux-gnu/libm.so
 MyGlfwTest: /usr/lib/x86_64-linux-gnu/libX11.so
 MyGlfwTest: CMakeFiles/MyGlfwTest.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir="/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable MyGlfwTest"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/eero/all/no-gtk-text-editor/glfw/text-editor/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Linking CXX executable MyGlfwTest"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/MyGlfwTest.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
@@ -104,6 +156,8 @@ CMakeFiles/MyGlfwTest.dir/build: MyGlfwTest
 .PHONY : CMakeFiles/MyGlfwTest.dir/build
 
 CMakeFiles/MyGlfwTest.dir/requires: CMakeFiles/MyGlfwTest.dir/main.cpp.o.requires
+CMakeFiles/MyGlfwTest.dir/requires: CMakeFiles/MyGlfwTest.dir/glad/src/glad.c.o.requires
+CMakeFiles/MyGlfwTest.dir/requires: CMakeFiles/MyGlfwTest.dir/lib.cpp.o.requires
 
 .PHONY : CMakeFiles/MyGlfwTest.dir/requires
 
@@ -112,6 +166,6 @@ CMakeFiles/MyGlfwTest.dir/clean:
 .PHONY : CMakeFiles/MyGlfwTest.dir/clean
 
 CMakeFiles/MyGlfwTest.dir/depend:
-	cd "/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build" && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" "/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test" "/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test" "/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build" "/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build" "/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build/CMakeFiles/MyGlfwTest.dir/DependInfo.cmake" --color=$(COLOR)
+	cd /home/eero/all/no-gtk-text-editor/glfw/text-editor/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/eero/all/no-gtk-text-editor/glfw/text-editor /home/eero/all/no-gtk-text-editor/glfw/text-editor /home/eero/all/no-gtk-text-editor/glfw/text-editor/build /home/eero/all/no-gtk-text-editor/glfw/text-editor/build /home/eero/all/no-gtk-text-editor/glfw/text-editor/build/CMakeFiles/MyGlfwTest.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/MyGlfwTest.dir/depend
 

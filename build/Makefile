@@ -48,10 +48,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = "/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test"
+CMAKE_SOURCE_DIR = /home/eero/all/no-gtk-text-editor/glfw/text-editor
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = "/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build"
+CMAKE_BINARY_DIR = /home/eero/all/no-gtk-text-editor/glfw/text-editor/build
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -124,9 +124,9 @@ edit_cache/fast: edit_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start "/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build/CMakeFiles" "/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build/CMakeFiles/progress.marks"
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/eero/all/no-gtk-text-editor/glfw/text-editor/build/CMakeFiles /home/eero/all/no-gtk-text-editor/glfw/text-editor/build/CMakeFiles/progress.marks
 	$(MAKE) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start "/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build/CMakeFiles" 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/eero/all/no-gtk-text-editor/glfw/text-editor/build/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -206,6 +206,60 @@ glfw/fast:
 	$(MAKE) -f glfw-3.3.8/src/CMakeFiles/glfw.dir/build.make glfw-3.3.8/src/CMakeFiles/glfw.dir/build
 .PHONY : glfw/fast
 
+glad/src/glad.o: glad/src/glad.c.o
+
+.PHONY : glad/src/glad.o
+
+# target to build an object file
+glad/src/glad.c.o:
+	$(MAKE) -f CMakeFiles/MyGlfwTest.dir/build.make CMakeFiles/MyGlfwTest.dir/glad/src/glad.c.o
+.PHONY : glad/src/glad.c.o
+
+glad/src/glad.i: glad/src/glad.c.i
+
+.PHONY : glad/src/glad.i
+
+# target to preprocess a source file
+glad/src/glad.c.i:
+	$(MAKE) -f CMakeFiles/MyGlfwTest.dir/build.make CMakeFiles/MyGlfwTest.dir/glad/src/glad.c.i
+.PHONY : glad/src/glad.c.i
+
+glad/src/glad.s: glad/src/glad.c.s
+
+.PHONY : glad/src/glad.s
+
+# target to generate assembly for a file
+glad/src/glad.c.s:
+	$(MAKE) -f CMakeFiles/MyGlfwTest.dir/build.make CMakeFiles/MyGlfwTest.dir/glad/src/glad.c.s
+.PHONY : glad/src/glad.c.s
+
+lib.o: lib.cpp.o
+
+.PHONY : lib.o
+
+# target to build an object file
+lib.cpp.o:
+	$(MAKE) -f CMakeFiles/MyGlfwTest.dir/build.make CMakeFiles/MyGlfwTest.dir/lib.cpp.o
+.PHONY : lib.cpp.o
+
+lib.i: lib.cpp.i
+
+.PHONY : lib.i
+
+# target to preprocess a source file
+lib.cpp.i:
+	$(MAKE) -f CMakeFiles/MyGlfwTest.dir/build.make CMakeFiles/MyGlfwTest.dir/lib.cpp.i
+.PHONY : lib.cpp.i
+
+lib.s: lib.cpp.s
+
+.PHONY : lib.s
+
+# target to generate assembly for a file
+lib.cpp.s:
+	$(MAKE) -f CMakeFiles/MyGlfwTest.dir/build.make CMakeFiles/MyGlfwTest.dir/lib.cpp.s
+.PHONY : lib.cpp.s
+
 main.o: main.cpp.o
 
 .PHONY : main.o
@@ -249,6 +303,12 @@ help:
 	@echo "... uninstall"
 	@echo "... update_mappings"
 	@echo "... glfw"
+	@echo "... glad/src/glad.o"
+	@echo "... glad/src/glad.i"
+	@echo "... glad/src/glad.s"
+	@echo "... lib.o"
+	@echo "... lib.i"
+	@echo "... lib.s"
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"

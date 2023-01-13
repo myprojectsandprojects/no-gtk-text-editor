@@ -43,10 +43,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = "/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test"
+CMAKE_SOURCE_DIR = /home/eero/all/no-gtk-text-editor/glfw/text-editor
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = "/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build"
+CMAKE_BINARY_DIR = /home/eero/all/no-gtk-text-editor/glfw/text-editor/build
 
 # Utility rule file for uninstall.
 
@@ -54,7 +54,7 @@ CMAKE_BINARY_DIR = "/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake
 include glfw-3.3.8/CMakeFiles/uninstall.dir/progress.make
 
 glfw-3.3.8/CMakeFiles/uninstall:
-	cd "/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build/glfw-3.3.8" && /usr/bin/cmake -P /home/eero/all/no-gtk-text-editor/glfw/Untitled\ Folder/cmake-test/build/glfw-3.3.8/cmake_uninstall.cmake
+	cd /home/eero/all/no-gtk-text-editor/glfw/text-editor/build/glfw-3.3.8 && /usr/bin/cmake -P /home/eero/all/no-gtk-text-editor/glfw/text-editor/build/glfw-3.3.8/cmake_uninstall.cmake
 
 uninstall: glfw-3.3.8/CMakeFiles/uninstall
 uninstall: glfw-3.3.8/CMakeFiles/uninstall.dir/build.make
@@ -67,10 +67,10 @@ glfw-3.3.8/CMakeFiles/uninstall.dir/build: uninstall
 .PHONY : glfw-3.3.8/CMakeFiles/uninstall.dir/build
 
 glfw-3.3.8/CMakeFiles/uninstall.dir/clean:
-	cd "/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build/glfw-3.3.8" && $(CMAKE_COMMAND) -P CMakeFiles/uninstall.dir/cmake_clean.cmake
+	cd /home/eero/all/no-gtk-text-editor/glfw/text-editor/build/glfw-3.3.8 && $(CMAKE_COMMAND) -P CMakeFiles/uninstall.dir/cmake_clean.cmake
 .PHONY : glfw-3.3.8/CMakeFiles/uninstall.dir/clean
 
 glfw-3.3.8/CMakeFiles/uninstall.dir/depend:
-	cd "/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build" && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" "/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test" "/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/glfw-3.3.8" "/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build" "/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build/glfw-3.3.8" "/home/eero/all/no-gtk-text-editor/glfw/Untitled Folder/cmake-test/build/glfw-3.3.8/CMakeFiles/uninstall.dir/DependInfo.cmake" --color=$(COLOR)
+	cd /home/eero/all/no-gtk-text-editor/glfw/text-editor/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/eero/all/no-gtk-text-editor/glfw/text-editor /home/eero/all/no-gtk-text-editor/glfw/text-editor/glfw-3.3.8 /home/eero/all/no-gtk-text-editor/glfw/text-editor/build /home/eero/all/no-gtk-text-editor/glfw/text-editor/build/glfw-3.3.8 /home/eero/all/no-gtk-text-editor/glfw/text-editor/build/glfw-3.3.8/CMakeFiles/uninstall.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : glfw-3.3.8/CMakeFiles/uninstall.dir/depend
 
