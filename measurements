@@ -1,0 +1,5 @@
+transform in shader, precalculated texture coordinates: 929.466272 932.246513 936.031048
+transform in shader, no precalculation:                 938.293254 935.138845 937.732839
+no shader, no precalculation:                           934.022859 922.171387 935.577281
+no shader, precalculated texture coordinates:           941.951064 924.224668 932.995106
+(all in microseconds)

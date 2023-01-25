@@ -33,6 +33,9 @@ bool ReadTextFile(const char *FileName, char **Contents); // returns 0-terminate
 #define MIN(a, b) (a) < (b) ? (a) : (b)
 #define MAX(a, b) (a) > (b) ? (a) : (b)
 
+// Using this on a float or a double before casting it to an integer yields a more accurate result.
+#define CAST_ROUND(n) ((n) + (((n) > 0) ? 0.5 : -0.5))
+
 #define INITIALLY_ALLOCATED 100
 
 template <typename t>

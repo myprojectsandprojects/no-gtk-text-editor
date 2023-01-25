@@ -1,0 +1,15 @@
+#version 330 core
+
+in vec2 Texture;
+in vec3 ForegroundColor;
+in vec3 BackgroundColor;
+
+out vec4 OutColor;
+
+uniform sampler2D sampler;
+
+void main()
+{
+	vec4 TextureColor = texture(sampler, Texture);
+	OutColor = vec4(mix(ForegroundColor, BackgroundColor, TextureColor.r), 1.0);
+}

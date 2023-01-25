@@ -2,7 +2,7 @@
 
 bool ReadFile(const char *FileName, u8 **Contents, size_t *ContentsNumBytes)
 {
-	FILE *F = fopen(FileName, "rb"); // On Windows we need 'b', otherwise it doesnt read the whole file.
+	FILE *F = fopen(FileName, "rb"); // Docs say that 'b' has no effect on POSIX-systems, but on Windows it disables special handling of '\n'.
 	if (!F)
 	{
 		fprintf(stderr, "Failed to open file: \"%s\"!\n", FileName);
@@ -51,7 +51,7 @@ bool ReadFile(const char *FileName, u8 **Contents, size_t *ContentsNumBytes)
 
 bool WriteFile(const char *FileName, u8 *Contents, size_t NumBytes)
 {
-	FILE *F = fopen(FileName, "w");
+	FILE *F = fopen(FileName, "w"); //@ wb?
 	if (!F)
 	{
 		fprintf(stderr, "Failed to open file: \"%s\"!\n", FileName);
@@ -81,7 +81,7 @@ bool WriteFile(const char *FileName, u8 *Contents, size_t NumBytes)
 
 bool ReadTextFile(const char *FileName, char **Contents)
 {
-	FILE *F = fopen(FileName, "rb"); // On Windows we need 'b', otherwise it doesnt read the whole file.
+	FILE *F = fopen(FileName, "r");
 	if (!F)
 	{
 		fprintf(stderr, "Failed to open file: \"%s\"!\n", FileName);
