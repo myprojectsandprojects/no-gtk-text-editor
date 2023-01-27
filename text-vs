@@ -2,15 +2,17 @@
 
 layout (location = 0) in vec2 Position;
 layout (location = 1) in vec2 TextureIn;
-layout (location = 2) in vec3 ForegroundColorIn;
-layout (location = 3) in vec3 BackgroundColorIn;
+//layout (location = 2) in vec3 ForegroundColorIn;
+//layout (location = 3) in vec3 BackgroundColorIn;
+layout (location = 2) in vec3 ColorIn;
 
 uniform float WindowWidth;
 uniform float WindowHeight;
 
 out vec2 Texture;
-out vec3 ForegroundColor;
-out vec3 BackgroundColor;
+//out vec3 ForegroundColor;
+//out vec3 BackgroundColor;
+out vec3 Color;
 
 void main()
 {
@@ -21,6 +23,7 @@ void main()
 		1.0);
 
 	Texture = TextureIn;
-	ForegroundColor = ForegroundColorIn;
-	BackgroundColor = BackgroundColorIn;
+//	ForegroundColor = ForegroundColorIn;
+//	BackgroundColor = BackgroundColorIn;
+	Color = ColorIn;
 }

@@ -1,3 +1,9 @@
+/*
+	* Could also draw the cursor separately and drop this whole text-background
+	thing because, come to think of it, it's kind of useless.
+	* ~/textdb (over million lines) is very slow. Why?
+*/
+
 #include <stdio.h>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -17,6 +23,15 @@ struct textureCoordinates
 	float X1, X2, Y1, Y2;
 };
 
+//struct textBuffer
+//{
+//	// todo
+//};
+//
+//bool MoveCursorForward(textBuffer *Buffer);
+//bool MoveCursorBackward(textBuffer *Buffer);
+//char GetChar(textBuffer *Buffer, int At);
+
 struct editor
 {
 	struct
@@ -35,9 +50,10 @@ struct editor
 
 	int CursorPos;
 
-	color TextFGColor;
-	color TextBGColor;
-	color CursorColor;
+	color TextColor;
+//	color TextFGColor;
+//	color TextBGColor;
+//	color CursorColor;
 
 	char *FileContents;
 };
@@ -67,9 +83,10 @@ editor Editor = {
 
 	.CursorPos = 0,
 
-	.TextFGColor = {1.0f, 1.0f, 1.0f},
-	.TextBGColor = {0.0f, 0.0f, 0.0f},
-	.CursorColor = {0.0f, 1.0f, 0.0f},
+	.TextColor = {1.0f, 1.0f, 1.0f},
+//	.TextFGColor = {1.0f, 1.0f, 1.0f},
+//	.TextBGColor = {0.0f, 0.0f, 0.0f},
+//	.CursorColor = {0.0f, 1.0f, 0.0f},
 
 	.FileContents = NULL
 };
@@ -79,6 +96,9 @@ GLuint CreateShader(const char *VertexShaderFile, const char *FragmentShaderFile
 //void RenderCharacter(char CharAscii, int CharX, int CharY, int CharWidth, int CharHeight, array<float> *Vertices);
 void CreateTextVertices
 (const char *Text, array<float> *Vertices, array<unsigned int> *Indices, textureCoordinates Chars[], editor *Editor);
+void CreateCursorVertices(array<float> *CursorVertices, editor *Editor);
+int GetCursorCharIndex(editor *Editor);
+int GetCursorLineIndex(editor *Editor);
 
 void PossiblyUpdateViewportPosition(editor *Editor);
 
@@ -329,7 +349,7 @@ int main()
 	}
 
 	GLuint TextShader = CreateShader("../text-vs", "../text-fs");
-//	GLuint CursorShader = CreateShader("../cursor-vs", "../cursor-fs");
+	GLuint CursorShader = CreateShader("../cursor-vs", "../cursor-fs");
 
 	array<float> TextVertices;
 	ArrayInit(&TextVertices);
@@ -349,48 +369,40 @@ int main()
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, TextEBO);
 	
 	// position
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 10 * sizeof(float), (void *) 0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void *) 0);
 	glEnableVertexAttribArray(0);
 
 	// texture coordinates
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 10 * sizeof(float), (void *) (2 * sizeof(float)));
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void *) (2 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 
-	// foreground color
-	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 10 * sizeof(float), (void *) (4 * sizeof(float)));
+//	// foreground color
+//	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 10 * sizeof(float), (void *) (4 * sizeof(float)));
+//	glEnableVertexAttribArray(2);
+//
+//	// background color
+//	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 10 * sizeof(float), (void *) (7 * sizeof(float)));
+//	glEnableVertexAttribArray(3);
+
+	// color
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void *) (4 * sizeof(float)));
 	glEnableVertexAttribArray(2);
 
-	// background color
-	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 10 * sizeof(float), (void *) (7 * sizeof(float)));
-	glEnableVertexAttribArray(3);
 
-////	int CursorWidth =;
-////	int CursorHeight =;
-//	float CursorVertices[] = {
-//		/* upper-left*/  -0.5f, +0.5f,
-//		/* upper-right*/ +0.5f, +0.5f,
-//		/* lower-right*/ +0.5f, -0.5f,
-//
-//		/* lower-right*/ +0.5f, -0.5f,
-//		/* lower-left*/  -0.5f, -0.5f,
-//		/* upper-left*/  -0.5f, +0.5f,
-//	};
-//
-//	GLuint CursorVAO; // Vertex Array Object for cursor
-//	glGenVertexArrays(1, &CursorVAO);
-//	glBindVertexArray(CursorVAO);
-//
-//	GLuint CursorVBO; // Vertex Buffer Object
-//	glGenBuffers(1, &CursorVBO);
-//	glBindBuffer(GL_ARRAY_BUFFER, CursorVBO);
-//	glBufferData(GL_ARRAY_BUFFER, sizeof(CursorVertices), CursorVertices, GL_STATIC_DRAW);
-//	
-//	// position
-//	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void *) 0);
-//	glEnableVertexAttribArray(0);
+	GLuint CursorVAO; // Vertex Array Object for cursor
+	glGenVertexArrays(1, &CursorVAO);
+	glBindVertexArray(CursorVAO);
 
-//	array<float> CursorVertices;
-//	ArrayInit(&CursorVertices);
+	GLuint CursorVBO; // Vertex Buffer Object
+	glGenBuffers(1, &CursorVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, CursorVBO);
+	
+	// position
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void *) 0);
+	glEnableVertexAttribArray(0);
+
+	array<float> CursorVertices;
+	ArrayInit(&CursorVertices);
 
 //	if(!ReadTextFile("/home/eero/all/text-editor/main.cpp", &Editor.FileContents))
 //	{
@@ -437,9 +449,15 @@ int main()
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-//		glUseProgram(CursorShader);
-//		glBindVertexArray(CursorVAO);
-//		glDrawArrays(GL_TRIANGLES, 0, COUNT(CursorVertices));
+		glUseProgram(CursorShader);
+		glUniform1f(glGetUniformLocation(TextShader, "WindowWidth"), Editor.WindowWidth);
+		glUniform1f(glGetUniformLocation(TextShader, "WindowHeight"), Editor.WindowHeight);
+
+		glBindVertexArray(CursorVAO);
+		glBindBuffer(GL_ARRAY_BUFFER, CursorVBO);
+		CreateCursorVertices(&CursorVertices, &Editor);
+		glBufferData(GL_ARRAY_BUFFER, CursorVertices.Count * sizeof(float), CursorVertices.Data, GL_STREAM_DRAW);
+		glDrawArrays(GL_TRIANGLES, 0, CursorVertices.Count / 2);
 
 		glUseProgram(TextShader);
 		glUniform1f(glGetUniformLocation(TextShader, "WindowWidth"), Editor.WindowWidth);
@@ -463,6 +481,7 @@ int main()
 
 		glfwPollEvents();
 
+		CursorVertices.Count = 0;
 		TextVertices.Count = 0;
 		TextIndices.Count = 0;
 	}
@@ -512,23 +531,26 @@ void CreateTextVertices
 			float X2 = X + Editor->CharWidth;  // lower right
 			float Y2 = Y + Editor->CharHeight; // lower right
 
-			float FGR = Editor->TextFGColor.R;
-			float FGG = Editor->TextFGColor.G;
-			float FGB = Editor->TextFGColor.B;
-
-			float BGR, BGG, BGB;
-			if(i == Editor->CursorPos)
-			{
-				BGR = Editor->CursorColor.R;
-				BGG = Editor->CursorColor.G;
-				BGB = Editor->CursorColor.B;
-			}
-			else
-			{
-				BGR = Editor->TextBGColor.R;
-				BGG = Editor->TextBGColor.G;
-				BGB = Editor->TextBGColor.B;
-			}
+//			float FGR = Editor->TextFGColor.R;
+//			float FGG = Editor->TextFGColor.G;
+//			float FGB = Editor->TextFGColor.B;
+//
+//			float BGR, BGG, BGB;
+//			if(i == Editor->CursorPos)
+//			{
+//				BGR = Editor->CursorColor.R;
+//				BGG = Editor->CursorColor.G;
+//				BGB = Editor->CursorColor.B;
+//			}
+//			else
+//			{
+//				BGR = Editor->TextBGColor.R;
+//				BGG = Editor->TextBGColor.G;
+//				BGB = Editor->TextBGColor.B;
+//			}
+			float TextR = Editor->TextColor.R;
+			float TextG = Editor->TextColor.G;
+			float TextB = Editor->TextColor.B;
 
 			int Index = Char - ' ';
 
@@ -539,13 +561,20 @@ void CreateTextVertices
 //				/*bottom-right*/  X2, Y2, Chars[Index].X2, Chars[Index].Y2, FGR, FGG, FGB, BGR, BGG, BGB,
 //				/*top-right*/     X2, Y1, Chars[Index].X2, Chars[Index].Y1, FGR, FGG, FGB, BGR, BGG, BGB,
 //				/*top-left*/      X1, Y1, Chars[Index].X1, Chars[Index].Y1, FGR, FGG, FGB, BGR, BGG, BGB,
+////			};
+//
+//			float QuadVertices[] = {
+//				X1, Y1, Chars[Index].X1, Chars[Index].Y1, FGR, FGG, FGB, BGR, BGG, BGB, /*top-left*/
+//				X1, Y2, Chars[Index].X1, Chars[Index].Y2, FGR, FGG, FGB, BGR, BGG, BGB, /*bottom-left*/
+//				X2, Y2, Chars[Index].X2, Chars[Index].Y2, FGR, FGG, FGB, BGR, BGG, BGB, /*bottom-right*/
+//				X2, Y1, Chars[Index].X2, Chars[Index].Y1, FGR, FGG, FGB, BGR, BGG, BGB, /*top-right*/
 //			};
 
 			float QuadVertices[] = {
-				X1, Y1, Chars[Index].X1, Chars[Index].Y1, FGR, FGG, FGB, BGR, BGG, BGB, /*top-left*/
-				X1, Y2, Chars[Index].X1, Chars[Index].Y2, FGR, FGG, FGB, BGR, BGG, BGB, /*bottom-left*/
-				X2, Y2, Chars[Index].X2, Chars[Index].Y2, FGR, FGG, FGB, BGR, BGG, BGB, /*bottom-right*/
-				X2, Y1, Chars[Index].X2, Chars[Index].Y1, FGR, FGG, FGB, BGR, BGG, BGB, /*top-right*/
+				X1, Y1, Chars[Index].X1, Chars[Index].Y1, TextR, TextG, TextB, /*top-left*/
+				X1, Y2, Chars[Index].X1, Chars[Index].Y2, TextR, TextG, TextB, /*bottom-left*/
+				X2, Y2, Chars[Index].X2, Chars[Index].Y2, TextR, TextG, TextB, /*bottom-right*/
+				X2, Y1, Chars[Index].X2, Chars[Index].Y1, TextR, TextG, TextB, /*top-right*/
 			};
 
 			for(int i = 0; i < COUNT(QuadVertices); ++i)
@@ -554,7 +583,7 @@ void CreateTextVertices
 			}
 
 			//@ Vertices->Count is not the number of vertices, its the number of floats in the array, really misleading
-			int OffsetNewVertices = Vertices->Count / 10 - 4;
+			int OffsetNewVertices = Vertices->Count / 7 - 4;
 			unsigned int QuadIndices[] = {
 				0, 1, 2,
 				2, 3, 0,
@@ -694,6 +723,101 @@ GLuint CreateShader(const char *VertexShaderFile, const char *FragmentShaderFile
 // If the cursor has moved outside the viewport, adjust the viewport's offsets, so that cursor becomes visible again
 void PossiblyUpdateViewportPosition(editor *Editor)
 {
+//	int i = Editor->CursorPos;
+//	while(i > 0)
+//	{
+//		--i;
+//		if(Editor->FileContents[i] == '\n')
+//		{
+//			i += 1;
+//			break;
+//		}
+//	}
+//	int CharCount = Editor->CursorPos - i; // number of chars before cursor
+
+//// Figure out on which line the cursor is at
+//	int LineCount = 0; // number of lines before cursor
+//	for(int i = Editor->CursorPos - 1; i >= 0; --i)
+//	{
+//		if(Editor->FileContents[i] == '\n')
+//		{
+//			++LineCount;
+//		}
+//	}
+//	printf("Cursor is at %dth line\n", LineCount + 1);
+
+	// Calculate the cursor's position in text-buffer-coordinates
+//	int CursorX1 = CharCount * (Editor->CharWidth + Editor->CharSpacing);
+//	int CursorY1 = LineCount * (Editor->CharHeight + Editor->LineSpacing);
+//	int CursorX2 = CursorX1 + Editor->CharWidth;
+//	int CursorY2 = CursorY1 + Editor->CharHeight;
+
+//	if(CursorY2 > Editor->ViewportY + Editor->WindowHeight)
+//	{
+//		Editor->ViewportY = CursorY2 - Editor->WindowHeight;
+//	}
+//	if(CursorY1 < Editor->ViewportY)
+//	{
+//		Editor->ViewportY = CursorY1;
+//	}
+//	if(CursorX2 > Editor->ViewportX + Editor->WindowWidth)
+//	{
+//		Editor->ViewportX = CursorX2 - Editor->WindowWidth;
+//	}
+//	if(CursorX1 < Editor->ViewportX)
+//	{
+//		Editor->ViewportX = CursorX1;
+//	}
+
+	// Calculate the cursor's position relative to the viewport
+	int CursorX1 = GetCursorCharIndex(Editor) * (Editor->CharWidth + Editor->CharSpacing) - Editor->ViewportX;
+	int CursorY1 = GetCursorLineIndex(Editor) * (Editor->CharHeight + Editor->LineSpacing) - Editor->ViewportY;
+	int CursorX2 = CursorX1 + Editor->CharWidth;
+	int CursorY2 = CursorY1 + Editor->CharHeight;
+
+	if(CursorY2 > Editor->WindowHeight)
+	{
+		Editor->ViewportY += CursorY2 - Editor->WindowHeight;
+	}
+	if(CursorY1 < 0)
+	{
+		Editor->ViewportY += CursorY1;
+	}
+	if(CursorX2 > Editor->WindowWidth)
+	{
+		Editor->ViewportX += CursorX2 - Editor->WindowWidth;
+	}
+	if(CursorX1 < 0)
+	{
+		Editor->ViewportX += CursorX1;
+	}
+}
+
+void CreateCursorVertices(array<float> *CursorVertices, editor *Editor)
+{
+	int CursorWidth = Editor->CharWidth;
+	int CursorHeight = Editor->CharHeight;
+	float X1 = GetCursorCharIndex(Editor) * (Editor->CharWidth + Editor->CharSpacing) - Editor->ViewportX;  // left edge
+	float X2 = X1 + CursorWidth;                                                        // right edge
+	float Y1 = GetCursorLineIndex(Editor) * (Editor->CharHeight + Editor->LineSpacing) - Editor->ViewportY; // upper edge
+	float Y2 = Y1 + CursorHeight;                                                       // lower edge
+	float Vertices[] = {
+		/* upper-left*/  X1, Y1,
+		/* upper-right*/ X2, Y1,
+		/* lower-right*/ X2, Y2,
+
+		/* lower-right*/ X2, Y2,
+		/* lower-left*/  X1, Y2,
+		/* upper-left*/  X1, Y1,
+	};
+	for(int i = 0; i < COUNT(Vertices); ++i)
+	{
+		ArrayAdd(CursorVertices, Vertices[i]);
+	}
+}
+
+int GetCursorCharIndex(editor *Editor)
+{
 	int i = Editor->CursorPos;
 	while(i > 0)
 	{
@@ -704,9 +828,12 @@ void PossiblyUpdateViewportPosition(editor *Editor)
 			break;
 		}
 	}
-	int CharCount = Editor->CursorPos - i; // number of chars before cursor
+	return Editor->CursorPos - i;
+}
 
 // Figure out on which line the cursor is at
+int GetCursorLineIndex(editor *Editor)
+{
 	int LineCount = 0; // number of lines before cursor
 	for(int i = Editor->CursorPos - 1; i >= 0; --i)
 	{
@@ -715,28 +842,5 @@ void PossiblyUpdateViewportPosition(editor *Editor)
 			++LineCount;
 		}
 	}
-//	printf("Cursor is at %dth line\n", LineCount + 1);
-
-	// Calculate the cursor's position in text-buffer-coordinates
-	int CursorX1 = CharCount * (Editor->CharWidth + Editor->CharSpacing);
-	int CursorY1 = LineCount * (Editor->CharHeight + Editor->LineSpacing);
-	int CursorX2 = CursorX1 + Editor->CharWidth;
-	int CursorY2 = CursorY1 + Editor->CharHeight;
-
-	if(CursorY2 > Editor->ViewportY + Editor->WindowHeight)
-	{
-		Editor->ViewportY = CursorY2 - Editor->WindowHeight;
-	}
-	if(CursorY1 < Editor->ViewportY)
-	{
-		Editor->ViewportY = CursorY1;
-	}
-	if(CursorX2 > Editor->ViewportX + Editor->WindowWidth)
-	{
-		Editor->ViewportX = CursorX2 - Editor->WindowWidth;
-	}
-	if(CursorX1 < Editor->ViewportX)
-	{
-		Editor->ViewportX = CursorX1;
-	}
+	return LineCount;
 }
