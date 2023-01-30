@@ -1,0 +1,30 @@
+
+struct textBuffer
+{
+	//
+};
+
+void TextBufferInsert(textBuffer *Buffer, char Char, int At)
+void TextBufferInsert(textBuffer *Buffer, const char *Text, int At)
+
+int Cursor = Buffer->Cursor;
+int XIndex = GetCharIndex(Buffer, Cursor); // How many characters into the line are we
+int YIndex = GetLineIndex(Buffer, Cursor); // How many lines into the text-buffer are we
+// further calculate X and Y in pixels and window-coordinates
+
+// 'a' 'b' 'c' '\0' '' '' '' -- cursor shouldnt go past '\0'
+
+bool SetCursor(textBuffer *Buffer, int At) // We want to keep the inner implementation details separate from the public api so that we can change the buffer implementation without a need to modify any of the client code
+int GetCursor(textBuffer *Buffer) // since we already have SetCursor()?
+char GetChar(textBuffer *Buffer, int At) // unicode characters?
+
+// if GetChar() returns '\0' we break out of the loop
+for(int i = 0; (Char = GetChar(Buffer, i)); ++i){
+	// do stuff with Char
+}
+
+TextBufferGetChar() vs GetChar() vs TextBuffer::GetChar()
+
+
+
+

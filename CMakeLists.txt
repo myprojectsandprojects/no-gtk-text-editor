@@ -18,3 +18,5 @@ target_include_directories(MyGlfwTest PUBLIC glfw-3.3.8/include glad/include)
 #target_link_libraries(MyGlfwTest PUBLIC X11)
 #target_link_libraries(MyGlfwTest PUBLIC dl)
 #target_link_libraries(MyGlfwTest PUBLIC pthread)
+
+target_compile_options(MyGlfwTest PRIVATE -Wall)

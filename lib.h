@@ -82,4 +82,24 @@ void ArrayAdd(array<t> *Array, t Element)
 	Array->Count += 1;
 }
 
+template <typename t>
+void ArrayAdd(array<t> *a, t e[], u32 n)
+{
+	for(u32 i = 0; i < n; ++i)
+	{
+		ArrayAdd(a, e[i]);
+	}
+}
+
+template <typename t>
+void ArrayRemove(array<t> *Array, int i)
+{
+	assert(i >= 0 && i < Array->Count);
+	for(; i < Array->Count-1; ++i)
+	{
+		Array->Data[i] = Array->Data[i+1];
+	}
+	Array->Count -= 1;
+}
+
 #endif
