@@ -4,10 +4,12 @@ struct textBuffer
 	//
 };
 
-void TextBufferInsert(textBuffer *Buffer, char Char, int At)
-void TextBufferInsert(textBuffer *Buffer, const char *Text, int At)
+void Insert(textBuffer *Buffer, char Char, int At)
+void Insert(textBuffer *Buffer, const char *Text, int At)
+Delete(textBuffer *Buffer, int At)
+Delete(textBuffer *Buffer, int At, int NumChars)
 
-int Cursor = Buffer->Cursor;
+int Cursor = GetCursor(Buffer);
 int XIndex = GetCharIndex(Buffer, Cursor); // How many characters into the line are we
 int YIndex = GetLineIndex(Buffer, Cursor); // How many lines into the text-buffer are we
 // further calculate X and Y in pixels and window-coordinates
