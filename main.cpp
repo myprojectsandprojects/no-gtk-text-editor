@@ -33,6 +33,14 @@ struct color
 //	float Progress;
 //};
 
+struct textMetrics
+{
+	int CharWidth;
+	int CharHeight;
+	int VSpacing;
+	int HSpacing;
+};
+
 struct textureCoordinates
 {
 	float X1, X2, Y1, Y2;
@@ -89,6 +97,7 @@ GLuint CreateShader(const char *VertexShaderFile, const char *FragmentShaderFile
 //void CreateTextVertices
 //(const char *Text, array<float> *Vertices, array<unsigned int> *Indices, textureCoordinates Chars[], editor *Editor);
 void MakeTextVertices(array<float> *Vertices, textBuffer *Buffer, textureCoordinates Chars[], int NumChars, editor *Editor);
+void MakeTextVertices(array<float> *Vertices, const char *Text, int OriginalX, int OriginalY, color TextColor, textMetrics TextMetrics, textureCoordinates Chars[], int NumChars, editor *Editor);
 //void CreateTextVertices(array<float> *Vertices, const char *Text, textureCoordinates Chars[]);
 void MakeCursorVertices(array<float> *CursorVertices, textBuffer *Buffer, editor *Editor);
 void MakeQuad(array<float> *Vertices, int X, int Y, int Width, int Height, color Color);
@@ -510,11 +519,11 @@ int main()
 //	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, TextEBO);
 	
 	// position
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void *) 0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) 0);
 	glEnableVertexAttribArray(0);
 
 	// texture coordinates
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void *) (2 * sizeof(float)));
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) (2 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 
 //	// foreground color
@@ -526,7 +535,7 @@ int main()
 //	glEnableVertexAttribArray(3);
 
 	// color
-	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void *) (4 * sizeof(float)));
+	glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) (4 * sizeof(float)));
 	glEnableVertexAttribArray(2);
 
 	array<float> QuadVertices;
@@ -565,7 +574,7 @@ int main()
 			double CurrentTime = glfwGetTime();
 			double TimeElapsed = CurrentTime - PreviousTime;
 			PreviousTime = CurrentTime;
-//			printf("elapsed: %.3f s\n", TimeElapsed);
+			printf("elapsed: %.3f s\n", TimeElapsed);
 ////			printf("elapsed: %f us\n", TimeElapsed * 1000000.0);
 //
 ////			if(FrameCount == 1000)
@@ -667,10 +676,85 @@ int main()
 		glBufferData(GL_ARRAY_BUFFER, TextVertices.Count * sizeof(float), TextVertices.Data, GL_STREAM_DRAW);
 //		glBufferData(GL_ELEMENT_ARRAY_BUFFER, TextIndices.Count * sizeof(unsigned int), TextIndices.Data, GL_STREAM_DRAW);
 //		glDrawElements(GL_TRIANGLES, TextIndices.Count, GL_UNSIGNED_INT, 0);
-		glDrawArrays(GL_TRIANGLES, 0, TextVertices.Count / 7);
+		glDrawArrays(GL_TRIANGLES, 0, TextVertices.Count / 8);
 
 		Time2 = glfwGetTime();
 //		printf("TEXT: %f\n", Time2 - Time1);
+
+
+		// Make message-box
+		float Alpha = 0.7;
+
+		textMetrics TextMetrics = {0};
+		TextMetrics.CharWidth = Editor.CharWidth;
+		TextMetrics.CharHeight = Editor.CharHeight;
+		TextMetrics.VSpacing = Editor.CharSpacing;
+		TextMetrics.HSpacing = Editor.LineSpacing;
+//		const char *MessageText = "ABC";
+//		const char *MessageText = "Hello, world!";
+//		const char *MessageText = "Hello,\n world!";
+//		const char *MessageText = "1\n2\n3\n4\n5";
+		const char *MessageText = "1\n12\n123\n1234\n12345";
+		int NumNewlines = 0;
+		int CharCount = 0;
+		int MaxCharCount = 0; // longest line
+		for(int i = 0; MessageText[i]; ++i)
+		{
+			if(MessageText[i] == '\n')
+			{
+				NumNewlines += 1;
+				if(CharCount > MaxCharCount)
+				{
+					MaxCharCount = CharCount;
+				}
+				CharCount = 0;
+				continue;
+			}
+			CharCount += 1;
+		}
+		if(MaxCharCount < CharCount) MaxCharCount = CharCount; // If no newlines
+		int TextWidth = MaxCharCount * TextMetrics.CharWidth + (MaxCharCount - 1) * (TextMetrics.HSpacing);
+		int TextHeight = NumNewlines * (TextMetrics.CharHeight + TextMetrics.VSpacing) + TextMetrics.CharHeight;
+		int HPadding = 50;
+		int VPadding = 50;
+		glUseProgram(QuadShader);
+		glUniform1f(glGetUniformLocation(QuadShader, "WindowWidth"), Editor.WindowWidth);
+		glUniform1f(glGetUniformLocation(QuadShader, "WindowHeight"), Editor.WindowHeight);
+		QuadVertices.Count = 0;
+		color MessageBoxColor;
+		MessageBoxColor.R = 0.0f;
+		MessageBoxColor.G = 0.0f;
+		MessageBoxColor.B = 1.0f;
+		MessageBoxColor.A = Alpha;
+		int MessageBoxWidth = TextWidth + HPadding * 2;
+		int MessageBoxHeight = TextHeight + VPadding * 2;
+		int MessageBoxX = Editor.WindowWidth / 2 - MessageBoxWidth / 2;
+		int MessageBoxY = Editor.WindowHeight / 2 - MessageBoxHeight / 2;
+		MakeQuad(&QuadVertices, MessageBoxX, MessageBoxY, MessageBoxWidth, MessageBoxHeight, MessageBoxColor);
+		glBindVertexArray(QuadVAO);
+		glBindBuffer(GL_ARRAY_BUFFER, QuadVBO);
+		glBufferData(GL_ARRAY_BUFFER, QuadVertices.Count * sizeof(float), QuadVertices.Data, GL_STREAM_DRAW);
+		glDrawArrays(GL_TRIANGLES, 0, QuadVertices.Count / 6);
+
+		
+		color TextColor;
+		TextColor.R = 0.0f;
+		TextColor.G = 1.0f;
+		TextColor.B = 1.0f;
+		TextColor.A = Alpha;
+		glUseProgram(TextShader);
+		glUniform1f(glGetUniformLocation(TextShader, "WindowWidth"), Editor.WindowWidth);
+		glUniform1f(glGetUniformLocation(TextShader, "WindowHeight"), Editor.WindowHeight);
+		TextVertices.Count = 0;
+		MakeTextVertices(&TextVertices, MessageText, MessageBoxX + HPadding, MessageBoxY + VPadding, TextColor, TextMetrics, Chars, NumChars, &Editor);
+		glBindVertexArray(TextVAO);
+		glBindBuffer(GL_ARRAY_BUFFER, TextVBO);
+//		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, TextEBO);
+//		glBufferData(GL_ARRAY_BUFFER, TextVertices.Count * sizeof(float), TextVertices.Data, GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, TextVertices.Count * sizeof(float), TextVertices.Data, GL_STREAM_DRAW);
+//		glBufferData(GL_ELEMENT_ARRAY_BUFFER, TextIndices.Count * sizeof(unsigned int), TextIndices.Data, GL_STREAM_DRAW);
+//		glDrawElements(GL_TRIANGLES, TextIndices.Count, GL_UNSIGNED_INT, 0);
+		glDrawArrays(GL_TRIANGLES, 0, TextVertices.Count / 8);
 
 		Time1 = glfwGetTime();
 
@@ -696,6 +780,57 @@ int main()
 	glfwTerminate();
 
 	return 0;
+}
+
+void MakeTextVertices(array<float> *Vertices, const char *Text, int OriginalX, int OriginalY, color TextColor, textMetrics TextMetrics, textureCoordinates Chars[], int NumChars, editor *Editor)
+{
+	int CharWidth = TextMetrics.CharWidth;
+	int CharHeight = TextMetrics.CharHeight;
+	int XAdvance = CharWidth + TextMetrics.HSpacing;
+	int YAdvance = CharHeight + TextMetrics.VSpacing;
+	int X = OriginalX;
+	int Y = OriginalY;
+
+	for(int i = 0; Text[i]; ++i)
+	{
+		unsigned char Char = Text[i];
+//		if(Char > '~')
+//		{
+//			printf("NON-ASCII CHARACTER\n");
+//		}
+
+		if(Char == '\n')
+		{
+			Y += YAdvance;
+			X = OriginalX;
+			continue;
+		}
+
+		float X1 = X;                      // upper left
+		float Y1 = Y;                      // upper left
+		float X2 = X + CharWidth;  // lower right
+		float Y2 = Y + CharHeight; // lower right
+
+//		float TextR = 0.0f;
+//		float TextG = 0.0f;
+//		float TextB = 1.0f;
+//		float TextA = 0.5f;
+
+		int Index = Char - ' ';
+
+		float QuadVertices[] = {
+			X1, Y1, Chars[Index].X1, Chars[Index].Y1, TextColor.R, TextColor.G, TextColor.B, TextColor.A, /*top-left*/
+			X1, Y2, Chars[Index].X1, Chars[Index].Y2, TextColor.R, TextColor.G, TextColor.B, TextColor.A, /*bottom-left*/
+			X2, Y2, Chars[Index].X2, Chars[Index].Y2, TextColor.R, TextColor.G, TextColor.B, TextColor.A, /*bottom-right*/
+			X2, Y2, Chars[Index].X2, Chars[Index].Y2, TextColor.R, TextColor.G, TextColor.B, TextColor.A, /*bottom-right*/
+			X2, Y1, Chars[Index].X2, Chars[Index].Y1, TextColor.R, TextColor.G, TextColor.B, TextColor.A, /*top-right*/
+			X1, Y1, Chars[Index].X1, Chars[Index].Y1, TextColor.R, TextColor.G, TextColor.B, TextColor.A, /*top-left*/
+		};
+
+		ArrayAdd(Vertices, QuadVertices, COUNT(QuadVertices));
+
+		X += XAdvance;
+	}
 }
 
 void MakeTextVertices(array<float> *Vertices, textBuffer *Buffer, textureCoordinates Chars[], int NumChars, editor *Editor)
@@ -758,12 +893,12 @@ void MakeTextVertices(array<float> *Vertices, textBuffer *Buffer, textureCoordin
 			int Index = Char - ' ';
 	
 			float QuadVertices[] = {
-				X1, Y1, Chars[Index].X1, Chars[Index].Y1, TextR, TextG, TextB, /*top-left*/
-				X1, Y2, Chars[Index].X1, Chars[Index].Y2, TextR, TextG, TextB, /*bottom-left*/
-				X2, Y2, Chars[Index].X2, Chars[Index].Y2, TextR, TextG, TextB, /*bottom-right*/
-				X2, Y2, Chars[Index].X2, Chars[Index].Y2, TextR, TextG, TextB, /*bottom-right*/
-				X2, Y1, Chars[Index].X2, Chars[Index].Y1, TextR, TextG, TextB, /*top-right*/
-				X1, Y1, Chars[Index].X1, Chars[Index].Y1, TextR, TextG, TextB, /*top-left*/
+				X1, Y1, Chars[Index].X1, Chars[Index].Y1, TextR, TextG, TextB, 1.0f, /*top-left*/
+				X1, Y2, Chars[Index].X1, Chars[Index].Y2, TextR, TextG, TextB, 1.0f, /*bottom-left*/
+				X2, Y2, Chars[Index].X2, Chars[Index].Y2, TextR, TextG, TextB, 1.0f, /*bottom-right*/
+				X2, Y2, Chars[Index].X2, Chars[Index].Y2, TextR, TextG, TextB, 1.0f, /*bottom-right*/
+				X2, Y1, Chars[Index].X2, Chars[Index].Y1, TextR, TextG, TextB, 1.0f, /*top-right*/
+				X1, Y1, Chars[Index].X1, Chars[Index].Y1, TextR, TextG, TextB, 1.0f, /*top-left*/
 			};
 	
 			ArrayAdd(Vertices, QuadVertices, COUNT(QuadVertices));
