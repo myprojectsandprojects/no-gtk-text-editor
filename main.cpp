@@ -15,6 +15,13 @@
 
 const int MAX_FILE_PATH = 1000; //@ very random
 
+enum messageType
+{
+	NONE,
+	SUCCESS_MESSAGE,
+	ERROR_MESSAGE
+};
+
 struct color
 {
 	float R, G, B, A;
@@ -87,6 +94,15 @@ struct editor
 	char OpenFile[MAX_FILE_PATH];
 
 	GLFWwindow *AppWindow;
+
+	// Message-box
+	double MBDuration;
+	bool MBShouldDisplay;
+	double MBStartTime;
+
+	messageType Message;
+	char MessageText[1000];
+	double MessageStartTime;
 } Editor;
 
 void InitEditor(editor *Editor, GLFWwindow *AppWindow);
@@ -134,6 +150,7 @@ bool Delete(textBuffer *Buffer, int At, int NumChars);
 //void PossiblyUpdateViewportPosition(textBuffer *Buffer, editor *Editor);
 void AdjustViewportIfNotVisible(editor *Editor, int CharIndex, int LineIndex);
 float Lerp(float From, float To, float Progress);
+void DisplayMessage(messageType MessageType, const char *MessageText, editor *Editor);
 
 void OnWindowResized(GLFWwindow *Window, int Width, int Height)
 {
@@ -207,13 +224,22 @@ void OnKeyEvent(GLFWwindow *Window, int Key, int Scancode, int Action, int Mods)
 		{
 			if(!WriteFile(Editor.OpenFile, (u8 *) Editor.TextBuffer.Data, Editor.TextBuffer.OneAfterLast))
 			{
-				printf("Error: Failed to write to %s\n", Editor.OpenFile);
+//				printf("Error: Failed to write to %s\n", Editor.OpenFile);
+				DisplayMessage(ERROR_MESSAGE, "Error: Failed to write!", &Editor);
+			}
+			else
+			{
+				DisplayMessage(SUCCESS_MESSAGE, "Saved!", &Editor);
 			}
 		}
 		else
 		{
-			printf("NO FILE TO WRITE TO\n");
+			DisplayMessage(ERROR_MESSAGE, "Error: No file!", &Editor);
 		}
+
+		Editor.MBShouldDisplay = true;
+		Editor.MBStartTime = glfwGetTime();
+
 		return;
 	}
 
@@ -559,40 +585,39 @@ int main()
 //	array<double> Timings;
 //	ArrayInit(&Timings);
 
-	int FrameCount = 0;
-	double PreviousTime;
+//	int FrameCount = 0;
+//	double PreviousTime;
 
 	while(!glfwWindowShouldClose(window))
 	{
-//		printf("# chars with effect: %d\n", Editor.CharsWithEffect.Count);
-		if(FrameCount == 0)
-		{
-			PreviousTime = glfwGetTime();
-		}
-		else
-		{
-			double CurrentTime = glfwGetTime();
-			double TimeElapsed = CurrentTime - PreviousTime;
-			PreviousTime = CurrentTime;
-			printf("elapsed: %.3f s\n", TimeElapsed);
-////			printf("elapsed: %f us\n", TimeElapsed * 1000000.0);
-//
-////			if(FrameCount == 1000)
-////			{
-////				double Sum = 0;
-////				for(int i = 0; i < Timings.Count; ++i)
-////				{
-////					Sum += Timings.Data[i];
-////				}
-////				printf("average frame timing: %f us\n", Sum / Timings.Count * 1000000.0);
-////				glfwSetWindowShouldClose(window, 1);
-////			}
-////			else
-////			{
-////				ArrayAdd(&Timings, TimeElapsed);
-////			}
-		}
-		FrameCount += 1;
+//		if(FrameCount == 0)
+//		{
+//			PreviousTime = glfwGetTime();
+//		}
+//		else
+//		{
+//			double CurrentTime = glfwGetTime();
+//			double TimeElapsed = CurrentTime - PreviousTime;
+//			PreviousTime = CurrentTime;
+//			printf("elapsed: %.3f s\n", TimeElapsed);
+//////			printf("elapsed: %f us\n", TimeElapsed * 1000000.0);
+////
+//////			if(FrameCount == 1000)
+//////			{
+//////				double Sum = 0;
+//////				for(int i = 0; i < Timings.Count; ++i)
+//////				{
+//////					Sum += Timings.Data[i];
+//////				}
+//////				printf("average frame timing: %f us\n", Sum / Timings.Count * 1000000.0);
+//////				glfwSetWindowShouldClose(window, 1);
+//////			}
+//////			else
+//////			{
+//////				ArrayAdd(&Timings, TimeElapsed);
+//////			}
+//		}
+//		FrameCount += 1;
 
 		double Time1 = glfwGetTime();
 
@@ -683,78 +708,106 @@ int main()
 
 
 		// Make message-box
-		float Alpha = 0.7;
-
-		textMetrics TextMetrics = {0};
-		TextMetrics.CharWidth = Editor.CharWidth;
-		TextMetrics.CharHeight = Editor.CharHeight;
-		TextMetrics.VSpacing = Editor.CharSpacing;
-		TextMetrics.HSpacing = Editor.LineSpacing;
-//		const char *MessageText = "ABC";
-//		const char *MessageText = "Hello, world!";
-//		const char *MessageText = "Hello,\n world!";
-//		const char *MessageText = "1\n2\n3\n4\n5";
-		const char *MessageText = "1\n12\n123\n1234\n12345";
-		int NumNewlines = 0;
-		int CharCount = 0;
-		int MaxCharCount = 0; // longest line
-		for(int i = 0; MessageText[i]; ++i)
+		if(Editor.Message != NONE)
 		{
-			if(MessageText[i] == '\n')
+			int Duration = 3.0;
+			double T = glfwGetTime();
+			double TimeTaken = T - Editor.MessageStartTime;
+			if(TimeTaken < Duration)
 			{
-				NumNewlines += 1;
-				if(CharCount > MaxCharCount)
-				{
-					MaxCharCount = CharCount;
-				}
-				CharCount = 0;
-				continue;
-			}
-			CharCount += 1;
-		}
-		if(MaxCharCount < CharCount) MaxCharCount = CharCount; // If no newlines
-		int TextWidth = MaxCharCount * TextMetrics.CharWidth + (MaxCharCount - 1) * (TextMetrics.HSpacing);
-		int TextHeight = NumNewlines * (TextMetrics.CharHeight + TextMetrics.VSpacing) + TextMetrics.CharHeight;
-		int HPadding = 50;
-		int VPadding = 50;
-		glUseProgram(QuadShader);
-		glUniform1f(glGetUniformLocation(QuadShader, "WindowWidth"), Editor.WindowWidth);
-		glUniform1f(glGetUniformLocation(QuadShader, "WindowHeight"), Editor.WindowHeight);
-		QuadVertices.Count = 0;
-		color MessageBoxColor;
-		MessageBoxColor.R = 0.0f;
-		MessageBoxColor.G = 0.0f;
-		MessageBoxColor.B = 1.0f;
-		MessageBoxColor.A = Alpha;
-		int MessageBoxWidth = TextWidth + HPadding * 2;
-		int MessageBoxHeight = TextHeight + VPadding * 2;
-		int MessageBoxX = Editor.WindowWidth / 2 - MessageBoxWidth / 2;
-		int MessageBoxY = Editor.WindowHeight / 2 - MessageBoxHeight / 2;
-		MakeQuad(&QuadVertices, MessageBoxX, MessageBoxY, MessageBoxWidth, MessageBoxHeight, MessageBoxColor);
-		glBindVertexArray(QuadVAO);
-		glBindBuffer(GL_ARRAY_BUFFER, QuadVBO);
-		glBufferData(GL_ARRAY_BUFFER, QuadVertices.Count * sizeof(float), QuadVertices.Data, GL_STREAM_DRAW);
-		glDrawArrays(GL_TRIANGLES, 0, QuadVertices.Count / 6);
+				float Alpha = 1.0 - TimeTaken / Duration;
+//				float Alpha = 1.0;
 
-		
-		color TextColor;
-		TextColor.R = 0.0f;
-		TextColor.G = 1.0f;
-		TextColor.B = 1.0f;
-		TextColor.A = Alpha;
-		glUseProgram(TextShader);
-		glUniform1f(glGetUniformLocation(TextShader, "WindowWidth"), Editor.WindowWidth);
-		glUniform1f(glGetUniformLocation(TextShader, "WindowHeight"), Editor.WindowHeight);
-		TextVertices.Count = 0;
-		MakeTextVertices(&TextVertices, MessageText, MessageBoxX + HPadding, MessageBoxY + VPadding, TextColor, TextMetrics, Chars, NumChars, &Editor);
-		glBindVertexArray(TextVAO);
-		glBindBuffer(GL_ARRAY_BUFFER, TextVBO);
-//		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, TextEBO);
-//		glBufferData(GL_ARRAY_BUFFER, TextVertices.Count * sizeof(float), TextVertices.Data, GL_STATIC_DRAW);
-		glBufferData(GL_ARRAY_BUFFER, TextVertices.Count * sizeof(float), TextVertices.Data, GL_STREAM_DRAW);
-//		glBufferData(GL_ELEMENT_ARRAY_BUFFER, TextIndices.Count * sizeof(unsigned int), TextIndices.Data, GL_STREAM_DRAW);
-//		glDrawElements(GL_TRIANGLES, TextIndices.Count, GL_UNSIGNED_INT, 0);
-		glDrawArrays(GL_TRIANGLES, 0, TextVertices.Count / 8);
+				textMetrics TextMetrics = {0};
+				TextMetrics.CharWidth = 2 * Editor.FontImage.CharWidth;
+				TextMetrics.CharHeight = 2 * Editor.FontImage.CharHeight;
+				TextMetrics.HSpacing = 6;
+				TextMetrics.VSpacing = 10;
+
+				const char *MessageText = Editor.MessageText;
+//				const char *MessageText = "Hello, world!";
+//				const char *MessageText = "Hello,\n world!";
+//				const char *MessageText = "1\n2\n3\n4\n5";
+//				const char *MessageText = "1\n12\n123\n1234\n12345";
+				int NumNewlines = 0;
+				int CharCount = 0;
+				int MaxCharCount = 0; // longest line
+				for(int i = 0; MessageText[i]; ++i)
+				{
+					if(MessageText[i] == '\n')
+					{
+						NumNewlines += 1;
+						if(CharCount > MaxCharCount)
+						{
+							MaxCharCount = CharCount;
+						}
+						CharCount = 0;
+						continue;
+					}
+					CharCount += 1;
+				}
+				if(MaxCharCount < CharCount) MaxCharCount = CharCount; // If no newlines
+				int TextWidth = MaxCharCount * TextMetrics.CharWidth + (MaxCharCount - 1) * (TextMetrics.HSpacing);
+				int TextHeight = NumNewlines * (TextMetrics.CharHeight + TextMetrics.VSpacing) + TextMetrics.CharHeight;
+	
+//				color MessageBoxColor = (Editor.Message == SUCCESS_MESSAGE) ? {0.0f, 0.5f, 0.0f, Alpha} : {0.5f, 0.0f, 0.0f, Alpha};
+				color MessageBoxColor, MessageTextColor;
+				color SuccessMessageColor = {0.0f, 0.5f, 0.0f, Alpha};
+				color SuccessTextColor = {0.6f, 1.0f, 0.6f, Alpha};
+				color ErrorMessageColor = {0.5f, 0.0f, 0.0f, Alpha};
+				color ErrorTextColor = {1.0f, 0.6f, 0.6f, Alpha};
+				if(Editor.Message == SUCCESS_MESSAGE)
+				{
+					MessageBoxColor = SuccessMessageColor;
+					MessageTextColor = SuccessTextColor;
+				}
+				else
+				{
+					MessageBoxColor = ErrorMessageColor;
+					MessageTextColor = ErrorTextColor;
+				}
+				int HPadding = 10;
+				int VPadding = 10;
+				int MessageBoxWidth = TextWidth + HPadding * 2;
+				int MessageBoxHeight = TextHeight + VPadding * 2;
+				int MessageBoxX = Editor.WindowWidth / 2 - MessageBoxWidth / 2;
+				int MessageBoxY = Editor.WindowHeight / 2 - MessageBoxHeight / 2;
+				QuadVertices.Count = 0;
+				MakeQuad(&QuadVertices, MessageBoxX, MessageBoxY, MessageBoxWidth, MessageBoxHeight, MessageBoxColor);
+
+				glUseProgram(QuadShader);
+				glUniform1f(glGetUniformLocation(QuadShader, "WindowWidth"), Editor.WindowWidth);
+				glUniform1f(glGetUniformLocation(QuadShader, "WindowHeight"), Editor.WindowHeight);
+				glBindVertexArray(QuadVAO);
+				glBindBuffer(GL_ARRAY_BUFFER, QuadVBO);
+				glBufferData(GL_ARRAY_BUFFER, QuadVertices.Count * sizeof(float), QuadVertices.Data, GL_STREAM_DRAW);
+				glDrawArrays(GL_TRIANGLES, 0, QuadVertices.Count / 6);
+
+//				color TextColor       = {1.0f, 1.0f, 0.0f, Alpha};
+//				color TextColor       = {0.6f, 1.0f, 0.6f, Alpha};
+				color TextColorDarker = {0.0f, 0.0f, 0.0f, Alpha};
+				glUseProgram(TextShader);
+				glUniform1f(glGetUniformLocation(TextShader, "WindowWidth"), Editor.WindowWidth);
+				glUniform1f(glGetUniformLocation(TextShader, "WindowHeight"), Editor.WindowHeight);
+				TextVertices.Count = 0;
+				int TextX = MessageBoxX + HPadding;
+				int TextY = MessageBoxY + VPadding;
+				MakeTextVertices(&TextVertices, MessageText, TextX+2, TextY+2, TextColorDarker, TextMetrics, Chars, NumChars, &Editor);
+				MakeTextVertices(&TextVertices, MessageText, TextX, TextY, MessageTextColor, TextMetrics, Chars, NumChars, &Editor);
+				glBindVertexArray(TextVAO);
+				glBindBuffer(GL_ARRAY_BUFFER, TextVBO);
+//				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, TextEBO);
+//				glBufferData(GL_ARRAY_BUFFER, TextVertices.Count * sizeof(float), TextVertices.Data, GL_STATIC_DRAW);
+				glBufferData(GL_ARRAY_BUFFER, TextVertices.Count * sizeof(float), TextVertices.Data, GL_STREAM_DRAW);
+//				glBufferData(GL_ELEMENT_ARRAY_BUFFER, TextIndices.Count * sizeof(unsigned int), TextIndices.Data, GL_STREAM_DRAW);
+//				glDrawElements(GL_TRIANGLES, TextIndices.Count, GL_UNSIGNED_INT, 0);
+				glDrawArrays(GL_TRIANGLES, 0, TextVertices.Count / 8);
+			}
+			else
+			{
+				Editor.Message = NONE;
+			}
+		}
 
 		Time1 = glfwGetTime();
 
@@ -1272,6 +1325,10 @@ void InitEditor(editor *Editor, GLFWwindow *AppWindow)
 	Editor->OpenFile[0] = '\0';
 
 	Editor->AppWindow = AppWindow;
+
+	Editor->Message = NONE;
+	Editor->MessageText[0] = '\0';
+	Editor->MessageStartTime = 0.0;
 }
 
 //void SetCursor(textBuffer *Buffer, int At, editor *Editor)
@@ -1342,6 +1399,13 @@ void MakeQuad(array<float> *Vertices, int X, int Y, int Width, int Height, color
 float Lerp(float From, float To, float Progress)
 {
 	return (1 - Progress) * From + Progress * To;
+}
+
+void DisplayMessage(messageType MessageType, const char *MessageText, editor *Editor)
+{
+	Editor->Message = MessageType;
+	strcpy(Editor->MessageText, MessageText); //@ bounds
+	Editor->MessageStartTime = glfwGetTime();
 }
 
 void CursorForward(textBuffer *Buffer)
