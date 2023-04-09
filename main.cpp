@@ -1,5 +1,6 @@
 /*
 	* ~/textdb (over million lines) is very slow. Why?
+	Should cursor be part of the text-buffer?
 */
 
 #include <stdio.h>
