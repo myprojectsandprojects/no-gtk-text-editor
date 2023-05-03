@@ -1,6 +1,6 @@
 # cmake-test
 
-git clone https://github.com/myprojectsandprojects/cmake-test<br>
+https://github.com/myprojectsandprojects/no-gtk-text-editor<br>
 cd cmake-test<br>
 mkdir build<br>
 cd build<br>
