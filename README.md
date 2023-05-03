@@ -1,4 +1,4 @@
-# cmake-test
+# no-gtk-text-editor
 
 https://github.com/myprojectsandprojects/no-gtk-text-editor<br>
 cd cmake-test<br>
