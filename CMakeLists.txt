@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.5.1)
 
 project(MyGlfwTest)
-add_executable(MyGlfwTest main.cpp glad/src/glad.c lib.cpp)
+add_executable(MyGlfwTest main.cpp glad/src/glad.c lib.cpp text_drawing.cpp opengl.cpp text_buffer.cpp)
 
 set(CMAKE_BUILD_TYPE Debug)
 
@@ -20,3 +20,4 @@ target_include_directories(MyGlfwTest PUBLIC glfw-3.3.8/include glad/include)
 #target_link_libraries(MyGlfwTest PUBLIC pthread)
 
 target_compile_options(MyGlfwTest PRIVATE -Wall)
+target_compile_options(MyGlfwTest PRIVATE -std=c++11)

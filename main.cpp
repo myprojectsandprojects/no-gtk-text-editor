@@ -4,15 +4,19 @@
 */
 
 #include <stdio.h>
+#include <string.h>
+#include <assert.h>
 //#include <time.h>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-#define STB_IMAGE_IMPLEMENTATION
+//#define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
 #include "lib.h"
+#include "text_buffer.hpp"
+#include "text_drawing.hpp"
 
 const int MAX_FILE_PATH = 1000; //@ very random
 
@@ -23,9 +27,9 @@ enum messageType
 	ERROR_MESSAGE
 };
 
-struct color
+struct textureCoordinatesOld
 {
-	float R, G, B, A;
+	float X1, X2, Y1, Y2;
 };
 
 //struct quad
@@ -49,11 +53,6 @@ struct textMetrics
 	int HSpacing;
 };
 
-struct textureCoordinates
-{
-	float X1, X2, Y1, Y2;
-};
-
 struct fontImage
 {
 	int Width, Height;
@@ -63,14 +62,16 @@ struct fontImage
 	int LeftMargin, TopMargin;
 };
 
-// Could keep an index of the last character instead of storing an actual '\0'?
-// Iterator can be equal to OneAfterLast even though there is no character at that location
-struct textBuffer
+// oneliner
+// multiliner
+struct editableText
 {
-	int Size;
-	char *Data;
-	int OneAfterLast; // also size of contents
+	int X, Y, Width, Height;
+	textBuffer *TextBuffer;
+	int OffsX, OffsY;
 	int Cursor;
+	color BackgroundColor;
+	bitmapFont *Font;
 };
 
 struct editor
@@ -87,8 +88,6 @@ struct editor
 //	color CursorEffectColor;
 //	float CursorEffectProgress;
 
-	textBuffer TextBuffer;
-
 //	array<quad> EffectQuads;
 //	array<charColor> CharsWithEffect;
 
@@ -104,6 +103,10 @@ struct editor
 	messageType Message;
 	char MessageText[1000];
 	double MessageStartTime;
+
+	textBuffer TextBuffer;
+
+	editableText EditableText;
 } Editor;
 
 void InitEditor(editor *Editor, GLFWwindow *AppWindow);
@@ -113,45 +116,23 @@ GLuint CreateShader(const char *VertexShaderFile, const char *FragmentShaderFile
 //void RenderCharacter(char CharAscii, int CharX, int CharY, int CharWidth, int CharHeight, array<float> *Vertices);
 //void CreateTextVertices
 //(const char *Text, array<float> *Vertices, array<unsigned int> *Indices, textureCoordinates Chars[], editor *Editor);
-void MakeTextVertices(array<float> *Vertices, textBuffer *Buffer, textureCoordinates Chars[], int NumChars, editor *Editor);
-void MakeTextVertices(array<float> *Vertices, const char *Text, int OriginalX, int OriginalY, color TextColor, textMetrics TextMetrics, textureCoordinates Chars[], int NumChars, editor *Editor);
+void MakeTextVertices(array<float> *Vertices, textBuffer *Buffer, textureCoordinatesOld Chars[], int NumChars, editor *Editor);
+void MakeTextVertices(array<float> *Vertices, const char *Text, int OriginalX, int OriginalY, color TextColor, textMetrics TextMetrics, textureCoordinatesOld Chars[], int NumChars, editor *Editor);
 //void CreateTextVertices(array<float> *Vertices, const char *Text, textureCoordinates Chars[]);
-void MakeCursorVertices(array<float> *CursorVertices, textBuffer *Buffer, editor *Editor);
+//void MakeCursorVertices(array<float> *CursorVertices, textBuffer *Buffer, editor *Editor);
 void MakeQuad(array<float> *Vertices, int X, int Y, int Width, int Height, color Color);
-
-//void SetCursor(textBuffer *Buffer, int At, editor *Editor);
-//int GetCursorCharIndex(textBuffer *Buffer);
-//int GetCursorLineIndex(textBuffer *Buffer);
-//void InsertAtCursor(textBuffer *Buffer, char Char, editor *Editor);
-
-void InitTextBuffer(textBuffer *Buffer);
-char GetChar(textBuffer *Buffer, int At);
-int GetStart(textBuffer *Buffer);
-int GetEnd(textBuffer *Buffer);
-bool IsStart(textBuffer *Buffer, int At);
-bool IsEnd(textBuffer *Buffer, int At);
-bool MoveForward(textBuffer *Buffer, int *Iter);
-void MoveForwardFast(textBuffer *Buffer, int *Iter);
-bool MoveBackward(textBuffer *Buffer, int *Iter);
-bool MoveAtCharBackwards(textBuffer *Buffer, char Char, int *Iter);
-//bool MoveAtCharForwards(textBuffer *Buffer, char Char, int *Iter);
-int GetCursor(textBuffer *Buffer);
-void SetCursor(textBuffer *Buffer, int At);
-int GetCharsIntoLine(textBuffer *Buffer, int At);
-int GetLinesIntoBuffer(textBuffer *Buffer, int At);
-bool MoveToPrevLine(textBuffer *Buffer, int *Iter);
-bool MoveToNextLine(textBuffer *Buffer, int *Iter);
-//void CursorForward(textBuffer *Buffer); // replace: MoveForward(Buffer, *Iter)
-//void CursorBackward(textBuffer *Buffer);
-bool Insert(textBuffer *Buffer, char Char, int At);
-bool Insert(textBuffer *Buffer, const char *Text, int At);
-bool Delete(textBuffer *Buffer, int At);
-bool Delete(textBuffer *Buffer, int At, int NumChars);
+void make_quad(array<float> *Vertices, int X, int Y, int W, int H, color Color, editor *Editor); // makes vertices
+//todo: void make_quad(int X, int Y, int W, int H, color Color, editor *Editor); // makes vertices, also draws
 
 //void PossiblyUpdateViewportPosition(textBuffer *Buffer, editor *Editor);
 void AdjustViewportIfNotVisible(editor *Editor, int CharIndex, int LineIndex);
+void AdjustViewportIfNotVisible(editableText *Editable, int Iter);
 float Lerp(float From, float To, float Progress);
 void DisplayMessage(messageType MessageType, const char *MessageText, editor *Editor);
+
+void init_editable_text(editableText *Editable, textBuffer *TextBuffer, bitmapFont *Font, color BackgroundColor,
+	int X, int Y, int Width, int Height);
+void draw_editable_text(editableText *EditableText, editor *Editor);
 
 void OnWindowResized(GLFWwindow *Window, int Width, int Height)
 {
@@ -189,16 +170,27 @@ void OnCharEvent(GLFWwindow *Window, unsigned int Codepoint)
 
 //		InsertAtCursor(&Editor.TextBuffer, (char)Codepoint, &Editor);
 		textBuffer *Buffer = &Editor.TextBuffer;
-		int Cursor = GetCursor(Buffer);
-		if(Insert(Buffer, (char)Codepoint, Cursor))
+
+//		int Cursor = GetCursor(Buffer);
+//		if(Insert(Buffer, (char)Codepoint, Cursor))
+//		{
+////			CursorForward(Buffer);
+//			MoveForward(Buffer, &Cursor);
+//			SetCursor(Buffer, Cursor);
+//			int NewCursor = GetCursor(Buffer);
+//			int NewCursorCharIndex = GetCharsIntoLine(Buffer, NewCursor);
+//			int NewCursorLineIndex = GetLinesIntoBuffer(Buffer, NewCursor);
+//			AdjustViewportIfNotVisible(&Editor, NewCursorCharIndex, NewCursorLineIndex);
+//		}
+//		else
+//		{
+//			printf("BUFFER IS FULL\n");
+//		}
+
+		if(Insert(Buffer, (char)Codepoint, Editor.EditableText.Cursor))
 		{
-//			CursorForward(Buffer);
-			MoveForward(Buffer, &Cursor);
-			SetCursor(Buffer, Cursor);
-			int NewCursor = GetCursor(Buffer);
-			int NewCursorCharIndex = GetCharsIntoLine(Buffer, NewCursor);
-			int NewCursorLineIndex = GetLinesIntoBuffer(Buffer, NewCursor);
-			AdjustViewportIfNotVisible(&Editor, NewCursorCharIndex, NewCursorLineIndex);
+			MoveForward(Buffer, &Editor.EditableText.Cursor);
+			AdjustViewportIfNotVisible(&Editor.EditableText, Editor.EditableText.Cursor);
 		}
 		else
 		{
@@ -216,54 +208,75 @@ void OnKeyEvent(GLFWwindow *Window, int Key, int Scancode, int Action, int Mods)
 	// press -> repeat ... -> release
 
 	textBuffer *Buffer = &Editor.TextBuffer;
+	editableText *Editable = &Editor.EditableText;
 
-	// CTRL + S
-	if(Key == GLFW_KEY_S && Mods == GLFW_MOD_CONTROL && Action == GLFW_PRESS)
-	{
-		printf("S + Ctrl\n");
-		if(Editor.OpenFile[0] != '\0')
-		{
-			if(!WriteFile(Editor.OpenFile, (u8 *) Editor.TextBuffer.Data, Editor.TextBuffer.OneAfterLast))
-			{
-//				printf("Error: Failed to write to %s\n", Editor.OpenFile);
-				DisplayMessage(ERROR_MESSAGE, "Error: Failed to write!", &Editor);
-			}
-			else
-			{
-				DisplayMessage(SUCCESS_MESSAGE, "Saved!", &Editor);
-			}
-		}
-		else
-		{
-			DisplayMessage(ERROR_MESSAGE, "Error: No file!", &Editor);
-		}
-
-		Editor.MBShouldDisplay = true;
-		Editor.MBStartTime = glfwGetTime();
-
-		return;
-	}
+//	// CTRL + S
+//	if(Key == GLFW_KEY_S && Mods == GLFW_MOD_CONTROL && Action == GLFW_PRESS)
+//	{
+//		printf("S + Ctrl\n");
+//		if(Editor.OpenFile[0] != '\0')
+//		{
+//			if(!WriteFile(Editor.OpenFile, (u8 *) Editor.TextBuffer.Data, Editor.TextBuffer.OneAfterLast))
+//			{
+////				printf("Error: Failed to write to %s\n", Editor.OpenFile);
+//				DisplayMessage(ERROR_MESSAGE, "Error: Failed to write!", &Editor);
+//			}
+//			else
+//			{
+//				DisplayMessage(SUCCESS_MESSAGE, "Saved!", &Editor);
+//			}
+//		}
+//		else
+//		{
+//			DisplayMessage(ERROR_MESSAGE, "Error: No file!", &Editor);
+//		}
+//
+//		Editor.MBShouldDisplay = true;
+//		Editor.MBStartTime = glfwGetTime();
+//
+//		return;
+//	}
 
 	if (Key == GLFW_KEY_UP && (Action == GLFW_PRESS || Action == GLFW_REPEAT))
 	{
-		int Iter = GetCursor(Buffer);
-		int CharsIntoLine = GetCharsIntoLine(Buffer, Iter);
-		if(MoveToPrevLine(Buffer, &Iter))
+//		int Iter = GetCursor(Buffer);
+//		int CharsIntoLine = GetCharsIntoLine(Buffer, Iter);
+//		if(MoveToPrevLine(Buffer, &Iter))
+//		{
+//			// If there is a previous line (we are not on the first line)
+//			while(CharsIntoLine > 0)
+//			{
+//				if(GetChar(Buffer, Iter) == '\n')
+//				{
+//					break;
+//				}
+//				--CharsIntoLine;
+//				++Iter;
+//			}
+//			SetCursor(Buffer, Iter);
+//			int NewCharsIntoLine = GetCharsIntoLine(Buffer, Iter);
+//			int NewLinesIntoBuffer = GetLinesIntoBuffer(Buffer, Iter);
+//			AdjustViewportIfNotVisible(&Editor, NewCharsIntoLine, NewLinesIntoBuffer);
+//		}
+//		else
+//		{
+//			printf("NO PREV LINE\n");
+//		}
+
+		int CharsIntoLine = GetCharsIntoLine(Buffer, Editable->Cursor);
+		if(MoveToPrevLine(Buffer, &Editable->Cursor))
 		{
 			// If there is a previous line (we are not on the first line)
 			while(CharsIntoLine > 0)
 			{
-				if(GetChar(Buffer, Iter) == '\n')
+				if(GetChar(Buffer, Editable->Cursor) == '\n')
 				{
 					break;
 				}
 				--CharsIntoLine;
-				++Iter;
+				MoveForward(Buffer, &Editable->Cursor);
 			}
-			SetCursor(Buffer, Iter);
-			int NewCharsIntoLine = GetCharsIntoLine(Buffer, Iter);
-			int NewLinesIntoBuffer = GetLinesIntoBuffer(Buffer, Iter);
-			AdjustViewportIfNotVisible(&Editor, NewCharsIntoLine, NewLinesIntoBuffer);
+			AdjustViewportIfNotVisible(Editable, Editable->Cursor);
 		}
 		else
 		{
@@ -272,82 +285,118 @@ void OnKeyEvent(GLFWwindow *Window, int Key, int Scancode, int Action, int Mods)
 	}
 	if (Key == GLFW_KEY_DOWN && (Action == GLFW_PRESS || Action == GLFW_REPEAT))
 	{
-		int Cursor = GetCursor(Buffer);
-		int CharsIntoLine = GetCharsIntoLine(Buffer, Cursor);
-		if(MoveToNextLine(Buffer, &Cursor))
+//		int Cursor = GetCursor(Buffer);
+//		int CharsIntoLine = GetCharsIntoLine(Buffer, Cursor);
+//		if(MoveToNextLine(Buffer, &Cursor))
+//		{
+//			// If there is a previous line (we are not on the first line)
+//			while(CharsIntoLine > 0)
+//			{
+//				char Char = GetChar(Buffer, Cursor);
+//				if(Char == '\n' || Char == '\0') //@ '\0'?
+//				{
+//					break;
+//				}
+//				--CharsIntoLine;
+//				MoveForward(Buffer, &Cursor);
+//			}
+//			SetCursor(Buffer, Cursor);
+//			int NewCharsIntoLine = GetCharsIntoLine(Buffer, Cursor);
+//			int NewLinesIntoBuffer = GetLinesIntoBuffer(Buffer, Cursor);
+//			AdjustViewportIfNotVisible(&Editor, NewCharsIntoLine, NewLinesIntoBuffer);
+//		}
+
+		int CharsIntoLine = GetCharsIntoLine(Buffer, Editable->Cursor);
+		if(MoveToNextLine(Buffer, &Editable->Cursor))
 		{
 			// If there is a previous line (we are not on the first line)
 			while(CharsIntoLine > 0)
 			{
-				char Char = GetChar(Buffer, Cursor);
+				char Char = GetChar(Buffer, Editable->Cursor);
 				if(Char == '\n' || Char == '\0') //@ '\0'?
 				{
 					break;
 				}
 				--CharsIntoLine;
-				MoveForward(Buffer, &Cursor);
+				MoveForward(Buffer, &Editable->Cursor);
 			}
-			SetCursor(Buffer, Cursor);
-			int NewCharsIntoLine = GetCharsIntoLine(Buffer, Cursor);
-			int NewLinesIntoBuffer = GetLinesIntoBuffer(Buffer, Cursor);
-			AdjustViewportIfNotVisible(&Editor, NewCharsIntoLine, NewLinesIntoBuffer);
+			AdjustViewportIfNotVisible(Editable, Editable->Cursor);
 		}
 	}
 	if (Key == GLFW_KEY_LEFT && (Action == GLFW_PRESS || Action == GLFW_REPEAT))
 	{
+////		int Cursor = GetCursor(Buffer);
+////		if(!IsStart(Buffer, Cursor))
+////		{
+////			int NewCursor = Cursor-1;
+////			SetCursor(Buffer, NewCursor);
+////			int CharsIntoLine = GetCharsIntoLine(Buffer, NewCursor);
+////			int LinesIntoBuffer = GetLinesIntoBuffer(Buffer, NewCursor);
+////			AdjustViewportIfNotVisible(&Editor, CharsIntoLine, LinesIntoBuffer);
+////		}
 //		int Cursor = GetCursor(Buffer);
-//		if(!IsStart(Buffer, Cursor))
-//		{
-//			int NewCursor = Cursor-1;
-//			SetCursor(Buffer, NewCursor);
-//			int CharsIntoLine = GetCharsIntoLine(Buffer, NewCursor);
-//			int LinesIntoBuffer = GetLinesIntoBuffer(Buffer, NewCursor);
-//			AdjustViewportIfNotVisible(&Editor, CharsIntoLine, LinesIntoBuffer);
-//		}
-		int Cursor = GetCursor(Buffer);
-		MoveBackward(Buffer, &Cursor);
-		SetCursor(Buffer, Cursor);
+//		MoveBackward(Buffer, &Cursor);
+//		SetCursor(Buffer, Cursor);
+//
+//		int CharsIntoLine = GetCharsIntoLine(Buffer, Cursor);
+//		int LinesIntoBuffer = GetLinesIntoBuffer(Buffer, Cursor);
+//		AdjustViewportIfNotVisible(&Editor, CharsIntoLine, LinesIntoBuffer);
 
-		int CharsIntoLine = GetCharsIntoLine(Buffer, Cursor);
-		int LinesIntoBuffer = GetLinesIntoBuffer(Buffer, Cursor);
-		AdjustViewportIfNotVisible(&Editor, CharsIntoLine, LinesIntoBuffer);
+		if(MoveBackward(Buffer, &Editable->Cursor))
+		{
+			AdjustViewportIfNotVisible(Editable, Editable->Cursor);
+		}
 	}
 	if (Key == GLFW_KEY_RIGHT && (Action == GLFW_PRESS || Action == GLFW_REPEAT))
 	{
+////		int Cursor = GetCursor(Buffer);
+////		if(!IsEnd(Buffer, Cursor))
+////		{
+////			int NewCursor = Cursor+1;
+////			SetCursor(Buffer, NewCursor);
+////			int CharsIntoLine = GetCharsIntoLine(Buffer, NewCursor);
+////			int LinesIntoBuffer = GetLinesIntoBuffer(Buffer, NewCursor);
+////			AdjustViewportIfNotVisible(&Editor, CharsIntoLine, LinesIntoBuffer);
+////		}
 //		int Cursor = GetCursor(Buffer);
-//		if(!IsEnd(Buffer, Cursor))
+//		if(MoveForward(Buffer, &Cursor))
 //		{
-//			int NewCursor = Cursor+1;
-//			SetCursor(Buffer, NewCursor);
-//			int CharsIntoLine = GetCharsIntoLine(Buffer, NewCursor);
-//			int LinesIntoBuffer = GetLinesIntoBuffer(Buffer, NewCursor);
+//			int CharsIntoLine = GetCharsIntoLine(Buffer, Cursor);
+//			int LinesIntoBuffer = GetLinesIntoBuffer(Buffer, Cursor);
 //			AdjustViewportIfNotVisible(&Editor, CharsIntoLine, LinesIntoBuffer);
 //		}
-		int Cursor = GetCursor(Buffer);
-		if(MoveForward(Buffer, &Cursor))
-		{
-			int CharsIntoLine = GetCharsIntoLine(Buffer, Cursor);
-			int LinesIntoBuffer = GetLinesIntoBuffer(Buffer, Cursor);
-			AdjustViewportIfNotVisible(&Editor, CharsIntoLine, LinesIntoBuffer);
-		}
-		SetCursor(Buffer, Cursor);
+//		SetCursor(Buffer, Cursor);
 
+		if(MoveForward(Buffer, &Editable->Cursor))
+		{
+			AdjustViewportIfNotVisible(Editable, Editable->Cursor);
+		}
 	}
 
 	if(Key == GLFW_KEY_ENTER && (Action == GLFW_PRESS || Action == GLFW_REPEAT))
 	{
-		int Cursor = GetCursor(Buffer);
-		if(Insert(Buffer, '\n', Cursor))
+//		int Cursor = GetCursor(Buffer);
+//		if(Insert(Buffer, '\n', Cursor))
+//		{
+////			CursorForward(Buffer);
+////			int NewCursor = GetCursor(Buffer);
+////			int NewCursorCharIndex = GetCharsIntoLine(Buffer, NewCursor);
+////			int NewCursorLineIndex = GetLinesIntoBuffer(Buffer, NewCursor);
+//			MoveForward(Buffer, &Cursor);
+//			SetCursor(Buffer, Cursor);
+//			int CursorCharIndex = GetCharsIntoLine(Buffer, Cursor);
+//			int CursorLineIndex = GetLinesIntoBuffer(Buffer, Cursor);
+//			AdjustViewportIfNotVisible(&Editor, CursorCharIndex, CursorLineIndex);
+//		}
+//		else
+//		{
+//			printf("BUFFER IS FULL\n");
+//		}
+
+		if(Insert(Buffer, '\n', Editable->Cursor))
 		{
-//			CursorForward(Buffer);
-//			int NewCursor = GetCursor(Buffer);
-//			int NewCursorCharIndex = GetCharsIntoLine(Buffer, NewCursor);
-//			int NewCursorLineIndex = GetLinesIntoBuffer(Buffer, NewCursor);
-			MoveForward(Buffer, &Cursor);
-			SetCursor(Buffer, Cursor);
-			int CursorCharIndex = GetCharsIntoLine(Buffer, Cursor);
-			int CursorLineIndex = GetLinesIntoBuffer(Buffer, Cursor);
-			AdjustViewportIfNotVisible(&Editor, CursorCharIndex, CursorLineIndex);
+			MoveForward(Buffer, &Editable->Cursor);
+			AdjustViewportIfNotVisible(Editable, Editable->Cursor);
 		}
 		else
 		{
@@ -356,17 +405,31 @@ void OnKeyEvent(GLFWwindow *Window, int Key, int Scancode, int Action, int Mods)
 	}
 	if(Key == GLFW_KEY_BACKSPACE && (Action == GLFW_PRESS || Action == GLFW_REPEAT))
 	{
+//		// delete character before cursor
+//		int Iter = GetCursor(Buffer);
+//		if(!IsStart(Buffer, Iter))
+//		{
+//			MoveBackward(Buffer, &Iter);
+//			if(Delete(Buffer, Iter))
+//			{
+//				SetCursor(Buffer, Iter);
+//				int CharIndex = GetCharsIntoLine(Buffer, Iter);
+//				int LineIndex = GetLinesIntoBuffer(Buffer, Iter);
+//				AdjustViewportIfNotVisible(&Editor, CharIndex, LineIndex);
+//			}
+//			else
+//			{
+//				assert(false); // should never happen
+//			}
+//		}
+
 		// delete character before cursor
-		int Iter = GetCursor(Buffer);
-		if(!IsStart(Buffer, Iter))
+		if(!IsStart(Buffer, Editable->Cursor))
 		{
-			MoveBackward(Buffer, &Iter);
-			if(Delete(Buffer, Iter))
+			MoveBackward(Buffer, &Editable->Cursor);
+			if(Delete(Buffer, Editable->Cursor))
 			{
-				SetCursor(Buffer, Iter);
-				int CharIndex = GetCharsIntoLine(Buffer, Iter);
-				int LineIndex = GetLinesIntoBuffer(Buffer, Iter);
-				AdjustViewportIfNotVisible(&Editor, CharIndex, LineIndex);
+				AdjustViewportIfNotVisible(Editable, Editable->Cursor);
 			}
 			else
 			{
@@ -376,40 +439,40 @@ void OnKeyEvent(GLFWwindow *Window, int Key, int Scancode, int Action, int Mods)
 	}
 }
 
-void OnFileDrop(GLFWwindow *Window, int Count, const char **Paths)
-{
-//	if(Editor.FileContents)
+//void OnFileDrop(GLFWwindow *Window, int Count, const char **Paths)
+//{
+////	if(Editor.FileContents)
+////	{
+////		free(Editor.FileContents);
+////	}
+//
+//	char *Contents;
+//	if(!ReadTextFile(Paths[0], &Contents))
 //	{
-//		free(Editor.FileContents);
+//		fprintf(stderr, "error: failed to read a dropped file: %s\n", Paths[0]);
+//		return;
 //	}
-
-	char *Contents;
-	if(!ReadTextFile(Paths[0], &Contents))
-	{
-		fprintf(stderr, "error: failed to read a dropped file: %s\n", Paths[0]);
-		return;
-	}
-	printf("Read file \"%s\" successfully\n", Paths[0]);
-	textBuffer *Buffer = &Editor.TextBuffer;
-	int NumCharsInBuffer = Buffer->OneAfterLast;
-	Delete(Buffer, GetStart(Buffer), NumCharsInBuffer);
-	if(Insert(Buffer, Contents, GetStart(Buffer)))
-	{
-		printf("Loaded file successfully\n");
-		strcpy(Editor.OpenFile, Paths[0]); //@ bounds
-		glfwSetWindowTitle(Editor.AppWindow, Editor.OpenFile);
-	}
-	else
-	{
-		printf("File too large!\n");
-	}
-	SetCursor(Buffer, GetStart(Buffer));
-
-	Editor.ViewportX = 0;
-	Editor.ViewportY = 0;
-
-	free(Contents);
-}
+//	printf("Read file \"%s\" successfully\n", Paths[0]);
+//	textBuffer *Buffer = &Editor.TextBuffer;
+//	int NumCharsInBuffer = Buffer->OneAfterLast;
+//	Delete(Buffer, GetStart(Buffer), NumCharsInBuffer);
+//	if(Insert(Buffer, Contents, GetStart(Buffer)))
+//	{
+//		printf("Loaded file successfully\n");
+//		strcpy(Editor.OpenFile, Paths[0]); //@ bounds
+//		glfwSetWindowTitle(Editor.AppWindow, Editor.OpenFile);
+//	}
+//	else
+//	{
+//		printf("File too large!\n");
+//	}
+//	SetCursor(Buffer, GetStart(Buffer));
+//
+//	Editor.ViewportX = 0;
+//	Editor.ViewportY = 0;
+//
+//	free(Contents);
+//}
 
 int main()
 {
@@ -450,9 +513,9 @@ int main()
 	printf("window width: %d, window height: %d\n", Editor.WindowWidth, Editor.WindowHeight);
 
 	glfwSetFramebufferSizeCallback(window, OnWindowResized);
-	glfwSetKeyCallback(window, OnKeyEvent);
 	glfwSetCharCallback(window, OnCharEvent);
-	glfwSetDropCallback(window, OnFileDrop);
+	glfwSetKeyCallback(window, OnKeyEvent);
+//	glfwSetDropCallback(window, OnFileDrop);
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -506,7 +569,7 @@ int main()
 	stbi_image_free(ImageData);
 
 	const int NumChars = 127 - ' ';
-	textureCoordinates Chars[NumChars];
+	textureCoordinatesOld Chars[NumChars];
 	{
 		float PixelWidth = 1.0f / Editor.FontImage.Width;
 		float PixelHeight = 1.0f / Editor.FontImage.Height;
@@ -527,6 +590,7 @@ int main()
 
 	GLuint TextShader = CreateShader("../text-vs", "../text-fs");
 	GLuint QuadShader = CreateShader("../quad-vs", "../quad-fs");
+	GLuint ColorShader = make_color_shader();
 
 	array<float> TextVertices;
 	ArrayInit(&TextVertices);
@@ -630,56 +694,65 @@ int main()
 
 		Time1 = glfwGetTime();
 
-		glUseProgram(QuadShader);
-		glUniform1f(glGetUniformLocation(QuadShader, "WindowWidth"), Editor.WindowWidth);
-		glUniform1f(glGetUniformLocation(QuadShader, "WindowHeight"), Editor.WindowHeight);
+		{
+			glUseProgram(ColorShader);
+			draw_editable_text(&Editor.EditableText, &Editor);
+		}
 
-		// Make the cursor
-//		color CursorColor;
-//		if(Editor.CursorEffectProgress < 1.0f)
-//		{
-//			CursorColor.A = Editor.CursorColor.A;
-//			CursorColor.R = Lerp(Editor.CursorEffectColor.R, Editor.CursorColor.R, Editor.CursorEffectProgress);
-//			CursorColor.G = Lerp(Editor.CursorEffectColor.G, Editor.CursorColor.G, Editor.CursorEffectProgress);
-//			CursorColor.B = Lerp(Editor.CursorEffectColor.B, Editor.CursorColor.B, Editor.CursorEffectProgress);
-//		}
-//		else
-//		{
-//			CursorColor = Editor.CursorColor;
-//		}
-//		Editor.CursorEffectProgress += 0.01f;
-//		if(Editor.CursorEffectProgress > 1.0f)
-//		{
-//			Editor.CursorEffectProgress = 1.0f;
-//		}
-		int CursorWidth = Editor.CharWidth;
-		int CursorHeight = Editor.CharHeight;
-		textBuffer *Buffer = &Editor.TextBuffer;
-		int Cursor = GetCursor(Buffer);
-		float X = GetCharsIntoLine(Buffer, Cursor) * (Editor.CharWidth + Editor.CharSpacing) - Editor.ViewportX;
-		float Y = GetLinesIntoBuffer(Buffer, Cursor) * (Editor.CharHeight + Editor.LineSpacing) - Editor.ViewportY;
-		MakeQuad(&QuadVertices, X, Y, CursorWidth, CursorHeight, Editor.CursorColor);
+//		glUseProgram(QuadShader);
+//		glUniform1f(glGetUniformLocation(QuadShader, "WindowWidth"), Editor.WindowWidth);
+//		glUniform1f(glGetUniformLocation(QuadShader, "WindowHeight"), Editor.WindowHeight);
 
-//		for(int i = 0; i < Editor.EffectQuads.Count; ++i)
-//		{
-//			MakeQuad(
-//				&QuadVertices,
-//				Editor.EffectQuads.Data[i].X - Editor.ViewportX,
-//				Editor.EffectQuads.Data[i].Y - Editor.ViewportY,
-//				Editor.CharWidth, Editor.CharHeight,
-//				Editor.EffectQuads.Data[i].Color);
-//			Editor.EffectQuads.Data[i].Color.A -= 0.01;
-//			printf("effect quad %d alpha: %f\n", i, Editor.EffectQuads.Data[i].Color.A);
-//			if(Editor.EffectQuads.Data[i].Color.A <= 0.0f)
-//			{
-//				ArrayRemove(&Editor.EffectQuads, i);
-//				printf("removed an effect quad!\n");
-//			}
-//		}
-		glBindVertexArray(QuadVAO);
-		glBindBuffer(GL_ARRAY_BUFFER, QuadVBO);
-		glBufferData(GL_ARRAY_BUFFER, QuadVertices.Count * sizeof(float), QuadVertices.Data, GL_STREAM_DRAW);
-		glDrawArrays(GL_TRIANGLES, 0, QuadVertices.Count / 6);
+//		// Make the cursor
+////		color CursorColor;
+////		if(Editor.CursorEffectProgress < 1.0f)
+////		{
+////			CursorColor.A = Editor.CursorColor.A;
+////			CursorColor.R = Lerp(Editor.CursorEffectColor.R, Editor.CursorColor.R, Editor.CursorEffectProgress);
+////			CursorColor.G = Lerp(Editor.CursorEffectColor.G, Editor.CursorColor.G, Editor.CursorEffectProgress);
+////			CursorColor.B = Lerp(Editor.CursorEffectColor.B, Editor.CursorColor.B, Editor.CursorEffectProgress);
+////		}
+////		else
+////		{
+////			CursorColor = Editor.CursorColor;
+////		}
+////		Editor.CursorEffectProgress += 0.01f;
+////		if(Editor.CursorEffectProgress > 1.0f)
+////		{
+////			Editor.CursorEffectProgress = 1.0f;
+////		}
+////		int CursorWidth = Editor.CharWidth;
+//		int CursorWidth = Editor.EditableText.Font->Config.CharWidth;
+////		int CursorHeight = Editor.CharHeight;
+//		int CursorHeight = Editor.EditableText.Font->Config.CharHeight;
+//		textBuffer *Buffer = &Editor.TextBuffer;
+//		int Cursor = GetCursor(Buffer);
+////		float X = GetCharsIntoLine(Buffer, Cursor) * (Editor.CharWidth + Editor.CharSpacing) - Editor.ViewportX;
+//		float X = GetCharsIntoLine(Buffer, Cursor) * (Editor.EditableText.Font->Config.CharWidth + Editor.EditableText.Font->Config.CharSpacing) + 100;
+////		float Y = GetLinesIntoBuffer(Buffer, Cursor) * (Editor.CharHeight + Editor.LineSpacing) - Editor.ViewportY;
+//		float Y = GetLinesIntoBuffer(Buffer, Cursor) * (Editor.EditableText.Font->Config.CharHeight + Editor.EditableText.Font->Config.LineSpacing) + 100;
+//		MakeQuad(&QuadVertices, X, Y, CursorWidth, CursorHeight, Editor.CursorColor);
+//
+////		for(int i = 0; i < Editor.EffectQuads.Count; ++i)
+////		{
+////			MakeQuad(
+////				&QuadVertices,
+////				Editor.EffectQuads.Data[i].X - Editor.ViewportX,
+////				Editor.EffectQuads.Data[i].Y - Editor.ViewportY,
+////				Editor.CharWidth, Editor.CharHeight,
+////				Editor.EffectQuads.Data[i].Color);
+////			Editor.EffectQuads.Data[i].Color.A -= 0.01;
+////			printf("effect quad %d alpha: %f\n", i, Editor.EffectQuads.Data[i].Color.A);
+////			if(Editor.EffectQuads.Data[i].Color.A <= 0.0f)
+////			{
+////				ArrayRemove(&Editor.EffectQuads, i);
+////				printf("removed an effect quad!\n");
+////			}
+////		}
+//		glBindVertexArray(QuadVAO);
+//		glBindBuffer(GL_ARRAY_BUFFER, QuadVBO);
+//		glBufferData(GL_ARRAY_BUFFER, QuadVertices.Count * sizeof(float), QuadVertices.Data, GL_STREAM_DRAW);
+//		glDrawArrays(GL_TRIANGLES, 0, QuadVertices.Count / 6);
 
 		Time2 = glfwGetTime();
 //		printf("CURSOR: %f\n", Time2 - Time1);
@@ -687,22 +760,34 @@ int main()
 		
 		Time1 = glfwGetTime();
 
-		glUseProgram(TextShader);
-		glUniform1f(glGetUniformLocation(TextShader, "WindowWidth"), Editor.WindowWidth);
-		glUniform1f(glGetUniformLocation(TextShader, "WindowHeight"), Editor.WindowHeight);
+//		glBindTexture(GL_TEXTURE_2D, myTexture);
+//		glUseProgram(TextShader);
+//		glUniform1f(glGetUniformLocation(TextShader, "WindowWidth"), Editor.WindowWidth);
+//		glUniform1f(glGetUniformLocation(TextShader, "WindowHeight"), Editor.WindowHeight);
+//
+//		double Before = glfwGetTime();
+//		MakeTextVertices(&TextVertices, &Editor.TextBuffer, Chars, NumChars, &Editor);
+//		double After = glfwGetTime();
+////		printf("MakeTextVertices(): %f\n", After - Before);
+//		glBindVertexArray(TextVAO);
+//		glBindBuffer(GL_ARRAY_BUFFER, TextVBO);
+////		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, TextEBO);
+////		glBufferData(GL_ARRAY_BUFFER, TextVertices.Count * sizeof(float), TextVertices.Data, GL_STATIC_DRAW);
+//		glBufferData(GL_ARRAY_BUFFER, TextVertices.Count * sizeof(float), TextVertices.Data, GL_STREAM_DRAW);
+////		glBufferData(GL_ELEMENT_ARRAY_BUFFER, TextIndices.Count * sizeof(unsigned int), TextIndices.Data, GL_STREAM_DRAW);
+////		glDrawElements(GL_TRIANGLES, TextIndices.Count, GL_UNSIGNED_INT, 0);
+//		glDrawArrays(GL_TRIANGLES, 0, TextVertices.Count / 8);
 
-		double Before = glfwGetTime();
-		MakeTextVertices(&TextVertices, &Editor.TextBuffer, Chars, NumChars, &Editor);
-		double After = glfwGetTime();
-//		printf("MakeTextVertices(): %f\n", After - Before);
-		glBindVertexArray(TextVAO);
-		glBindBuffer(GL_ARRAY_BUFFER, TextVBO);
-//		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, TextEBO);
-//		glBufferData(GL_ARRAY_BUFFER, TextVertices.Count * sizeof(float), TextVertices.Data, GL_STATIC_DRAW);
-		glBufferData(GL_ARRAY_BUFFER, TextVertices.Count * sizeof(float), TextVertices.Data, GL_STREAM_DRAW);
-//		glBufferData(GL_ELEMENT_ARRAY_BUFFER, TextIndices.Count * sizeof(unsigned int), TextIndices.Data, GL_STREAM_DRAW);
-//		glDrawElements(GL_TRIANGLES, TextIndices.Count, GL_UNSIGNED_INT, 0);
-		glDrawArrays(GL_TRIANGLES, 0, TextVertices.Count / 8);
+//		int TextBoxX = 100;
+//		int TextBoxY = 100;
+//		int TextBoxW = 100;
+//		int TextBoxH = 100;
+//		int OffsH = 0;
+//		int OffsV = 0;
+//		draw_text_buffer(&Editor.TextBuffer, Editor.EditableText.Font,
+//			TextBoxX, TextBoxY, TextBoxW, TextBoxH,
+//			OffsH, OffsV,
+//			Editor.WindowWidth, Editor.WindowHeight);
 
 		Time2 = glfwGetTime();
 //		printf("TEXT: %f\n", Time2 - Time1);
@@ -810,6 +895,13 @@ int main()
 			}
 		}
 
+		{
+			int X = 10;
+			int Y = 10;
+			color Color = {1.0f, 0.0f, 1.0f, 1.0f};
+			draw_text("Hello world!", X, Y, Color, Editor.EditableText.Font, Editor.WindowWidth, Editor.WindowHeight);
+		}
+
 		Time1 = glfwGetTime();
 
 		glfwSwapBuffers(window);
@@ -836,7 +928,7 @@ int main()
 	return 0;
 }
 
-void MakeTextVertices(array<float> *Vertices, const char *Text, int OriginalX, int OriginalY, color TextColor, textMetrics TextMetrics, textureCoordinates Chars[], int NumChars, editor *Editor)
+void MakeTextVertices(array<float> *Vertices, const char *Text, int OriginalX, int OriginalY, color TextColor, textMetrics TextMetrics, textureCoordinatesOld Chars[], int NumChars, editor *Editor)
 {
 	int CharWidth = TextMetrics.CharWidth;
 	int CharHeight = TextMetrics.CharHeight;
@@ -887,7 +979,7 @@ void MakeTextVertices(array<float> *Vertices, const char *Text, int OriginalX, i
 	}
 }
 
-void MakeTextVertices(array<float> *Vertices, textBuffer *Buffer, textureCoordinates Chars[], int NumChars, editor *Editor)
+void MakeTextVertices(array<float> *Vertices, textBuffer *Buffer, textureCoordinatesOld Chars[], int NumChars, editor *Editor)
 {
 	int XAdvance = Editor->CharWidth + Editor->CharSpacing;
 	int YAdvance = Editor->CharHeight + Editor->LineSpacing;
@@ -1248,35 +1340,6 @@ GLuint CreateShader(const char *VertexShaderFile, const char *FragmentShaderFile
 //	}
 //}
 
-//int GetCursorCharIndex(textBuffer *Buffer)
-//{
-//	int i = Buffer->Cursor;
-//	while(i > 0)
-//	{
-//		--i;
-//		if(Buffer->Data[i] == '\n')
-//		{
-//			i += 1;
-//			break;
-//		}
-//	}
-//	return Buffer->Cursor - i;
-//}
-
-//// Figure out on which line the cursor is at
-//int GetCursorLineIndex(textBuffer *Buffer)
-//{
-//	int LineCount = 0; // number of lines before cursor
-//	for(int i = Buffer->Cursor - 1; i >= 0; --i)
-//	{
-//		if(Buffer->Data[i] == '\n')
-//		{
-//			++LineCount;
-//		}
-//	}
-//	return LineCount;
-//}
-
 void InitEditor(editor *Editor, GLFWwindow *AppWindow)
 {
 //	Editor->FontImage = {
@@ -1319,7 +1382,6 @@ void InitEditor(editor *Editor, GLFWwindow *AppWindow)
 //	Editor->CursorEffectColor = CursorEffectColor;
 //	Editor->CursorEffectProgress = 1.0f;
 
-	InitTextBuffer(&Editor->TextBuffer);
 //	ArrayInit(&Editor->EffectQuads);
 //	ArrayInit(&Editor->CharsWithEffect);
 
@@ -1330,51 +1392,67 @@ void InitEditor(editor *Editor, GLFWwindow *AppWindow)
 	Editor->Message = NONE;
 	Editor->MessageText[0] = '\0';
 	Editor->MessageStartTime = 0.0;
+
+//	bitmapFontImageMetrics IM = {};
+//	IM.FilePath = "../charmap-oldschool_white.png";
+//	IM.Width = 128;
+//	IM.Height = 64;
+//	IM.CharsInRow = 18;
+//	IM.CharWidth = 5;
+//	IM.CharHeight = 7;
+//	IM.HSpacing = 2;
+//	IM.VSpacing = 2;
+//	IM.LMargin = 1;
+////	IM.TMargin = 1;
+
+//	bitmapFontImageMetrics IM = {};
+//	IM.FilePath = "../intrepid.png";
+//	IM.Width = 128;
+//	IM.Height = 48;
+//	IM.CharsInRow = 16;
+//	IM.CharWidth = 8;
+//	IM.CharHeight = 8;
+//	IM.HSpacing = 0;
+//	IM.VSpacing = 0;
+//	IM.LMargin = 0;
+//	IM.TMargin = 0;
+
+	bitmapFontImageMetrics IM = {};
+	IM.FilePath = "../November(8x16).png";
+	IM.Width = 760;
+	IM.Height = 16;
+	IM.CharsInRow = 95;
+	IM.CharWidth = 8;
+	IM.CharHeight = 16;
+	IM.HSpacing = 0;
+	IM.VSpacing = 0;
+	IM.LMargin = 0;
+	IM.TMargin = 0;
+
+	fontConfig Config = {};
+//	Config.CharWidth = IM.CharWidth;
+	Config.CharWidth = IM.CharWidth * 2;
+//	Config.CharHeight = IM.CharHeight;
+	Config.CharHeight = IM.CharHeight * 2;
+	Config.CharSpacing = 0;
+	Config.LineSpacing = 0;
+
+	bitmapFont *TheFont = make_bitmap_font(IM, Config);
+	if(!TheFont)
+	{
+		printf("ERROR: FAILED TO MAKE BITMAP FONT!\n");
+	}
+
+	InitTextBuffer(&Editor->TextBuffer);
+
+	int X = 100;
+	int Y = 100;
+	int W = 300;
+	int H = 300;
+	color BackgroundColor = {0.5f, 0.5f, 0.5f, 1.0f};
+	init_editable_text(&Editor->EditableText, &Editor->TextBuffer, TheFont, BackgroundColor,
+		X, Y, W, H);
 }
-
-//void SetCursor(textBuffer *Buffer, int At, editor *Editor)
-//{
-//	// Dont put the cursor past the end of the buffer
-//	if(At < 0 || At >= Buffer->Size)
-//	{
-//		return;
-//	}
-//	// Dont put the cursor past the end of the contents in the text-buffer
-//	for(int i = 0; i < At; ++i)
-//	{
-//		if(Buffer->Data[i] == '\0')
-//		{
-//			return;
-//		}
-//	}
-//	Buffer->Cursor = At;
-//	PossiblyUpdateViewportPosition(Buffer, Editor);
-//	printf("Cursor at %d\n", Buffer->Cursor);
-//}
-
-//void InsertAtCursor(textBuffer *Buffer, char Char, editor *Editor)
-//{
-//	// find 0-char at the end
-//	int i = Buffer->Cursor;
-//	while(Buffer->Data[i] != '\0') ++i;
-//
-//	assert(i < Buffer->Size);
-//	if(i == Buffer->Size-1)
-//	{
-//		// Dont insert if the buffer is full
-//		return;
-//	}
-//
-//	// copy characters
-//	while(i >= Buffer->Cursor)
-//	{
-//		Buffer->Data[i+1] = Buffer->Data[i];
-//		--i;
-//	}
-//
-//	Buffer->Data[Buffer->Cursor] = Char;
-//	SetCursor(Buffer, Buffer->Cursor+1, Editor);
-//}
 
 void MakeQuad(array<float> *Vertices, int X, int Y, int Width, int Height, color Color)
 {
@@ -1397,6 +1475,34 @@ void MakeQuad(array<float> *Vertices, int X, int Y, int Width, int Height, color
 	}
 }
 
+// Transformation of coordinates/dimensions to OpenGL coordinates/dimensions is done here, not in the shader.
+void make_quad(array<float> *Vertices, int X, int Y, int W, int H, color Color, editor *Editor)
+{
+	float PixelWidth = 2.0f / Editor->WindowWidth;
+	float PixelHeight = 2.0f / Editor->WindowHeight;
+
+	float _X = X * PixelWidth - 1.0f;
+	float _Y = 1.0f - Y * PixelHeight;
+	float _W = W * PixelWidth;
+	float _H = H * PixelHeight;
+
+	float X0 = _X;
+	float X1 = _X + _W;
+	float Y0 = _Y;
+	float Y1 = _Y - _H;
+
+	float QuadVertices[] = {
+		/* upper-left*/  X0, Y0, Color.R, Color.G, Color.B, Color.A,
+		/* upper-right*/ X1, Y0, Color.R, Color.G, Color.B, Color.A,
+		/* lower-right*/ X1, Y1, Color.R, Color.G, Color.B, Color.A,
+
+		/* lower-right*/ X1, Y1, Color.R, Color.G, Color.B, Color.A,
+		/* lower-left*/  X0, Y1, Color.R, Color.G, Color.B, Color.A,
+		/* upper-left*/  X0, Y0, Color.R, Color.G, Color.B, Color.A,
+	};
+	ArrayAdd(Vertices, QuadVertices, COUNT(QuadVertices));
+}
+
 float Lerp(float From, float To, float Progress)
 {
 	return (1 - Progress) * From + Progress * To;
@@ -1407,18 +1513,6 @@ void DisplayMessage(messageType MessageType, const char *MessageText, editor *Ed
 	Editor->Message = MessageType;
 	strcpy(Editor->MessageText, MessageText); //@ bounds
 	Editor->MessageStartTime = glfwGetTime();
-}
-
-void CursorForward(textBuffer *Buffer)
-{
-	assert(Buffer->Data[Buffer->Cursor] != '\0');
-	Buffer->Cursor += 1;
-}
-
-void CursorBackward(textBuffer *Buffer)
-{
-	assert(Buffer->Cursor != 0);
-	Buffer->Cursor -= 1;
 }
 
 // adjust viewport if CharWidth * CharHeight quad at (CharIndex, LineIndex) is not visible, so that it becomes visible again
@@ -1449,372 +1543,122 @@ void AdjustViewportIfNotVisible(editor *Editor, int CharIndex, int LineIndex)
 	}
 }
 
-void InitTextBuffer(textBuffer *Buffer)
+void AdjustViewportIfNotVisible(editableText *Editable, int Iter)
 {
-//	Buffer->Size = 3;
-	Buffer->Size = 1024;	
-	Buffer->Data = (char *) malloc(Buffer->Size);
-	assert(Buffer->Data);
-	Buffer->OneAfterLast = 0;
-	Buffer->Cursor = 0;
+	int Col = GetCharsIntoLine(Editable->TextBuffer, Iter);
+	int Row = GetLinesIntoBuffer(Editable->TextBuffer, Iter);
 
-//	memset(Buffer->Data, 'x', Buffer->Size);
+	// Iter's position relative to the text buffer
+	int CursorX1 = Col * (Editable->Font->Config.CharWidth + Editable->Font->Config.CharSpacing);
+	int CursorY1 = Row * (Editable->Font->Config.CharHeight + Editable->Font->Config.LineSpacing);
 
-//	Buffer->Data[0] = 'a';
-//	Buffer->Data[1] = 'b';
-//	Buffer->Data[2] = 'c';
-//	Buffer->OneAfterLast = 3;
-}
+	// Iter's position relative to the editable text widget
+	CursorX1 = CursorX1 - Editable->OffsX;
+	CursorY1 = CursorY1 - Editable->OffsY;
+	int CursorX2 = CursorX1 + Editable->Font->Config.CharWidth;
+	int CursorY2 = CursorY1 + Editable->Font->Config.CharHeight;
 
-char GetChar(textBuffer *Buffer, int At)
-{
-	// validate iterator
-	assert(0 <= At && At < Buffer->OneAfterLast+1);
-
-	if(At == Buffer->OneAfterLast)
+	//@ what if the cursor's height is greater than editable's height?
+	if(CursorY2 > Editable->Height)
 	{
-		return '\0'; //@ ?
+		Editable->OffsY += CursorY2 - Editable->Height;
 	}
-	else
+	else if(CursorY1 < 0)
 	{
-		return Buffer->Data[At];
+		Editable->OffsY += CursorY1;
 	}
-}
-
-int GetStart(textBuffer *Buffer)
-{
-	return 0;
-}
-
-int GetEnd(textBuffer *Buffer)
-{
-//	int i = 0;
-//	while(true)	
-//	{
-//		assert(i < Buffer->Size);
-//		if(Buffer->Data[i] == '\0')
-//		{
-//			return i;
-//		}
-//		++i;
-//	}
-	return Buffer->OneAfterLast;
-}
-
-bool IsStart(textBuffer *Buffer, int At)
-{
-	return (At == 0);
-}
-
-bool IsEnd(textBuffer *Buffer, int At)
-{
-	return (At == Buffer->OneAfterLast);
-}
-
-bool MoveForward(textBuffer *Buffer, int *Iter)
-{
-	// validate iterator
-	assert(0 <= *Iter && *Iter < Buffer->OneAfterLast+1);
-
-	if(*Iter == Buffer->OneAfterLast)
+	if(CursorX2 > Editable->Width)
 	{
-		return false; // at the end
+		Editable->OffsX += CursorX2 - Editable->Width;
 	}
-	else
+	else if(CursorX1 < 0)
 	{
-		*Iter += 1;
-		return true;
+		Editable->OffsX += CursorX1;
 	}
 }
 
-void MoveForwardFast(textBuffer *Buffer, int *Iter)
+void init_editable_text(editableText *EditableText, textBuffer *TextBuffer, bitmapFont *Font, color BackgroundColor,
+	int X, int Y, int Width, int Height)
 {
-	*Iter += 1;
+	EditableText->X = X;
+	EditableText->Y = Y;
+	EditableText->Width = Width;
+	EditableText->Height = Height;
+
+	EditableText->Cursor = GetStart(TextBuffer);
+	EditableText->TextBuffer = TextBuffer;
+	EditableText->OffsX = EditableText->OffsY = 0;
+	EditableText->BackgroundColor = BackgroundColor;
+	EditableText->Font = Font;
 }
 
-bool MoveBackward(textBuffer *Buffer, int *Iter)
+void draw_editable_text(editableText *EditableText, editor *Editor)
 {
-	// validate iterator
-	assert(0 <= *Iter && *Iter < Buffer->OneAfterLast+1);
+	int X = EditableText->X;
+	int Y = EditableText->Y;
+	int W = EditableText->Width;
+	int H = EditableText->Height;
 
-	if(*Iter == 0)
+	array<float> Vertices; ArrayInit(&Vertices);
+	//@ Vertices.Count is misleading.
+
+	// MAKE BACKGROUND
+	make_quad(&Vertices, X, Y, W, H, EditableText->BackgroundColor, Editor);
+
+	// MAKE CURSOR
+	int CharWidth = EditableText->Font->Config.CharWidth;
+	int CharHeight = EditableText->Font->Config.CharHeight;
+	int LineSpacing = EditableText->Font->Config.LineSpacing;
+	int CharSpacing = EditableText->Font->Config.CharSpacing;
+
+	int CursorWidth = CharWidth;
+	int CursorHeight = CharHeight;
+	printf("cursor width: %d, cursor height: %d\n", CursorWidth, CursorHeight);
+
+	int Cursor = EditableText->Cursor;
+	textBuffer *Buffer = &Editor->TextBuffer;
+	int CursorTBX = GetCharsIntoLine(Buffer, Cursor) * (CharWidth + CharSpacing);
+	int CursorTBY = GetLinesIntoBuffer(Buffer, Cursor) * (CharHeight + LineSpacing);
+	printf("cursor tbx: %d, cursor tby: %d\n", CursorTBX, CursorTBY);
+
+	if(CursorTBX >= EditableText->OffsX && CursorTBX < EditableText->OffsX + W
+	&& CursorTBY >= EditableText->OffsY && CursorTBY < EditableText->OffsY + H)
 	{
-		return false; // at the beginning
+		// Cursor visible
+		int CursorX = X + CursorTBX - EditableText->OffsX;
+		int CursorY = Y + CursorTBY - EditableText->OffsY;
+		color CursorColor = {1.0f, 0.0f, 0.0f, 1.0f};
+		make_quad(&Vertices, CursorX, CursorY, CursorWidth, CursorHeight, CursorColor, Editor);
 	}
-	else
-	{
-		*Iter -= 1;
-		return true;
-	}
+
+	GLuint VAO;
+	glGenVertexArrays(1, &VAO);
+	glBindVertexArray(VAO);
+
+	GLuint VBO;
+	glGenBuffers(1, &VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *) 0); // pos
+	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *) (2 * sizeof(float))); // color
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+
+//	glBindVertexArray(QuadVAO);
+//	glBindBuffer(GL_ARRAY_BUFFER, QuadVBO);
+	glBufferData(GL_ARRAY_BUFFER, Vertices.Count * sizeof(float), Vertices.Data, GL_STREAM_DRAW);
+
+	assert((Vertices.Count % 6) == 0);
+	int NumVertices = Vertices.Count / 6;
+	glDrawArrays(GL_TRIANGLES, 0, NumVertices);
+
+	glDeleteBuffers(1, &VBO);
+	glDeleteVertexArrays(1, &VAO);
+
+
+	// MAKE TEXT
+	draw_text_buffer(EditableText->TextBuffer, EditableText->Font,
+		X, Y, W, H, EditableText->OffsX, EditableText->OffsY, Editor->WindowWidth, Editor->WindowHeight);
 }
 
-int GetCursor(textBuffer *Buffer)
-{
-	return Buffer->Cursor;
-}
 
-void SetCursor(textBuffer *Buffer, int At)
-{
-	assert(0 <= At && At < Buffer->OneAfterLast+1);
-
-	Buffer->Cursor = At;
-}
-
-int GetCharsIntoLine(textBuffer *Buffer, int At)
-{
-	assert(0 <= At && At < Buffer->OneAfterLast+1);
-
-	int i = At;
-	while(i > 0)
-	{
-		--i;
-		if(Buffer->Data[i] == '\n')
-		{
-			i += 1;
-			break;
-		}
-	}
-	return At - i;
-}
-
-int GetLinesIntoBuffer(textBuffer *Buffer, int At)
-{
-	assert(0 <= At && At < Buffer->OneAfterLast+1);
-
-	int LineCount = 0;
-	for(int i = At - 1; i >= 0; --i)
-	{
-		if(Buffer->Data[i] == '\n')
-		{
-			++LineCount;
-		}
-	}
-	return LineCount;
-}
-
-//bool MoveAtCharForwards(textBuffer *Buffer, char Char, int *Iter)
-//{}
-bool MoveAtCharBackwards(textBuffer *Buffer, char Char, int *Iter)
-{
-	assert(0 <= *Iter && *Iter < Buffer->OneAfterLast+1);
-
-	bool Result = false;
-	int i = *Iter;
-	do
-	{
-		if(MoveBackward(Buffer, &i))
-		{
-			if(GetChar(Buffer, i) == '\n')
-			{
-				*Iter = i;
-				Result = true;
-				break;
-			}
-		}
-		else
-		{
-			break;
-		}
-	}
-	while(!IsStart(Buffer, *Iter));
-	return Result;
-}
-
-// moves Iter to the beginning of previous line and returns true
-// if no previous line, returns false
-bool MoveToPrevLine(textBuffer *Buffer, int *Iter)
-{
-	assert(0 <= *Iter && *Iter < Buffer->OneAfterLast+1);
-
-//	bool BrokeOut = false;
-//	bool OnPreviousLine = false;
-//	int i = *Iter;
-////	while(i > 0)
-//	while(!IsStart(Buffer, i))
-//	{
-//		--i;
-//		if(GetChar(Buffer, i) == '\n')
-//		{
-//			if(OnPreviousLine)
-//			{
-//				BrokeOut = true;
-//				break;
-//			}
-//			else
-//			{
-//				OnPreviousLine = true;
-//			}
-//		}
-//	}
-//	bool Result = (BrokeOut || OnPreviousLine);
-//	if(Result)
-//	{
-//		*Iter = i;
-//		*Iter += BrokeOut ? 1 : 0;
-//	}
-//	return Result;
-
-	bool Result = false;
-	if(MoveAtCharBackwards(Buffer, '\n', Iter))
-	{
-		// go to the beginning of the line
-		while(!IsStart(Buffer, *Iter))
-		{
-			MoveBackward(Buffer, Iter);
-			if(GetChar(Buffer, *Iter) == '\n')
-			{
-				MoveForward(Buffer, Iter);
-				break;
-			}
-		}
-		Result = true;
-	}
-	return Result;
-}
-
-// moves Iter to the beginning of next line and returns true
-// if no next line, returns false
-bool MoveToNextLine(textBuffer *Buffer, int *Iter)
-{
-	assert(0 <= *Iter && *Iter < Buffer->OneAfterLast+1);
-
-	int i = *Iter;
-	bool FoundLine = false;
-//	while(GetChar(Buffer, i) != '\0')
-	while(i < Buffer->OneAfterLast)
-	{
-		if(GetChar(Buffer, i) == '\n')
-		{
-			FoundLine = true;
-			i += 1;
-			break;
-		}
-		++i;
-	}
-	if(FoundLine)
-	{
-		*Iter = i;
-	}
-	return FoundLine;
-}
-
-bool Insert(textBuffer *Buffer, char Char, int At)
-{
-	assert(0 <= At && At <= Buffer->OneAfterLast);
-
-	bool Result = false; // Assume buffer is full
-
-	if(Buffer->OneAfterLast < Buffer->Size)
-	{
-		int i = Buffer->OneAfterLast;
-		while(i > At)
-		{
-			Buffer->Data[i] = Buffer->Data[i-1];
-			--i;
-		}
-		Buffer->Data[At] = Char;
-		Buffer->OneAfterLast += 1;
-		Result = true;
-	}
-
-	return Result;
-}
-
-bool Insert(textBuffer *Buffer, const char *Text, int At)
-{
-	assert(0 <= At && At <= Buffer->OneAfterLast);
-
-	bool Result = false; // Assume buffer is full
-	int TextLength = strlen(Text);
-
-	if(!((Buffer->OneAfterLast + TextLength) <= Buffer->Size))
-	{
-		int NewDataSize = 2 * (Buffer->OneAfterLast + TextLength);
-		char *NewData = (char *) malloc(NewDataSize);
-		assert(NewData);
-		for(int i = 0; i < Buffer->OneAfterLast; ++i)
-		{
-			NewData[i] = Buffer->Data[i];
-		}
-		free(Buffer->Data);
-		Buffer->Data = NewData;
-		Buffer->Size = NewDataSize;
-		printf("ALLOCATED NEW MEMORY: %d\n", Buffer->Size);
-	}
-
-	int i = Buffer->OneAfterLast-1;
-	while(i >= At)
-	{
-		Buffer->Data[i+TextLength] = Buffer->Data[i];
-		--i;
-	}
-	for(int i = 0; i < TextLength; ++i)
-	{
-		Buffer->Data[At+i] = Text[i];
-	}
-	Buffer->OneAfterLast += TextLength;
-	Result = true;
-
-	return Result;
-}
-
-/*
-we dont expect the caller to keep track of whether the buffer is empty or not (well return false if the buffer is empty)
-we do expect the caller to not give us invalid[1] iterators though (when we see one well fail an assertion)
-
-[1] invalid iterator is an iterator which is either outside of the buffer bounds or after the '\0' that marks the end of the buffer contents.
-*/
-bool Delete(textBuffer *Buffer, int At)
-{
-	// validate an iterator
-	assert(0 <= At && At <= Buffer->OneAfterLast);
-
-	if(Buffer->OneAfterLast > 0)
-	{
-//		do
-//		{
-//			++At;
-//			Buffer->Data[At-1] = Buffer->Data[At];
-//		}
-//		while(At < Buffer->OneAfterLast-1);
-		while(At < Buffer->OneAfterLast-1)
-		{
-			Buffer->Data[At] = Buffer->Data[At+1];
-			++At;
-		}
-		Buffer->OneAfterLast -= 1;
-		return true;
-	}
-	else
-	{
-		// buffer is empty or At is at the end of the buffer
-		return false;
-	}
-}
-
-bool Delete(textBuffer *Buffer, int At, int NumChars)
-{
-	// validate an iterator
-	assert(0 <= At && At <= Buffer->OneAfterLast);
-
-	// cant delete more characters than there are
-	assert(NumChars <= Buffer->OneAfterLast);
-
-	//@ if the caller wants to delete more chars than can be deleted... we dont check for that
-
-	if(NumChars <= Buffer->OneAfterLast) //@ because of the assertion above else-block never executes
-	{
-		while(At+NumChars < Buffer->OneAfterLast)
-		{
-			Buffer->Data[At] = Buffer->Data[At+NumChars];
-			++At;
-		}
-		Buffer->OneAfterLast -= NumChars;
-		return true;
-	}
-	else
-	{
-		return false;
-	}
-	return false;
-}

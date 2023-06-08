@@ -81,7 +81,8 @@ bool WriteFile(const char *FileName, u8 *Contents, size_t NumBytes)
 
 bool ReadTextFile(const char *FileName, char **Contents)
 {
-	FILE *F = fopen(FileName, "r");
+//	FILE *F = fopen(FileName, "r");
+	FILE *F = fopen(FileName, "rb"); //@ Windows needs 'b'. Why?
 	if (!F)
 	{
 		fprintf(stderr, "Failed to open file: \"%s\"!\n", FileName);

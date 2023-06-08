@@ -22,6 +22,11 @@ typedef uint64_t u64;
 typedef float r32;
 typedef double r64;
 
+struct color
+{
+	float R, G, B, A;
+};
+
 bool ReadFile(const char *FileName, u8 **Contents, size_t *NumBytes);
 bool WriteFile(const char *FileName, u8 *Contents, size_t NumBytes);
 bool ReadTextFile(const char *FileName, char **Contents); // returns 0-terminated contents
@@ -83,9 +88,38 @@ void ArrayAdd(array<t> *Array, t Element)
 }
 
 template <typename t>
-void ArrayAdd(array<t> *a, t e[], u32 n)
+void ArrayAdd(array<t> *Array, t Elements[], int NumElements)
 {
-	for(u32 i = 0; i < n; ++i)
+	int NewNumElements = Array->Count + NumElements;
+	if (NewNumElements > Array->Allocated)
+	{
+		int AllocatedTwice = Array->Allocated * 2;
+		Array->Allocated = (NewNumElements > AllocatedTwice) ? NewNumElements : AllocatedTwice;
+
+		t *Ptr = (t *) malloc(Array->Allocated * sizeof(t)); //@
+
+		for(int i = 0; i < Array->Count; ++i)
+		{
+			Ptr[i] = Array->Data[i];
+		}
+
+		free(Array->Data);
+		Array->Data = Ptr;
+	}
+
+	int j = Array->Count;
+	for(int i = 0; i < NumElements; ++i)
+	{
+		Array->Data[j] = Elements[i];
+		++j;
+	}
+	Array->Count = NewNumElements;
+}
+
+template <typename t>
+void ArrayAddSlow(array<t> *a, t e[], int n)
+{
+	for(int i = 0; i < n; ++i)
 	{
 		ArrayAdd(a, e[i]);
 	}

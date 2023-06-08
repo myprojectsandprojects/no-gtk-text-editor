@@ -13,5 +13,25 @@ CMakeFiles/MyGlfwTest.dir/main.cpp.o: ../glad/include/glad/glad.h
 CMakeFiles/MyGlfwTest.dir/main.cpp.o: ../glfw-3.3.8/include/GLFW/glfw3.h
 CMakeFiles/MyGlfwTest.dir/main.cpp.o: ../lib.h
 CMakeFiles/MyGlfwTest.dir/main.cpp.o: ../main.cpp
+CMakeFiles/MyGlfwTest.dir/main.cpp.o: ../opengl.h
 CMakeFiles/MyGlfwTest.dir/main.cpp.o: ../stb_image.h
+CMakeFiles/MyGlfwTest.dir/main.cpp.o: ../text_buffer.hpp
+CMakeFiles/MyGlfwTest.dir/main.cpp.o: ../text_drawing.hpp
+
+CMakeFiles/MyGlfwTest.dir/opengl.cpp.o: ../glad/include/KHR/khrplatform.h
+CMakeFiles/MyGlfwTest.dir/opengl.cpp.o: ../glad/include/glad/glad.h
+CMakeFiles/MyGlfwTest.dir/opengl.cpp.o: ../opengl.cpp
+CMakeFiles/MyGlfwTest.dir/opengl.cpp.o: ../opengl.h
+
+CMakeFiles/MyGlfwTest.dir/text_buffer.cpp.o: ../text_buffer.cpp
+CMakeFiles/MyGlfwTest.dir/text_buffer.cpp.o: ../text_buffer.hpp
+
+CMakeFiles/MyGlfwTest.dir/text_drawing.cpp.o: ../glad/include/KHR/khrplatform.h
+CMakeFiles/MyGlfwTest.dir/text_drawing.cpp.o: ../glad/include/glad/glad.h
+CMakeFiles/MyGlfwTest.dir/text_drawing.cpp.o: ../lib.h
+CMakeFiles/MyGlfwTest.dir/text_drawing.cpp.o: ../opengl.h
+CMakeFiles/MyGlfwTest.dir/text_drawing.cpp.o: ../stb_image.h
+CMakeFiles/MyGlfwTest.dir/text_drawing.cpp.o: ../text_buffer.hpp
+CMakeFiles/MyGlfwTest.dir/text_drawing.cpp.o: ../text_drawing.cpp
+CMakeFiles/MyGlfwTest.dir/text_drawing.cpp.o: ../text_drawing.hpp
 

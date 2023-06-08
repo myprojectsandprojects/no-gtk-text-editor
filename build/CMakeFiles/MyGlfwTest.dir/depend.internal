@@ -14,4 +14,24 @@ CMakeFiles/MyGlfwTest.dir/main.cpp.o
  ../glfw-3.3.8/include/GLFW/glfw3.h
  /home/eero/all/no-gtk-text-editor/glfw/text-editor/lib.h
  /home/eero/all/no-gtk-text-editor/glfw/text-editor/main.cpp
+ /home/eero/all/no-gtk-text-editor/glfw/text-editor/opengl.h
  /home/eero/all/no-gtk-text-editor/glfw/text-editor/stb_image.h
+ /home/eero/all/no-gtk-text-editor/glfw/text-editor/text_buffer.hpp
+ /home/eero/all/no-gtk-text-editor/glfw/text-editor/text_drawing.hpp
+CMakeFiles/MyGlfwTest.dir/opengl.cpp.o
+ ../glad/include/KHR/khrplatform.h
+ ../glad/include/glad/glad.h
+ /home/eero/all/no-gtk-text-editor/glfw/text-editor/opengl.cpp
+ /home/eero/all/no-gtk-text-editor/glfw/text-editor/opengl.h
+CMakeFiles/MyGlfwTest.dir/text_buffer.cpp.o
+ /home/eero/all/no-gtk-text-editor/glfw/text-editor/text_buffer.cpp
+ /home/eero/all/no-gtk-text-editor/glfw/text-editor/text_buffer.hpp
+CMakeFiles/MyGlfwTest.dir/text_drawing.cpp.o
+ ../glad/include/KHR/khrplatform.h
+ ../glad/include/glad/glad.h
+ /home/eero/all/no-gtk-text-editor/glfw/text-editor/lib.h
+ /home/eero/all/no-gtk-text-editor/glfw/text-editor/opengl.h
+ /home/eero/all/no-gtk-text-editor/glfw/text-editor/stb_image.h
+ /home/eero/all/no-gtk-text-editor/glfw/text-editor/text_buffer.hpp
+ /home/eero/all/no-gtk-text-editor/glfw/text-editor/text_drawing.cpp
+ /home/eero/all/no-gtk-text-editor/glfw/text-editor/text_drawing.hpp

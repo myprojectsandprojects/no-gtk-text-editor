@@ -287,6 +287,87 @@ main.cpp.s:
 	$(MAKE) -f CMakeFiles/MyGlfwTest.dir/build.make CMakeFiles/MyGlfwTest.dir/main.cpp.s
 .PHONY : main.cpp.s
 
+opengl.o: opengl.cpp.o
+
+.PHONY : opengl.o
+
+# target to build an object file
+opengl.cpp.o:
+	$(MAKE) -f CMakeFiles/MyGlfwTest.dir/build.make CMakeFiles/MyGlfwTest.dir/opengl.cpp.o
+.PHONY : opengl.cpp.o
+
+opengl.i: opengl.cpp.i
+
+.PHONY : opengl.i
+
+# target to preprocess a source file
+opengl.cpp.i:
+	$(MAKE) -f CMakeFiles/MyGlfwTest.dir/build.make CMakeFiles/MyGlfwTest.dir/opengl.cpp.i
+.PHONY : opengl.cpp.i
+
+opengl.s: opengl.cpp.s
+
+.PHONY : opengl.s
+
+# target to generate assembly for a file
+opengl.cpp.s:
+	$(MAKE) -f CMakeFiles/MyGlfwTest.dir/build.make CMakeFiles/MyGlfwTest.dir/opengl.cpp.s
+.PHONY : opengl.cpp.s
+
+text_buffer.o: text_buffer.cpp.o
+
+.PHONY : text_buffer.o
+
+# target to build an object file
+text_buffer.cpp.o:
+	$(MAKE) -f CMakeFiles/MyGlfwTest.dir/build.make CMakeFiles/MyGlfwTest.dir/text_buffer.cpp.o
+.PHONY : text_buffer.cpp.o
+
+text_buffer.i: text_buffer.cpp.i
+
+.PHONY : text_buffer.i
+
+# target to preprocess a source file
+text_buffer.cpp.i:
+	$(MAKE) -f CMakeFiles/MyGlfwTest.dir/build.make CMakeFiles/MyGlfwTest.dir/text_buffer.cpp.i
+.PHONY : text_buffer.cpp.i
+
+text_buffer.s: text_buffer.cpp.s
+
+.PHONY : text_buffer.s
+
+# target to generate assembly for a file
+text_buffer.cpp.s:
+	$(MAKE) -f CMakeFiles/MyGlfwTest.dir/build.make CMakeFiles/MyGlfwTest.dir/text_buffer.cpp.s
+.PHONY : text_buffer.cpp.s
+
+text_drawing.o: text_drawing.cpp.o
+
+.PHONY : text_drawing.o
+
+# target to build an object file
+text_drawing.cpp.o:
+	$(MAKE) -f CMakeFiles/MyGlfwTest.dir/build.make CMakeFiles/MyGlfwTest.dir/text_drawing.cpp.o
+.PHONY : text_drawing.cpp.o
+
+text_drawing.i: text_drawing.cpp.i
+
+.PHONY : text_drawing.i
+
+# target to preprocess a source file
+text_drawing.cpp.i:
+	$(MAKE) -f CMakeFiles/MyGlfwTest.dir/build.make CMakeFiles/MyGlfwTest.dir/text_drawing.cpp.i
+.PHONY : text_drawing.cpp.i
+
+text_drawing.s: text_drawing.cpp.s
+
+.PHONY : text_drawing.s
+
+# target to generate assembly for a file
+text_drawing.cpp.s:
+	$(MAKE) -f CMakeFiles/MyGlfwTest.dir/build.make CMakeFiles/MyGlfwTest.dir/text_drawing.cpp.s
+.PHONY : text_drawing.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -312,6 +393,15 @@ help:
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"
+	@echo "... opengl.o"
+	@echo "... opengl.i"
+	@echo "... opengl.s"
+	@echo "... text_buffer.o"
+	@echo "... text_buffer.i"
+	@echo "... text_buffer.s"
+	@echo "... text_drawing.o"
+	@echo "... text_drawing.i"
+	@echo "... text_drawing.s"
 .PHONY : help
 
 
