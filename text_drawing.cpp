@@ -5,7 +5,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
-bitmapFont *make_bitmap_font(bitmapFontImageMetrics IM, fontConfig Config)
+bitmapFont *make_bitmap_font(bitmapFontImageMetrics IM, fontConfig Config, GLuint Shader)
 {
 	int ImageWidth, ImageHeight, ImageNChannels;
 	stbi_set_flip_vertically_on_load(1);
@@ -61,7 +61,8 @@ bitmapFont *make_bitmap_font(bitmapFontImageMetrics IM, fontConfig Config)
 	}
 
 	bitmapFont *Font = (bitmapFont *)malloc(sizeof(bitmapFont));
-	Font->Shader = make_text_shader();
+//	Font->Shader = make_text_shader();
+	Font->Shader = Shader;
 	Font->TextureAtlas = myTexture;
 	Font->TextureCoordinates = Chars;
 	Font->Config = Config;

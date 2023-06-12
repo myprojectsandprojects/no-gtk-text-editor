@@ -64,6 +64,18 @@ GL/gl.h
 GL/glext.h
 -
 
+/home/eero/all/no-gtk-text-editor/glfw/text-editor/drawing.cpp
+drawing.hpp
+/home/eero/all/no-gtk-text-editor/glfw/text-editor/drawing.hpp
+assert.h
+-
+
+/home/eero/all/no-gtk-text-editor/glfw/text-editor/drawing.hpp
+glad/glad.h
+-
+lib.h
+/home/eero/all/no-gtk-text-editor/glfw/text-editor/lib.h
+
 /home/eero/all/no-gtk-text-editor/glfw/text-editor/lib.cpp
 lib.h
 /home/eero/all/no-gtk-text-editor/glfw/text-editor/lib.h
@@ -95,6 +107,8 @@ text_buffer.hpp
 /home/eero/all/no-gtk-text-editor/glfw/text-editor/text_buffer.hpp
 text_drawing.hpp
 /home/eero/all/no-gtk-text-editor/glfw/text-editor/text_drawing.hpp
+ui.hpp
+/home/eero/all/no-gtk-text-editor/glfw/text-editor/ui.hpp
 
 /home/eero/all/no-gtk-text-editor/glfw/text-editor/opengl.cpp
 stdio.h
@@ -167,4 +181,18 @@ opengl.h
 /home/eero/all/no-gtk-text-editor/glfw/text-editor/opengl.h
 text_buffer.hpp
 /home/eero/all/no-gtk-text-editor/glfw/text-editor/text_buffer.hpp
+drawing.hpp
+/home/eero/all/no-gtk-text-editor/glfw/text-editor/drawing.hpp
+
+/home/eero/all/no-gtk-text-editor/glfw/text-editor/ui.cpp
+ui.hpp
+/home/eero/all/no-gtk-text-editor/glfw/text-editor/ui.hpp
+
+/home/eero/all/no-gtk-text-editor/glfw/text-editor/ui.hpp
+text_buffer.hpp
+/home/eero/all/no-gtk-text-editor/glfw/text-editor/text_buffer.hpp
+drawing.hpp
+/home/eero/all/no-gtk-text-editor/glfw/text-editor/drawing.hpp
+text_drawing.hpp
+/home/eero/all/no-gtk-text-editor/glfw/text-editor/text_drawing.hpp
 

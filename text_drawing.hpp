@@ -4,6 +4,7 @@
 #include "lib.h"
 #include "opengl.h"
 #include "text_buffer.hpp"
+#include "drawing.hpp"
 
 struct fontConfig
 {
@@ -34,7 +35,7 @@ struct bitmapFontImageMetrics
 	int LMargin, TMargin;
 };
 
-bitmapFont *make_bitmap_font(bitmapFontImageMetrics ImageMetrics, fontConfig Config);
+bitmapFont *make_bitmap_font(bitmapFontImageMetrics ImageMetrics, fontConfig Config, GLuint Shader);
 void draw_text(const char *Text, int X, int Y, color Color, bitmapFont *Font, int WindowWidth, int WindowHeight);
 // maybe draw_text() should take some kind of horizontal extent and once it reaches the end it wraps to a new line?
 

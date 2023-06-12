@@ -201,6 +201,54 @@ CMakeFiles/MyGlfwTest.dir/text_buffer.cpp.o.provides: CMakeFiles/MyGlfwTest.dir/
 CMakeFiles/MyGlfwTest.dir/text_buffer.cpp.o.provides.build: CMakeFiles/MyGlfwTest.dir/text_buffer.cpp.o
 
 
+CMakeFiles/MyGlfwTest.dir/ui.cpp.o: CMakeFiles/MyGlfwTest.dir/flags.make
+CMakeFiles/MyGlfwTest.dir/ui.cpp.o: ../ui.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/eero/all/no-gtk-text-editor/glfw/text-editor/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/MyGlfwTest.dir/ui.cpp.o"
+	/usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/MyGlfwTest.dir/ui.cpp.o -c /home/eero/all/no-gtk-text-editor/glfw/text-editor/ui.cpp
+
+CMakeFiles/MyGlfwTest.dir/ui.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/MyGlfwTest.dir/ui.cpp.i"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/eero/all/no-gtk-text-editor/glfw/text-editor/ui.cpp > CMakeFiles/MyGlfwTest.dir/ui.cpp.i
+
+CMakeFiles/MyGlfwTest.dir/ui.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/MyGlfwTest.dir/ui.cpp.s"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/eero/all/no-gtk-text-editor/glfw/text-editor/ui.cpp -o CMakeFiles/MyGlfwTest.dir/ui.cpp.s
+
+CMakeFiles/MyGlfwTest.dir/ui.cpp.o.requires:
+
+.PHONY : CMakeFiles/MyGlfwTest.dir/ui.cpp.o.requires
+
+CMakeFiles/MyGlfwTest.dir/ui.cpp.o.provides: CMakeFiles/MyGlfwTest.dir/ui.cpp.o.requires
+	$(MAKE) -f CMakeFiles/MyGlfwTest.dir/build.make CMakeFiles/MyGlfwTest.dir/ui.cpp.o.provides.build
+.PHONY : CMakeFiles/MyGlfwTest.dir/ui.cpp.o.provides
+
+CMakeFiles/MyGlfwTest.dir/ui.cpp.o.provides.build: CMakeFiles/MyGlfwTest.dir/ui.cpp.o
+
+
+CMakeFiles/MyGlfwTest.dir/drawing.cpp.o: CMakeFiles/MyGlfwTest.dir/flags.make
+CMakeFiles/MyGlfwTest.dir/drawing.cpp.o: ../drawing.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/eero/all/no-gtk-text-editor/glfw/text-editor/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/MyGlfwTest.dir/drawing.cpp.o"
+	/usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/MyGlfwTest.dir/drawing.cpp.o -c /home/eero/all/no-gtk-text-editor/glfw/text-editor/drawing.cpp
+
+CMakeFiles/MyGlfwTest.dir/drawing.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/MyGlfwTest.dir/drawing.cpp.i"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/eero/all/no-gtk-text-editor/glfw/text-editor/drawing.cpp > CMakeFiles/MyGlfwTest.dir/drawing.cpp.i
+
+CMakeFiles/MyGlfwTest.dir/drawing.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/MyGlfwTest.dir/drawing.cpp.s"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/eero/all/no-gtk-text-editor/glfw/text-editor/drawing.cpp -o CMakeFiles/MyGlfwTest.dir/drawing.cpp.s
+
+CMakeFiles/MyGlfwTest.dir/drawing.cpp.o.requires:
+
+.PHONY : CMakeFiles/MyGlfwTest.dir/drawing.cpp.o.requires
+
+CMakeFiles/MyGlfwTest.dir/drawing.cpp.o.provides: CMakeFiles/MyGlfwTest.dir/drawing.cpp.o.requires
+	$(MAKE) -f CMakeFiles/MyGlfwTest.dir/build.make CMakeFiles/MyGlfwTest.dir/drawing.cpp.o.provides.build
+.PHONY : CMakeFiles/MyGlfwTest.dir/drawing.cpp.o.provides
+
+CMakeFiles/MyGlfwTest.dir/drawing.cpp.o.provides.build: CMakeFiles/MyGlfwTest.dir/drawing.cpp.o
+
+
 # Object files for target MyGlfwTest
 MyGlfwTest_OBJECTS = \
 "CMakeFiles/MyGlfwTest.dir/main.cpp.o" \
@@ -208,7 +256,9 @@ MyGlfwTest_OBJECTS = \
 "CMakeFiles/MyGlfwTest.dir/lib.cpp.o" \
 "CMakeFiles/MyGlfwTest.dir/text_drawing.cpp.o" \
 "CMakeFiles/MyGlfwTest.dir/opengl.cpp.o" \
-"CMakeFiles/MyGlfwTest.dir/text_buffer.cpp.o"
+"CMakeFiles/MyGlfwTest.dir/text_buffer.cpp.o" \
+"CMakeFiles/MyGlfwTest.dir/ui.cpp.o" \
+"CMakeFiles/MyGlfwTest.dir/drawing.cpp.o"
 
 # External object files for target MyGlfwTest
 MyGlfwTest_EXTERNAL_OBJECTS =
@@ -219,13 +269,15 @@ MyGlfwTest: CMakeFiles/MyGlfwTest.dir/lib.cpp.o
 MyGlfwTest: CMakeFiles/MyGlfwTest.dir/text_drawing.cpp.o
 MyGlfwTest: CMakeFiles/MyGlfwTest.dir/opengl.cpp.o
 MyGlfwTest: CMakeFiles/MyGlfwTest.dir/text_buffer.cpp.o
+MyGlfwTest: CMakeFiles/MyGlfwTest.dir/ui.cpp.o
+MyGlfwTest: CMakeFiles/MyGlfwTest.dir/drawing.cpp.o
 MyGlfwTest: CMakeFiles/MyGlfwTest.dir/build.make
 MyGlfwTest: glfw-3.3.8/src/libglfw3.a
 MyGlfwTest: /usr/lib/x86_64-linux-gnu/librt.so
 MyGlfwTest: /usr/lib/x86_64-linux-gnu/libm.so
 MyGlfwTest: /usr/lib/x86_64-linux-gnu/libX11.so
 MyGlfwTest: CMakeFiles/MyGlfwTest.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/eero/all/no-gtk-text-editor/glfw/text-editor/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Linking CXX executable MyGlfwTest"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/eero/all/no-gtk-text-editor/glfw/text-editor/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Linking CXX executable MyGlfwTest"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/MyGlfwTest.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
@@ -239,6 +291,8 @@ CMakeFiles/MyGlfwTest.dir/requires: CMakeFiles/MyGlfwTest.dir/lib.cpp.o.requires
 CMakeFiles/MyGlfwTest.dir/requires: CMakeFiles/MyGlfwTest.dir/text_drawing.cpp.o.requires
 CMakeFiles/MyGlfwTest.dir/requires: CMakeFiles/MyGlfwTest.dir/opengl.cpp.o.requires
 CMakeFiles/MyGlfwTest.dir/requires: CMakeFiles/MyGlfwTest.dir/text_buffer.cpp.o.requires
+CMakeFiles/MyGlfwTest.dir/requires: CMakeFiles/MyGlfwTest.dir/ui.cpp.o.requires
+CMakeFiles/MyGlfwTest.dir/requires: CMakeFiles/MyGlfwTest.dir/drawing.cpp.o.requires
 
 .PHONY : CMakeFiles/MyGlfwTest.dir/requires
 

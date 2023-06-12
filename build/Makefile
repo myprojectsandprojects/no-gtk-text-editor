@@ -206,6 +206,33 @@ glfw/fast:
 	$(MAKE) -f glfw-3.3.8/src/CMakeFiles/glfw.dir/build.make glfw-3.3.8/src/CMakeFiles/glfw.dir/build
 .PHONY : glfw/fast
 
+drawing.o: drawing.cpp.o
+
+.PHONY : drawing.o
+
+# target to build an object file
+drawing.cpp.o:
+	$(MAKE) -f CMakeFiles/MyGlfwTest.dir/build.make CMakeFiles/MyGlfwTest.dir/drawing.cpp.o
+.PHONY : drawing.cpp.o
+
+drawing.i: drawing.cpp.i
+
+.PHONY : drawing.i
+
+# target to preprocess a source file
+drawing.cpp.i:
+	$(MAKE) -f CMakeFiles/MyGlfwTest.dir/build.make CMakeFiles/MyGlfwTest.dir/drawing.cpp.i
+.PHONY : drawing.cpp.i
+
+drawing.s: drawing.cpp.s
+
+.PHONY : drawing.s
+
+# target to generate assembly for a file
+drawing.cpp.s:
+	$(MAKE) -f CMakeFiles/MyGlfwTest.dir/build.make CMakeFiles/MyGlfwTest.dir/drawing.cpp.s
+.PHONY : drawing.cpp.s
+
 glad/src/glad.o: glad/src/glad.c.o
 
 .PHONY : glad/src/glad.o
@@ -368,6 +395,33 @@ text_drawing.cpp.s:
 	$(MAKE) -f CMakeFiles/MyGlfwTest.dir/build.make CMakeFiles/MyGlfwTest.dir/text_drawing.cpp.s
 .PHONY : text_drawing.cpp.s
 
+ui.o: ui.cpp.o
+
+.PHONY : ui.o
+
+# target to build an object file
+ui.cpp.o:
+	$(MAKE) -f CMakeFiles/MyGlfwTest.dir/build.make CMakeFiles/MyGlfwTest.dir/ui.cpp.o
+.PHONY : ui.cpp.o
+
+ui.i: ui.cpp.i
+
+.PHONY : ui.i
+
+# target to preprocess a source file
+ui.cpp.i:
+	$(MAKE) -f CMakeFiles/MyGlfwTest.dir/build.make CMakeFiles/MyGlfwTest.dir/ui.cpp.i
+.PHONY : ui.cpp.i
+
+ui.s: ui.cpp.s
+
+.PHONY : ui.s
+
+# target to generate assembly for a file
+ui.cpp.s:
+	$(MAKE) -f CMakeFiles/MyGlfwTest.dir/build.make CMakeFiles/MyGlfwTest.dir/ui.cpp.s
+.PHONY : ui.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -384,6 +438,9 @@ help:
 	@echo "... uninstall"
 	@echo "... update_mappings"
 	@echo "... glfw"
+	@echo "... drawing.o"
+	@echo "... drawing.i"
+	@echo "... drawing.s"
 	@echo "... glad/src/glad.o"
 	@echo "... glad/src/glad.i"
 	@echo "... glad/src/glad.s"
@@ -402,6 +459,9 @@ help:
 	@echo "... text_drawing.o"
 	@echo "... text_drawing.i"
 	@echo "... text_drawing.s"
+	@echo "... ui.o"
+	@echo "... ui.i"
+	@echo "... ui.s"
 .PHONY : help
 
 

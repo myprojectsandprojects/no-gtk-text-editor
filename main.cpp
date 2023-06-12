@@ -15,8 +15,10 @@
 #include "stb_image.h"
 
 #include "lib.h"
+
 #include "text_buffer.hpp"
 #include "text_drawing.hpp"
+#include "ui.hpp"
 
 const int MAX_FILE_PATH = 1000; //@ very random
 
@@ -62,18 +64,6 @@ struct fontImage
 	int LeftMargin, TopMargin;
 };
 
-// oneliner
-// multiliner
-struct editableText
-{
-	int X, Y, Width, Height;
-	textBuffer *TextBuffer;
-	int OffsX, OffsY;
-	int Cursor;
-	color BackgroundColor;
-	bitmapFont *Font;
-};
-
 struct editor
 {
 	fontImage FontImage;
@@ -95,10 +85,10 @@ struct editor
 
 	GLFWwindow *AppWindow;
 
-	// Message-box
-	double MBDuration;
-	bool MBShouldDisplay;
-	double MBStartTime;
+//	// Message-box
+//	double MBDuration;
+//	bool MBShouldDisplay;
+//	double MBStartTime;
 
 	messageType Message;
 	char MessageText[1000];
@@ -121,18 +111,12 @@ void MakeTextVertices(array<float> *Vertices, const char *Text, int OriginalX, i
 //void CreateTextVertices(array<float> *Vertices, const char *Text, textureCoordinates Chars[]);
 //void MakeCursorVertices(array<float> *CursorVertices, textBuffer *Buffer, editor *Editor);
 void MakeQuad(array<float> *Vertices, int X, int Y, int Width, int Height, color Color);
-void make_quad(array<float> *Vertices, int X, int Y, int W, int H, color Color, editor *Editor); // makes vertices
-//todo: void make_quad(int X, int Y, int W, int H, color Color, editor *Editor); // makes vertices, also draws
 
 //void PossiblyUpdateViewportPosition(textBuffer *Buffer, editor *Editor);
 void AdjustViewportIfNotVisible(editor *Editor, int CharIndex, int LineIndex);
 void AdjustViewportIfNotVisible(editableText *Editable, int Iter);
 float Lerp(float From, float To, float Progress);
 void DisplayMessage(messageType MessageType, const char *MessageText, editor *Editor);
-
-void init_editable_text(editableText *Editable, textBuffer *TextBuffer, bitmapFont *Font, color BackgroundColor,
-	int X, int Y, int Width, int Height);
-void draw_editable_text(editableText *EditableText, editor *Editor);
 
 void OnWindowResized(GLFWwindow *Window, int Width, int Height)
 {
@@ -476,16 +460,6 @@ void OnKeyEvent(GLFWwindow *Window, int Key, int Scancode, int Action, int Mods)
 
 int main()
 {
-//	srand(time(NULL));
-//	printf("n: %f\n", (rand() % 10) / 9.0f);
-//	printf("n: %f\n", (rand() % 10) / 9.0f);
-//	printf("n: %f\n", (rand() % 10) / 9.0f);
-//	return 0;
-//	printf("%f\n", Lerp(9.0, 1.0, 0.0));
-//	printf("%f\n", Lerp(9.0, 1.0, 0.5));
-//	printf("%f\n", Lerp(9.0, 1.0, 0.75));
-//	printf("%f\n", Lerp(9.0, 1.0, 1.0));
-//	return 0;
 	if(glfwInit() == GLFW_FALSE)
 	{
 		printf("error: glfwInit()\n");
@@ -696,7 +670,8 @@ int main()
 
 		{
 			glUseProgram(ColorShader);
-			draw_editable_text(&Editor.EditableText, &Editor);
+			windowWH WindowSize = {Editor.WindowWidth, Editor.WindowHeight};
+			draw_editable_text(&Editor.EditableText, WindowSize);
 		}
 
 //		glUseProgram(QuadShader);
@@ -1437,7 +1412,8 @@ void InitEditor(editor *Editor, GLFWwindow *AppWindow)
 	Config.CharSpacing = 0;
 	Config.LineSpacing = 0;
 
-	bitmapFont *TheFont = make_bitmap_font(IM, Config);
+	GLuint TextShader = make_text_shader();
+	bitmapFont *TheFont = make_bitmap_font(IM, Config, TextShader);
 	if(!TheFont)
 	{
 		printf("ERROR: FAILED TO MAKE BITMAP FONT!\n");
@@ -1445,13 +1421,17 @@ void InitEditor(editor *Editor, GLFWwindow *AppWindow)
 
 	InitTextBuffer(&Editor->TextBuffer);
 
-	int X = 100;
-	int Y = 100;
-	int W = 300;
-	int H = 300;
+//	int X = 100;
+//	int Y = 100;
+//	int W = 300;
+//	int H = 300;
 	color BackgroundColor = {0.5f, 0.5f, 0.5f, 1.0f};
-	init_editable_text(&Editor->EditableText, &Editor->TextBuffer, TheFont, BackgroundColor,
-		X, Y, W, H);
+	windowXYWH PosAndSize;
+	PosAndSize.X = 100;
+	PosAndSize.Y = 100;
+	PosAndSize.W = 300;
+	PosAndSize.H = 300;
+	init_editable_text(&Editor->EditableText, &Editor->TextBuffer, TheFont, BackgroundColor, PosAndSize);
 }
 
 void MakeQuad(array<float> *Vertices, int X, int Y, int Width, int Height, color Color)
@@ -1473,34 +1453,6 @@ void MakeQuad(array<float> *Vertices, int X, int Y, int Width, int Height, color
 	{
 		ArrayAdd(Vertices, QuadVertices[i]);
 	}
-}
-
-// Transformation of coordinates/dimensions to OpenGL coordinates/dimensions is done here, not in the shader.
-void make_quad(array<float> *Vertices, int X, int Y, int W, int H, color Color, editor *Editor)
-{
-	float PixelWidth = 2.0f / Editor->WindowWidth;
-	float PixelHeight = 2.0f / Editor->WindowHeight;
-
-	float _X = X * PixelWidth - 1.0f;
-	float _Y = 1.0f - Y * PixelHeight;
-	float _W = W * PixelWidth;
-	float _H = H * PixelHeight;
-
-	float X0 = _X;
-	float X1 = _X + _W;
-	float Y0 = _Y;
-	float Y1 = _Y - _H;
-
-	float QuadVertices[] = {
-		/* upper-left*/  X0, Y0, Color.R, Color.G, Color.B, Color.A,
-		/* upper-right*/ X1, Y0, Color.R, Color.G, Color.B, Color.A,
-		/* lower-right*/ X1, Y1, Color.R, Color.G, Color.B, Color.A,
-
-		/* lower-right*/ X1, Y1, Color.R, Color.G, Color.B, Color.A,
-		/* lower-left*/  X0, Y1, Color.R, Color.G, Color.B, Color.A,
-		/* upper-left*/  X0, Y0, Color.R, Color.G, Color.B, Color.A,
-	};
-	ArrayAdd(Vertices, QuadVertices, COUNT(QuadVertices));
 }
 
 float Lerp(float From, float To, float Progress)
@@ -1541,124 +1493,6 @@ void AdjustViewportIfNotVisible(editor *Editor, int CharIndex, int LineIndex)
 	{
 		Editor->ViewportX += CursorX1;
 	}
-}
-
-void AdjustViewportIfNotVisible(editableText *Editable, int Iter)
-{
-	int Col = GetCharsIntoLine(Editable->TextBuffer, Iter);
-	int Row = GetLinesIntoBuffer(Editable->TextBuffer, Iter);
-
-	// Iter's position relative to the text buffer
-	int CursorX1 = Col * (Editable->Font->Config.CharWidth + Editable->Font->Config.CharSpacing);
-	int CursorY1 = Row * (Editable->Font->Config.CharHeight + Editable->Font->Config.LineSpacing);
-
-	// Iter's position relative to the editable text widget
-	CursorX1 = CursorX1 - Editable->OffsX;
-	CursorY1 = CursorY1 - Editable->OffsY;
-	int CursorX2 = CursorX1 + Editable->Font->Config.CharWidth;
-	int CursorY2 = CursorY1 + Editable->Font->Config.CharHeight;
-
-	//@ what if the cursor's height is greater than editable's height?
-	if(CursorY2 > Editable->Height)
-	{
-		Editable->OffsY += CursorY2 - Editable->Height;
-	}
-	else if(CursorY1 < 0)
-	{
-		Editable->OffsY += CursorY1;
-	}
-	if(CursorX2 > Editable->Width)
-	{
-		Editable->OffsX += CursorX2 - Editable->Width;
-	}
-	else if(CursorX1 < 0)
-	{
-		Editable->OffsX += CursorX1;
-	}
-}
-
-void init_editable_text(editableText *EditableText, textBuffer *TextBuffer, bitmapFont *Font, color BackgroundColor,
-	int X, int Y, int Width, int Height)
-{
-	EditableText->X = X;
-	EditableText->Y = Y;
-	EditableText->Width = Width;
-	EditableText->Height = Height;
-
-	EditableText->Cursor = GetStart(TextBuffer);
-	EditableText->TextBuffer = TextBuffer;
-	EditableText->OffsX = EditableText->OffsY = 0;
-	EditableText->BackgroundColor = BackgroundColor;
-	EditableText->Font = Font;
-}
-
-void draw_editable_text(editableText *EditableText, editor *Editor)
-{
-	int X = EditableText->X;
-	int Y = EditableText->Y;
-	int W = EditableText->Width;
-	int H = EditableText->Height;
-
-	array<float> Vertices; ArrayInit(&Vertices);
-	//@ Vertices.Count is misleading.
-
-	// MAKE BACKGROUND
-	make_quad(&Vertices, X, Y, W, H, EditableText->BackgroundColor, Editor);
-
-	// MAKE CURSOR
-	int CharWidth = EditableText->Font->Config.CharWidth;
-	int CharHeight = EditableText->Font->Config.CharHeight;
-	int LineSpacing = EditableText->Font->Config.LineSpacing;
-	int CharSpacing = EditableText->Font->Config.CharSpacing;
-
-	int CursorWidth = CharWidth;
-	int CursorHeight = CharHeight;
-	printf("cursor width: %d, cursor height: %d\n", CursorWidth, CursorHeight);
-
-	int Cursor = EditableText->Cursor;
-	textBuffer *Buffer = &Editor->TextBuffer;
-	int CursorTBX = GetCharsIntoLine(Buffer, Cursor) * (CharWidth + CharSpacing);
-	int CursorTBY = GetLinesIntoBuffer(Buffer, Cursor) * (CharHeight + LineSpacing);
-	printf("cursor tbx: %d, cursor tby: %d\n", CursorTBX, CursorTBY);
-
-	if(CursorTBX >= EditableText->OffsX && CursorTBX < EditableText->OffsX + W
-	&& CursorTBY >= EditableText->OffsY && CursorTBY < EditableText->OffsY + H)
-	{
-		// Cursor visible
-		int CursorX = X + CursorTBX - EditableText->OffsX;
-		int CursorY = Y + CursorTBY - EditableText->OffsY;
-		color CursorColor = {1.0f, 0.0f, 0.0f, 1.0f};
-		make_quad(&Vertices, CursorX, CursorY, CursorWidth, CursorHeight, CursorColor, Editor);
-	}
-
-	GLuint VAO;
-	glGenVertexArrays(1, &VAO);
-	glBindVertexArray(VAO);
-
-	GLuint VBO;
-	glGenBuffers(1, &VBO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *) 0); // pos
-	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *) (2 * sizeof(float))); // color
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-
-//	glBindVertexArray(QuadVAO);
-//	glBindBuffer(GL_ARRAY_BUFFER, QuadVBO);
-	glBufferData(GL_ARRAY_BUFFER, Vertices.Count * sizeof(float), Vertices.Data, GL_STREAM_DRAW);
-
-	assert((Vertices.Count % 6) == 0);
-	int NumVertices = Vertices.Count / 6;
-	glDrawArrays(GL_TRIANGLES, 0, NumVertices);
-
-	glDeleteBuffers(1, &VBO);
-	glDeleteVertexArrays(1, &VAO);
-
-
-	// MAKE TEXT
-	draw_text_buffer(EditableText->TextBuffer, EditableText->Font,
-		X, Y, W, H, EditableText->OffsX, EditableText->OffsY, Editor->WindowWidth, Editor->WindowHeight);
 }
 
 

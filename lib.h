@@ -22,11 +22,6 @@ typedef uint64_t u64;
 typedef float r32;
 typedef double r64;
 
-struct color
-{
-	float R, G, B, A;
-};
-
 bool ReadFile(const char *FileName, u8 **Contents, size_t *NumBytes);
 bool WriteFile(const char *FileName, u8 *Contents, size_t NumBytes);
 bool ReadTextFile(const char *FileName, char **Contents); // returns 0-terminated contents
