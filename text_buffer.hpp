@@ -23,6 +23,7 @@ bool MoveBackward(textBuffer *Buffer, int *Iter);
 //int GetCursor(textBuffer *Buffer);
 //void SetCursor(textBuffer *Buffer, int At);
 int GetCharsIntoLine(textBuffer *Buffer, int At);
+int GetCharsIntoLine(textBuffer *Buffer, int At, int TabWidth);
 int GetLinesIntoBuffer(textBuffer *Buffer, int At);
 bool MoveToPrevLine(textBuffer *Buffer, int *Iter);
 bool MoveToNextLine(textBuffer *Buffer, int *Iter);

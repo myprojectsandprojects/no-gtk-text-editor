@@ -10,6 +10,7 @@ struct fontConfig
 {
 	int CharWidth, CharHeight;
 	int CharSpacing, LineSpacing;
+	int TabWidth; //@ work in progress. right now it's: space in pixels = TabWidth * (CharWidth + CharSpacing) so it should line up with other monospace characters.
 };
 
 struct textureCoordinates

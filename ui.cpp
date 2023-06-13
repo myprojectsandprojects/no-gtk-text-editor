@@ -34,16 +34,15 @@ void draw_editable_text(editableText *EditableText, windowWH WindowSize)
 	int CharHeight = EditableText->Font->Config.CharHeight;
 	int LineSpacing = EditableText->Font->Config.LineSpacing;
 	int CharSpacing = EditableText->Font->Config.CharSpacing;
+	int TabWidth = EditableText->Font->Config.TabWidth;
 
 	int CursorWidth = CharWidth;
 	int CursorHeight = CharHeight;
-	printf("cursor width: %d, cursor height: %d\n", CursorWidth, CursorHeight);
 
 	int Cursor = EditableText->Cursor;
 	textBuffer *Buffer = EditableText->TextBuffer;
-	int CursorTBX = GetCharsIntoLine(Buffer, Cursor) * (CharWidth + CharSpacing);
+	int CursorTBX = GetCharsIntoLine(Buffer, Cursor, TabWidth) * (CharWidth + CharSpacing);
 	int CursorTBY = GetLinesIntoBuffer(Buffer, Cursor) * (CharHeight + LineSpacing);
-	printf("cursor tbx: %d, cursor tby: %d\n", CursorTBX, CursorTBY);
 
 	if(CursorTBX >= EditableText->OffsX && CursorTBX < EditableText->OffsX + EditableText->PosAndSize.W
 	&& CursorTBY >= EditableText->OffsY && CursorTBY < EditableText->OffsY + EditableText->PosAndSize.H)
@@ -75,7 +74,7 @@ void AdjustViewportIfNotVisible(editableText *Editable, int Iter)
 //	int Y = Editable->PosAndSize.Y;
 	int W = Editable->PosAndSize.W;
 	int H = Editable->PosAndSize.H;
-	int Col = GetCharsIntoLine(Editable->TextBuffer, Iter);
+	int Col = GetCharsIntoLine(Editable->TextBuffer, Iter, Editable->Font->Config.TabWidth);
 	int Row = GetLinesIntoBuffer(Editable->TextBuffer, Iter);
 
 	// Iter's position relative to the text buffer

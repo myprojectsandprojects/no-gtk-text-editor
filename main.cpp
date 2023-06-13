@@ -97,9 +97,14 @@ struct editor
 	textBuffer TextBuffer;
 
 	editableText EditableText;
+
+	bitmapFont *Font8x16px;
+	bitmapFont *Font16x32px;
+	bitmapFont *Font32x64px;
 } Editor;
 
-void InitEditor(editor *Editor, GLFWwindow *AppWindow);
+//void InitEditor(editor *Editor, GLFWwindow *AppWindow);
+void InitEditor(editor *Editor);
 
 GLuint CreateShader(const char *VertexShaderFile, const char *FragmentShaderFile);
 //void RenderText(const char *text, int X, int Y, int FontHeight, array<float> *Vertices);
@@ -480,7 +485,8 @@ int main()
 //	glfwSwapInterval(0); // VSync off
 	gladLoadGL();
 
-	InitEditor(&Editor, window);
+//	InitEditor(&Editor, window);
+	InitEditor(&Editor);
 
 	// Dimensions given by glfwGetWindowSize() might not be in pixels
 	glfwGetFramebufferSize(window, &Editor.WindowWidth, &Editor.WindowHeight);
@@ -509,61 +515,61 @@ int main()
 //	int ImageWidth = 2;
 //	int ImageHeight = 2;
 
-	int ImageWidth, ImageHeight, ImageNChannels;
-//	const char *ImageFile = "../charmap-oldschool_white.png";
-	const char *ImageFile = "../charmap-oldschool_black.png";
-	stbi_set_flip_vertically_on_load(1);
-	unsigned char *ImageData = stbi_load(ImageFile, &ImageWidth, &ImageHeight, &ImageNChannels, 0);
-	if(!ImageData)
-	{
-		fprintf(stderr, "error: stbi_load()\n");
-		return 1;
-	}
-	else
-	{
-		printf("width: %d, height: %d, num channels: %d\n", ImageWidth, ImageHeight, ImageNChannels);
-	}
+//	int ImageWidth, ImageHeight, ImageNChannels;
+////	const char *ImageFile = "../charmap-oldschool_white.png";
+//	const char *ImageFile = "../charmap-oldschool_black.png";
+//	stbi_set_flip_vertically_on_load(1);
+//	unsigned char *ImageData = stbi_load(ImageFile, &ImageWidth, &ImageHeight, &ImageNChannels, 0);
+//	if(!ImageData)
+//	{
+//		fprintf(stderr, "error: stbi_load()\n");
+//		return 1;
+//	}
+//	else
+//	{
+//		printf("width: %d, height: %d, num channels: %d\n", ImageWidth, ImageHeight, ImageNChannels);
+//	}
+//
+//	GLuint myTexture;
+//	glGenTextures(1, &myTexture);
+//	glBindTexture(GL_TEXTURE_2D, myTexture);
+//
+//	// What to do when texture coordinates are outside of the texture:
+//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+//
+//	// What to do when the texture is minified/magnified:
+//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+////	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+//
+//	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, ImageWidth, ImageHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, ImageData);
+////	glGenerateMipmap(GL_TEXTURE_2D);
+//
+//	stbi_image_free(ImageData);
+//
+//	const int NumChars = 127 - ' ';
+//	textureCoordinatesOld Chars[NumChars];
+//	{
+//		float PixelWidth = 1.0f / Editor.FontImage.Width;
+//		float PixelHeight = 1.0f / Editor.FontImage.Height;
+//		for(char Char = ' '; Char < 127; ++Char)
+//		{
+//			int Index = Char - ' ';
+//			int Row = Index / Editor.FontImage.CharsInRow;
+//			int Column = Index % Editor.FontImage.CharsInRow;
+//			int CharWidthAndSome = Editor.FontImage.CharWidth + Editor.FontImage.HorizontalSpacing;
+//			int CharHeightAndSome = Editor.FontImage.CharHeight + Editor.FontImage.VerticalSpacing;
+//
+//			Chars[Index].X1 = (Editor.FontImage.LeftMargin + Column * CharWidthAndSome) * PixelWidth;
+//			Chars[Index].X2 = Chars[Index].X1 + Editor.FontImage.CharWidth * PixelWidth;
+//			Chars[Index].Y1 = ((Editor.FontImage.Height - Editor.FontImage.TopMargin) - Row * CharHeightAndSome) * PixelHeight;
+//			Chars[Index].Y2 = Chars[Index].Y1 - Editor.FontImage.CharHeight * PixelHeight;
+//		}
+//	}
 
-	GLuint myTexture;
-	glGenTextures(1, &myTexture);
-	glBindTexture(GL_TEXTURE_2D, myTexture);
-
-	// What to do when texture coordinates are outside of the texture:
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-	// What to do when the texture is minified/magnified:
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, ImageWidth, ImageHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, ImageData);
-//	glGenerateMipmap(GL_TEXTURE_2D);
-
-	stbi_image_free(ImageData);
-
-	const int NumChars = 127 - ' ';
-	textureCoordinatesOld Chars[NumChars];
-	{
-		float PixelWidth = 1.0f / Editor.FontImage.Width;
-		float PixelHeight = 1.0f / Editor.FontImage.Height;
-		for(char Char = ' '; Char < 127; ++Char)
-		{
-			int Index = Char - ' ';
-			int Row = Index / Editor.FontImage.CharsInRow;
-			int Column = Index % Editor.FontImage.CharsInRow;
-			int CharWidthAndSome = Editor.FontImage.CharWidth + Editor.FontImage.HorizontalSpacing;
-			int CharHeightAndSome = Editor.FontImage.CharHeight + Editor.FontImage.VerticalSpacing;
-
-			Chars[Index].X1 = (Editor.FontImage.LeftMargin + Column * CharWidthAndSome) * PixelWidth;
-			Chars[Index].X2 = Chars[Index].X1 + Editor.FontImage.CharWidth * PixelWidth;
-			Chars[Index].Y1 = ((Editor.FontImage.Height - Editor.FontImage.TopMargin) - Row * CharHeightAndSome) * PixelHeight;
-			Chars[Index].Y2 = Chars[Index].Y1 - Editor.FontImage.CharHeight * PixelHeight;
-		}
-	}
-
-	GLuint TextShader = CreateShader("../text-vs", "../text-fs");
-	GLuint QuadShader = CreateShader("../quad-vs", "../quad-fs");
+//	GLuint TextShader = CreateShader("../text-vs", "../text-fs");
+//	GLuint QuadShader = CreateShader("../quad-vs", "../quad-fs");
 	GLuint ColorShader = make_color_shader();
 
 	array<float> TextVertices;
@@ -658,21 +664,12 @@ int main()
 //		}
 //		FrameCount += 1;
 
-		double Time1 = glfwGetTime();
-
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		double Time2 = glfwGetTime();
-//		printf("CLEAR: %f\n", Time2 - Time1);
-
-		Time1 = glfwGetTime();
-
-		{
-			glUseProgram(ColorShader);
-			windowWH WindowSize = {Editor.WindowWidth, Editor.WindowHeight};
-			draw_editable_text(&Editor.EditableText, WindowSize);
-		}
+		glUseProgram(ColorShader);
+		windowWH WindowSize = {Editor.WindowWidth, Editor.WindowHeight};
+		draw_editable_text(&Editor.EditableText, WindowSize);
 
 //		glUseProgram(QuadShader);
 //		glUniform1f(glGetUniformLocation(QuadShader, "WindowWidth"), Editor.WindowWidth);
@@ -729,12 +726,6 @@ int main()
 //		glBufferData(GL_ARRAY_BUFFER, QuadVertices.Count * sizeof(float), QuadVertices.Data, GL_STREAM_DRAW);
 //		glDrawArrays(GL_TRIANGLES, 0, QuadVertices.Count / 6);
 
-		Time2 = glfwGetTime();
-//		printf("CURSOR: %f\n", Time2 - Time1);
-
-		
-		Time1 = glfwGetTime();
-
 //		glBindTexture(GL_TEXTURE_2D, myTexture);
 //		glUseProgram(TextShader);
 //		glUniform1f(glGetUniformLocation(TextShader, "WindowWidth"), Editor.WindowWidth);
@@ -764,128 +755,131 @@ int main()
 //			OffsH, OffsV,
 //			Editor.WindowWidth, Editor.WindowHeight);
 
-		Time2 = glfwGetTime();
-//		printf("TEXT: %f\n", Time2 - Time1);
-
-
-		// Make message-box
-		if(Editor.Message != NONE)
-		{
-			int Duration = 3.0;
-			double T = glfwGetTime();
-			double TimeTaken = T - Editor.MessageStartTime;
-			if(TimeTaken < Duration)
-			{
-				float Alpha = 1.0 - TimeTaken / Duration;
-//				float Alpha = 1.0;
-
-				textMetrics TextMetrics = {0};
-				TextMetrics.CharWidth = 2 * Editor.FontImage.CharWidth;
-				TextMetrics.CharHeight = 2 * Editor.FontImage.CharHeight;
-				TextMetrics.HSpacing = 6;
-				TextMetrics.VSpacing = 10;
-
-				const char *MessageText = Editor.MessageText;
-//				const char *MessageText = "Hello, world!";
-//				const char *MessageText = "Hello,\n world!";
-//				const char *MessageText = "1\n2\n3\n4\n5";
-//				const char *MessageText = "1\n12\n123\n1234\n12345";
-				int NumNewlines = 0;
-				int CharCount = 0;
-				int MaxCharCount = 0; // longest line
-				for(int i = 0; MessageText[i]; ++i)
-				{
-					if(MessageText[i] == '\n')
-					{
-						NumNewlines += 1;
-						if(CharCount > MaxCharCount)
-						{
-							MaxCharCount = CharCount;
-						}
-						CharCount = 0;
-						continue;
-					}
-					CharCount += 1;
-				}
-				if(MaxCharCount < CharCount) MaxCharCount = CharCount; // If no newlines
-				int TextWidth = MaxCharCount * TextMetrics.CharWidth + (MaxCharCount - 1) * (TextMetrics.HSpacing);
-				int TextHeight = NumNewlines * (TextMetrics.CharHeight + TextMetrics.VSpacing) + TextMetrics.CharHeight;
-	
-//				color MessageBoxColor = (Editor.Message == SUCCESS_MESSAGE) ? {0.0f, 0.5f, 0.0f, Alpha} : {0.5f, 0.0f, 0.0f, Alpha};
-				color MessageBoxColor, MessageTextColor;
-				color SuccessMessageColor = {0.0f, 0.5f, 0.0f, Alpha};
-				color SuccessTextColor = {0.6f, 1.0f, 0.6f, Alpha};
-				color ErrorMessageColor = {0.5f, 0.0f, 0.0f, Alpha};
-				color ErrorTextColor = {1.0f, 0.6f, 0.6f, Alpha};
-				if(Editor.Message == SUCCESS_MESSAGE)
-				{
-					MessageBoxColor = SuccessMessageColor;
-					MessageTextColor = SuccessTextColor;
-				}
-				else
-				{
-					MessageBoxColor = ErrorMessageColor;
-					MessageTextColor = ErrorTextColor;
-				}
-				int HPadding = 10;
-				int VPadding = 10;
-				int MessageBoxWidth = TextWidth + HPadding * 2;
-				int MessageBoxHeight = TextHeight + VPadding * 2;
-				int MessageBoxX = Editor.WindowWidth / 2 - MessageBoxWidth / 2;
-				int MessageBoxY = Editor.WindowHeight / 2 - MessageBoxHeight / 2;
-				QuadVertices.Count = 0;
-				MakeQuad(&QuadVertices, MessageBoxX, MessageBoxY, MessageBoxWidth, MessageBoxHeight, MessageBoxColor);
-
-				glUseProgram(QuadShader);
-				glUniform1f(glGetUniformLocation(QuadShader, "WindowWidth"), Editor.WindowWidth);
-				glUniform1f(glGetUniformLocation(QuadShader, "WindowHeight"), Editor.WindowHeight);
-				glBindVertexArray(QuadVAO);
-				glBindBuffer(GL_ARRAY_BUFFER, QuadVBO);
-				glBufferData(GL_ARRAY_BUFFER, QuadVertices.Count * sizeof(float), QuadVertices.Data, GL_STREAM_DRAW);
-				glDrawArrays(GL_TRIANGLES, 0, QuadVertices.Count / 6);
-
-//				color TextColor       = {1.0f, 1.0f, 0.0f, Alpha};
-//				color TextColor       = {0.6f, 1.0f, 0.6f, Alpha};
-				color TextColorDarker = {0.0f, 0.0f, 0.0f, Alpha};
-				glUseProgram(TextShader);
-				glUniform1f(glGetUniformLocation(TextShader, "WindowWidth"), Editor.WindowWidth);
-				glUniform1f(glGetUniformLocation(TextShader, "WindowHeight"), Editor.WindowHeight);
-				TextVertices.Count = 0;
-				int TextX = MessageBoxX + HPadding;
-				int TextY = MessageBoxY + VPadding;
-				MakeTextVertices(&TextVertices, MessageText, TextX+2, TextY+2, TextColorDarker, TextMetrics, Chars, NumChars, &Editor);
-				MakeTextVertices(&TextVertices, MessageText, TextX, TextY, MessageTextColor, TextMetrics, Chars, NumChars, &Editor);
-				glBindVertexArray(TextVAO);
-				glBindBuffer(GL_ARRAY_BUFFER, TextVBO);
-//				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, TextEBO);
-//				glBufferData(GL_ARRAY_BUFFER, TextVertices.Count * sizeof(float), TextVertices.Data, GL_STATIC_DRAW);
-				glBufferData(GL_ARRAY_BUFFER, TextVertices.Count * sizeof(float), TextVertices.Data, GL_STREAM_DRAW);
-//				glBufferData(GL_ELEMENT_ARRAY_BUFFER, TextIndices.Count * sizeof(unsigned int), TextIndices.Data, GL_STREAM_DRAW);
-//				glDrawElements(GL_TRIANGLES, TextIndices.Count, GL_UNSIGNED_INT, 0);
-				glDrawArrays(GL_TRIANGLES, 0, TextVertices.Count / 8);
-			}
-			else
-			{
-				Editor.Message = NONE;
-			}
-		}
+//		// Make message-box
+//		if(Editor.Message != NONE)
+//		{
+//			int Duration = 3.0;
+//			double T = glfwGetTime();
+//			double TimeTaken = T - Editor.MessageStartTime;
+//			if(TimeTaken < Duration)
+//			{
+//				float Alpha = 1.0 - TimeTaken / Duration;
+////				float Alpha = 1.0;
+//
+//				textMetrics TextMetrics = {0};
+//				TextMetrics.CharWidth = 2 * Editor.FontImage.CharWidth;
+//				TextMetrics.CharHeight = 2 * Editor.FontImage.CharHeight;
+//				TextMetrics.HSpacing = 6;
+//				TextMetrics.VSpacing = 10;
+//
+//				const char *MessageText = Editor.MessageText;
+////				const char *MessageText = "Hello, world!";
+////				const char *MessageText = "Hello,\n world!";
+////				const char *MessageText = "1\n2\n3\n4\n5";
+////				const char *MessageText = "1\n12\n123\n1234\n12345";
+//				int NumNewlines = 0;
+//				int CharCount = 0;
+//				int MaxCharCount = 0; // longest line
+//				for(int i = 0; MessageText[i]; ++i)
+//				{
+//					if(MessageText[i] == '\n')
+//					{
+//						NumNewlines += 1;
+//						if(CharCount > MaxCharCount)
+//						{
+//							MaxCharCount = CharCount;
+//						}
+//						CharCount = 0;
+//						continue;
+//					}
+//					CharCount += 1;
+//				}
+//				if(MaxCharCount < CharCount) MaxCharCount = CharCount; // If no newlines
+//				int TextWidth = MaxCharCount * TextMetrics.CharWidth + (MaxCharCount - 1) * (TextMetrics.HSpacing);
+//				int TextHeight = NumNewlines * (TextMetrics.CharHeight + TextMetrics.VSpacing) + TextMetrics.CharHeight;
+//	
+////				color MessageBoxColor = (Editor.Message == SUCCESS_MESSAGE) ? {0.0f, 0.5f, 0.0f, Alpha} : {0.5f, 0.0f, 0.0f, Alpha};
+//				color MessageBoxColor, MessageTextColor;
+//				color SuccessMessageColor = {0.0f, 0.5f, 0.0f, Alpha};
+//				color SuccessTextColor = {0.6f, 1.0f, 0.6f, Alpha};
+//				color ErrorMessageColor = {0.5f, 0.0f, 0.0f, Alpha};
+//				color ErrorTextColor = {1.0f, 0.6f, 0.6f, Alpha};
+//				if(Editor.Message == SUCCESS_MESSAGE)
+//				{
+//					MessageBoxColor = SuccessMessageColor;
+//					MessageTextColor = SuccessTextColor;
+//				}
+//				else
+//				{
+//					MessageBoxColor = ErrorMessageColor;
+//					MessageTextColor = ErrorTextColor;
+//				}
+//				int HPadding = 10;
+//				int VPadding = 10;
+//				int MessageBoxWidth = TextWidth + HPadding * 2;
+//				int MessageBoxHeight = TextHeight + VPadding * 2;
+//				int MessageBoxX = Editor.WindowWidth / 2 - MessageBoxWidth / 2;
+//				int MessageBoxY = Editor.WindowHeight / 2 - MessageBoxHeight / 2;
+//				QuadVertices.Count = 0;
+//				MakeQuad(&QuadVertices, MessageBoxX, MessageBoxY, MessageBoxWidth, MessageBoxHeight, MessageBoxColor);
+//
+//				glUseProgram(QuadShader);
+//				glUniform1f(glGetUniformLocation(QuadShader, "WindowWidth"), Editor.WindowWidth);
+//				glUniform1f(glGetUniformLocation(QuadShader, "WindowHeight"), Editor.WindowHeight);
+//				glBindVertexArray(QuadVAO);
+//				glBindBuffer(GL_ARRAY_BUFFER, QuadVBO);
+//				glBufferData(GL_ARRAY_BUFFER, QuadVertices.Count * sizeof(float), QuadVertices.Data, GL_STREAM_DRAW);
+//				glDrawArrays(GL_TRIANGLES, 0, QuadVertices.Count / 6);
+//
+////				color TextColor       = {1.0f, 1.0f, 0.0f, Alpha};
+////				color TextColor       = {0.6f, 1.0f, 0.6f, Alpha};
+//				color TextColorDarker = {0.0f, 0.0f, 0.0f, Alpha};
+//				glUseProgram(TextShader);
+//				glUniform1f(glGetUniformLocation(TextShader, "WindowWidth"), Editor.WindowWidth);
+//				glUniform1f(glGetUniformLocation(TextShader, "WindowHeight"), Editor.WindowHeight);
+//				TextVertices.Count = 0;
+//				int TextX = MessageBoxX + HPadding;
+//				int TextY = MessageBoxY + VPadding;
+//				MakeTextVertices(&TextVertices, MessageText, TextX+2, TextY+2, TextColorDarker, TextMetrics, Chars, NumChars, &Editor);
+//				MakeTextVertices(&TextVertices, MessageText, TextX, TextY, MessageTextColor, TextMetrics, Chars, NumChars, &Editor);
+//				glBindVertexArray(TextVAO);
+//				glBindBuffer(GL_ARRAY_BUFFER, TextVBO);
+////				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, TextEBO);
+////				glBufferData(GL_ARRAY_BUFFER, TextVertices.Count * sizeof(float), TextVertices.Data, GL_STATIC_DRAW);
+//				glBufferData(GL_ARRAY_BUFFER, TextVertices.Count * sizeof(float), TextVertices.Data, GL_STREAM_DRAW);
+////				glBufferData(GL_ELEMENT_ARRAY_BUFFER, TextIndices.Count * sizeof(unsigned int), TextIndices.Data, GL_STREAM_DRAW);
+////				glDrawElements(GL_TRIANGLES, TextIndices.Count, GL_UNSIGNED_INT, 0);
+//				glDrawArrays(GL_TRIANGLES, 0, TextVertices.Count / 8);
+//			}
+//			else
+//			{
+//				Editor.Message = NONE;
+//			}
+//		}
 
 		{
 			int X = 10;
 			int Y = 10;
-			color Color = {1.0f, 0.0f, 1.0f, 1.0f};
-			draw_text("Hello world!", X, Y, Color, Editor.EditableText.Font, Editor.WindowWidth, Editor.WindowHeight);
+			color Color = {1.0f, 0.0f, 0.0f, 1.0f};
+			draw_text("Hello world!", X, Y, Color, Editor.Font8x16px, Editor.WindowWidth, Editor.WindowHeight);
 		}
-
-		Time1 = glfwGetTime();
+		{
+			int X = 10;
+			int Y = 40;
+			color Color = {0.0f, 1.0f, 0.0f, 1.0f};
+			draw_text("Hello world!", X, Y, Color, Editor.Font16x32px, Editor.WindowWidth, Editor.WindowHeight);
+		}
+		{
+			int X = 10;
+			int Y = 70;
+			color Color = {0.0f, 0.0f, 1.0f, 1.0f};
+			draw_text("This\tis supposed to be a really long sentence...",
+				X, Y, Color, Editor.Font32x64px, Editor.WindowWidth, Editor.WindowHeight);
+		}
 
 		glfwSwapBuffers(window);
 
 		glfwPollEvents();
-
-		Time2 = glfwGetTime();
-//		printf("SWAP-POLL: %f\n", Time2 - Time1);
-//		printf("\n");
 
 		TextVertices.Count = 0;
 		QuadVertices.Count = 0;
@@ -1315,58 +1309,62 @@ GLuint CreateShader(const char *VertexShaderFile, const char *FragmentShaderFile
 //	}
 //}
 
-void InitEditor(editor *Editor, GLFWwindow *AppWindow)
+//void InitEditor(editor *Editor, GLFWwindow *AppWindow)
+void InitEditor(editor *Editor)
 {
-//	Editor->FontImage = {
-//		.Width = 128,
-//		.Height = 64,
-//		.CharsInRow = 18,
-//		.CharWidth = 5,
-//		.CharHeight = 7,
-//		.HorizontalSpacing = 2,
-//		.VerticalSpacing = 2,
-//		.LeftMargin = 1,
-//		.TopMargin = 1
-//	};
-	fontImage FontImage = {0};
-	FontImage.Width = 128;
-	FontImage.Height = 64;
-	FontImage.CharsInRow = 18;
-	FontImage.CharWidth = 5;
-	FontImage.CharHeight = 7;
-	FontImage.HorizontalSpacing = 2;
-	FontImage.VerticalSpacing = 2;
-	FontImage.LeftMargin = 1;
-	FontImage.TopMargin = 1;
-	Editor->FontImage = FontImage;
-
-//	Editor->WindowWidth = 0;
-//	Editor->WindowHeight = 0;
-//	Editor->ViewportX = 0;
-//	Editor->ViewportY = 0;
-	Editor->CharWidth = 3 * Editor->FontImage.CharWidth;
-	Editor->CharHeight = 3 * Editor->FontImage.CharHeight;
-	Editor->CharSpacing = 3;
-	Editor->LineSpacing = 10;
-
-	color TextColor = {1.0f, 1.0f, 1.0f, 1.0f};
-	Editor->TextColor = TextColor;
-	color CursorColor = {0.0f, 1.0f, 0.0f, 1.0f};
-	Editor->CursorColor = CursorColor;
-//	color CursorEffectColor = {0.0f, 0.0f, 0.0f, 1.0f};
-//	Editor->CursorEffectColor = CursorEffectColor;
-//	Editor->CursorEffectProgress = 1.0f;
+////	Editor->FontImage = {
+////		.Width = 128,
+////		.Height = 64,
+////		.CharsInRow = 18,
+////		.CharWidth = 5,
+////		.CharHeight = 7,
+////		.HorizontalSpacing = 2,
+////		.VerticalSpacing = 2,
+////		.LeftMargin = 1,
+////		.TopMargin = 1
+////	};
+//	fontImage FontImage = {0};
+//	FontImage.Width = 128;
+//	FontImage.Height = 64;
+//	FontImage.CharsInRow = 18;
+//	FontImage.CharWidth = 5;
+//	FontImage.CharHeight = 7;
+//	FontImage.HorizontalSpacing = 2;
+//	FontImage.VerticalSpacing = 2;
+//	FontImage.LeftMargin = 1;
+//	FontImage.TopMargin = 1;
+//	Editor->FontImage = FontImage;
+//
+////	Editor->WindowWidth = 0;
+////	Editor->WindowHeight = 0;
+////	Editor->ViewportX = 0;
+////	Editor->ViewportY = 0;
+//	Editor->CharWidth = 3 * Editor->FontImage.CharWidth;
+//	Editor->CharHeight = 3 * Editor->FontImage.CharHeight;
+//	Editor->CharSpacing = 3;
+//	Editor->LineSpacing = 10;
+//
+//	color TextColor = {1.0f, 1.0f, 1.0f, 1.0f};
+//	Editor->TextColor = TextColor;
+//	color CursorColor = {0.0f, 1.0f, 0.0f, 1.0f};
+//	Editor->CursorColor = CursorColor;
+////	color CursorEffectColor = {0.0f, 0.0f, 0.0f, 1.0f};
+////	Editor->CursorEffectColor = CursorEffectColor;
+////	Editor->CursorEffectProgress = 1.0f;
 
 //	ArrayInit(&Editor->EffectQuads);
 //	ArrayInit(&Editor->CharsWithEffect);
 
 	Editor->OpenFile[0] = '\0';
 
-	Editor->AppWindow = AppWindow;
+//	Editor->AppWindow = AppWindow;
 
 	Editor->Message = NONE;
 	Editor->MessageText[0] = '\0';
 	Editor->MessageStartTime = 0.0;
+
+	GLuint TextShader = make_text_shader();
+	GLuint TextShaderWithTransform = make_text_shader_with_transform();
 
 //	bitmapFontImageMetrics IM = {};
 //	IM.FilePath = "../charmap-oldschool_white.png";
@@ -1411,15 +1409,49 @@ void InitEditor(editor *Editor, GLFWwindow *AppWindow)
 	Config.CharHeight = IM.CharHeight * 2;
 	Config.CharSpacing = 0;
 	Config.LineSpacing = 0;
+	Config.TabWidth = 3;
 
-	GLuint TextShader = make_text_shader();
 	bitmapFont *TheFont = make_bitmap_font(IM, Config, TextShader);
 	if(!TheFont)
 	{
 		printf("ERROR: FAILED TO MAKE BITMAP FONT!\n");
 	}
 
+	//@ dumbass way
+	Config.CharWidth = 8;
+	Config.CharHeight = 16;
+	bitmapFont *Font8x16px = make_bitmap_font(IM, Config, TextShaderWithTransform);
+	Config.CharWidth = 16;
+	Config.CharHeight = 32;
+	bitmapFont *Font16x32px = make_bitmap_font(IM, Config, TextShaderWithTransform);
+	Config.CharWidth = 32;
+	Config.CharHeight = 64;
+	bitmapFont *Font32x64px = make_bitmap_font(IM, Config, TextShaderWithTransform);
+	Editor->Font8x16px = Font8x16px;
+	Editor->Font16x32px = Font16x32px;
+	Editor->Font32x64px = Font32x64px;
+
 	InitTextBuffer(&Editor->TextBuffer);
+
+	char *Contents;
+	const char *FilePath = "testfile.cpp";
+	if(!ReadTextFile(FilePath, &Contents))
+	{
+		fprintf(stderr, "error: failed to read a dropped file: %s\n", FilePath);
+		return;
+	}
+	printf("Read file \"%s\" successfully\n", FilePath);
+	textBuffer *Buffer = &Editor->TextBuffer;
+	int NumCharsInBuffer = Buffer->OneAfterLast;
+	Delete(Buffer, GetStart(Buffer), NumCharsInBuffer);
+	if(Insert(Buffer, Contents, GetStart(Buffer)))
+	{
+		printf("Loaded file successfully\n");
+	}
+	else
+	{
+		printf("File too large!\n");
+	}
 
 //	int X = 100;
 //	int Y = 100;
@@ -1428,9 +1460,9 @@ void InitEditor(editor *Editor, GLFWwindow *AppWindow)
 	color BackgroundColor = {0.5f, 0.5f, 0.5f, 1.0f};
 	windowXYWH PosAndSize;
 	PosAndSize.X = 100;
-	PosAndSize.Y = 100;
+	PosAndSize.Y = 300;
 	PosAndSize.W = 300;
-	PosAndSize.H = 300;
+	PosAndSize.H = 200;
 	init_editable_text(&Editor->EditableText, &Editor->TextBuffer, TheFont, BackgroundColor, PosAndSize);
 }
 

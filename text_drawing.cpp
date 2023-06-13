@@ -72,17 +72,18 @@ bitmapFont *make_bitmap_font(bitmapFontImageMetrics IM, fontConfig Config, GLuin
 
 void draw_text(const char *Text, int X, int Y, color Color, bitmapFont *Font, int WindowWidth, int WindowHeight)
 {
+	int AdvanceX = Font->Config.CharWidth + Font->Config.CharSpacing;
+	int AdvanceY = Font->Config.CharHeight + Font->Config.LineSpacing;
+	int TabWidth = Font->Config.CharWidth * 3;
+
 	int PenX = X;
 	int PenY = Y;
-
-	float PixelWidth = 2.0f / WindowWidth;
-	float PixelHeight = 2.0f / WindowHeight;
 
 	int TextLen = strlen(Text);
 //	printf("TEXT LENGTH: %d\n", TextLen);
 
-	int NumFloatsPerVertex = 8;
 	int NumVerticesPerChar = 6;
+	int NumFloatsPerVertex = 8;
 	int NumFloatsPerChar = NumVerticesPerChar * NumFloatsPerVertex;
 	int NumBytesPerChar = NumFloatsPerChar * sizeof(float);
 //	int InitiallyAllocatedMemory = (42+6) * 14356 * sizeof(float); // avoid allocating memory, this is the exact amount we need
@@ -103,41 +104,43 @@ void draw_text(const char *Text, int X, int Y, color Color, bitmapFont *Font, in
 
 	for (int i = 0; Text[i]; ++i)
 	{
-		if(Text[i] == '\n' || PenX > WindowWidth)
+//		if(Text[i] == '\n' || PenX > WindowWidth)
+		if(Text[i] == '\n')
 		{
 //			PenY += 16;
-			PenY += 10;
-			if(PenY > WindowHeight)
-			{
-				break;
-			}
+			PenY += AdvanceY;
+//			if(PenY > WindowHeight)
+//			{
+//				break;
+//			}
 			PenX = X;
 
 			continue;
 		}
 		if(Text[i] == '\t')
 		{
-			PenX += 24;
+			PenX += TabWidth;
 			continue;
 		}
 
 		int Index = Text[i] - ' ';
-		textureCoordinates TexCoord = Font->TextureCoordinates[Index];
+//		textureCoordinates TexCoord = Font->TextureCoordinates[Index];
+		textureCoordinates TexCoord;
+		float GlyphWidthTex = 1.0f / 95;
+		TexCoord.X0 = Index * GlyphWidthTex;
+		TexCoord.X1 = TexCoord.X0 + GlyphWidthTex;
+		TexCoord.Y0 = 1.0f;
+		TexCoord.Y1 = 0.0f;
 
 		int X = PenX;
 		int Y = PenY;
-		int Width = Font->Config.CharWidth;
-		int Height = Font->Config.CharHeight;
+		int W = Font->Config.CharWidth;
+		int H = Font->Config.CharHeight;
 
-		float _X = X * PixelWidth - 1.0f;
-		float _Y = 1.0f - Y * PixelHeight;
-		float _Width = Width * PixelWidth;
-		float _Height = Height * PixelHeight;
-
-		float X0 = _X;
-		float X1 = _X + _Width;
-		float Y0 = _Y;
-		float Y1 = _Y - _Height;
+		float X0 = X;
+		float X1 = X + W;
+		float Y0 = Y;
+		float Y1 = Y + H;
 //		printf("[%c] x0: %f, x1: %f, y0: %f, y1: %f\n", Text[i], X0, X1, Y0, Y1);
 //		printf("[%c] tx0: %f, tx1: %f, ty0: %f, ty1: %f\n",
 //			Text[i], Glyph.TexX0, Glyph.TexX1, Glyph.TexY0, Glyph.TexY1);
@@ -206,7 +209,7 @@ void draw_text(const char *Text, int X, int Y, color Color, bitmapFont *Font, in
 //		Ptr += NumFloatsPerChar;
 		VerticesCount += NumVerticesPerChar;
 		
-		PenX += Font->Config.CharWidth;
+		PenX += AdvanceX;
 	}
 
 //	glUnmapBuffer(GL_ARRAY_BUFFER);
@@ -216,6 +219,8 @@ void draw_text(const char *Text, int X, int Y, color Color, bitmapFont *Font, in
 
 	glBindTexture(GL_TEXTURE_2D, Font->TextureAtlas);
 	glUseProgram(Font->Shader);
+	pass_to_shader(Font->Shader, "WindowWidth", (float)WindowWidth);
+	pass_to_shader(Font->Shader, "WindowHeight", (float)WindowHeight);
 
 //	GLuint VertexArray, VertexBuffer;
 	GLuint VertexArray;
@@ -225,12 +230,15 @@ void draw_text(const char *Text, int X, int Y, color Color, bitmapFont *Font, in
 	glBindVertexArray(VertexArray);
 //	glBindBuffer(GL_ARRAY_BUFFER, VertexBuffer);
 
+	// position
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (const void *)0);
 	glEnableVertexAttribArray(0);
 
+	// texture coordinates
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (const void *) (sizeof(float) * 2));
 	glEnableVertexAttribArray(1);
 
+	// color
 	glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (const void *) (sizeof(float) * 4));
 	glEnableVertexAttribArray(2);
 
@@ -307,7 +315,7 @@ void draw_text_buffer(
 		}
 		if(Ch == '\t')
 		{
-			PenX += 24;
+			PenX += Font->Config.TabWidth * (Font->Config.CharWidth + Font->Config.CharSpacing);
 			continue;
 		}
 

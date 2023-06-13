@@ -239,6 +239,54 @@ GLuint make_text_shader()
 	return make_shader(VertexShader, FragmentShader);
 }
 
+GLuint make_text_shader_with_transform()
+{
+	const char *VertexShader = R"(
+		#version 330 core
+	
+		layout(location = 0) in vec2 Position;
+		layout(location = 1) in vec2 vTex;
+		layout(location = 2) in vec4 vColor;
+	
+		out vec2 fTex;
+		out vec4 fColor;
+
+		uniform float WindowWidth;
+		uniform float WindowHeight;
+	
+		void main()
+		{
+			gl_Position = vec4(
+				Position.x * 2.0 / WindowWidth - 1.0,
+				-(Position.y * 2.0 / WindowHeight) + 1.0,
+				0.0,
+				1.0);
+			fTex = vTex;
+			fColor = vColor;
+		}
+	)";
+
+	const char *FragmentShader = R"(
+		#version 330 core
+		
+		in vec2 fTex;
+		in vec4 fColor;
+		
+		out vec4 Color;
+		
+		uniform sampler2D s;
+		
+		void main()
+		{
+			Color = vec4(fColor.rgb, fColor.a * texture(s, fTex).r);
+//			Color = vec4(1.0, 1.0, 1.0, texture(s, fTex).r);
+//			Color = vec4(texture(s, fTex).r, 1.0, 1.0, 1.0);
+		}
+	)";
+
+	return make_shader(VertexShader, FragmentShader);
+}
+
 GLuint make_text_shader_geometry_style()
 {
 	const char *VertexShader = R"(

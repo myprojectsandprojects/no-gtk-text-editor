@@ -17,6 +17,12 @@ struct windowXYWH
 	int X, Y, W, H;
 };
 
+//// would like to have this (in window coordinates) and never think about things in terms of opengl coordinates
+//struct box
+//{
+//	int X, Y, W, H;
+//};
+
 struct windowWH
 {
 	int W, H;
@@ -33,6 +39,7 @@ void make_quad(array<float> *Vertices, openglXYWH PosAndSize, color Color); // p
 //todo: void make_quad(int X, int Y, int W, int H, color Color, editor *Editor); // makes vertices, also draws
 void make_quad(array<float> *Vertices, int X, int Y, int W, int H, color Color, windowWH WindowSize); // makes vertices
 void draw_2d_with_color(array<float> *Vertices);
+void draw_XYRGBA(array<float> *Vertices);
 
 #endif
 

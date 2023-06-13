@@ -6,8 +6,8 @@
 
 void InitTextBuffer(textBuffer *Buffer)
 {
-//	Buffer->Size = 3;
-	Buffer->Size = 1024;	
+	Buffer->Size = 3;
+//	Buffer->Size = 1024;	
 	Buffer->Data = (char *) malloc(Buffer->Size);
 	assert(Buffer->Data);
 	Buffer->OneAfterLast = 0;
@@ -121,6 +121,20 @@ bool MoveBackward(textBuffer *Buffer, int *Iter)
 //
 //	Buffer->Cursor = At;
 //}
+
+int GetCharsIntoLine(textBuffer *Buffer, int At, int TabWidth)
+{
+	int NumCharsInto = 0;
+	for(int i = At - 1; i >= 0; --i)
+	{
+		if(Buffer->Data[i] == '\n')
+		{
+			break;
+		}
+		NumCharsInto += (Buffer->Data[i] == '\t') ? TabWidth : 1;
+	}
+	return NumCharsInto;
+}
 
 int GetCharsIntoLine(textBuffer *Buffer, int At)
 {
