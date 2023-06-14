@@ -4,6 +4,7 @@
 #include <glad/glad.h>
 
 #include "lib.h"
+#include "opengl.h"
 
 // OpenGL coordinates and dimensions
 struct openglXYWH
@@ -35,11 +36,11 @@ struct color
 	float R, G, B, A;
 };
 
-void make_quad(array<float> *Vertices, openglXYWH PosAndSize, color Color); // pos/size opengl coordinates
-//todo: void make_quad(int X, int Y, int W, int H, color Color, editor *Editor); // makes vertices, also draws
-void make_quad(array<float> *Vertices, int X, int Y, int W, int H, color Color, windowWH WindowSize); // makes vertices
-void draw_2d_with_color(array<float> *Vertices);
-void draw_XYRGBA(array<float> *Vertices);
+//void make_quad(array<float> *Vertices, openglXYWH PosAndSize, color Color); // pos/size opengl coordinates
+//void make_quad(array<float> *Vertices, int X, int Y, int W, int H, color Color, windowWH WindowSize); // makes vertices
+//void draw_2d_with_color(array<float> *Vertices);
+//void draw_XYRGBA(array<float> *Vertices);
+void make_quad(int X, int Y, int W, int H, color Color, GLuint Shader, int WindowWidth, int WindowHeight);
 
 #endif
 

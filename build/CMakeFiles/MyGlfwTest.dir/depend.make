@@ -10,6 +10,7 @@ CMakeFiles/MyGlfwTest.dir/drawing.cpp.o: ../glad/include/glad/glad.h
 CMakeFiles/MyGlfwTest.dir/drawing.cpp.o: ../drawing.cpp
 CMakeFiles/MyGlfwTest.dir/drawing.cpp.o: ../drawing.hpp
 CMakeFiles/MyGlfwTest.dir/drawing.cpp.o: ../lib.h
+CMakeFiles/MyGlfwTest.dir/drawing.cpp.o: ../opengl.h
 
 CMakeFiles/MyGlfwTest.dir/lib.cpp.o: ../lib.cpp
 CMakeFiles/MyGlfwTest.dir/lib.cpp.o: ../lib.h

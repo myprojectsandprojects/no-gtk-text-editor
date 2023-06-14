@@ -75,6 +75,8 @@ glad/glad.h
 -
 lib.h
 /home/eero/all/no-gtk-text-editor/glfw/text-editor/lib.h
+opengl.h
+/home/eero/all/no-gtk-text-editor/glfw/text-editor/opengl.h
 
 /home/eero/all/no-gtk-text-editor/glfw/text-editor/lib.cpp
 lib.h

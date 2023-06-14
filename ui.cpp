@@ -15,19 +15,20 @@ void init_editable_text(editableText *EditableText, textBuffer *TextBuffer, bitm
 	EditableText->Font = Font;
 }
 
-void draw_editable_text(editableText *EditableText, windowWH WindowSize)
+void draw_editable_text(editableText *EditableText, windowWH WindowSize, GLuint ColorShader)
 {
 	int X = EditableText->PosAndSize.X;
 	int Y = EditableText->PosAndSize.Y;
 	int W = EditableText->PosAndSize.W;
 	int H = EditableText->PosAndSize.H;
 
-	array<float> Vertices; ArrayInit(&Vertices);
+//	array<float> Vertices; ArrayInit(&Vertices);
 	//@ Vertices.Count is misleading.
 
 	// MAKE BACKGROUND
-	openglXYWH PosAndSize = transform_window_to_opengl(EditableText->PosAndSize, WindowSize);
-	make_quad(&Vertices, PosAndSize, EditableText->BackgroundColor);
+//	openglXYWH PosAndSize = transform_window_to_opengl(EditableText->PosAndSize, WindowSize);
+//	make_quad(&Vertices, PosAndSize, EditableText->BackgroundColor);
+	make_quad(X, Y, W, H, EditableText->BackgroundColor, ColorShader, WindowSize.W, WindowSize.H);
 
 	// MAKE CURSOR
 	int CharWidth = EditableText->Font->Config.CharWidth;
@@ -52,15 +53,16 @@ void draw_editable_text(editableText *EditableText, windowWH WindowSize)
 		int CursorY = Y + CursorTBY - EditableText->OffsY;
 		color CursorColor = {1.0f, 0.0f, 0.0f, 1.0f};
 
-		windowXYWH WindowCoord;
-		WindowCoord.X = CursorX;
-		WindowCoord.Y = CursorY;
-		WindowCoord.W = CursorWidth;
-		WindowCoord.H = CursorHeight;
-		openglXYWH OpenglCoord = transform_window_to_opengl(WindowCoord, WindowSize);
-		make_quad(&Vertices, OpenglCoord, CursorColor);
+//		windowXYWH WindowCoord;
+//		WindowCoord.X = CursorX;
+//		WindowCoord.Y = CursorY;
+//		WindowCoord.W = CursorWidth;
+//		WindowCoord.H = CursorHeight;
+//		openglXYWH OpenglCoord = transform_window_to_opengl(WindowCoord, WindowSize);
+//		make_quad(&Vertices, OpenglCoord, CursorColor);
+		make_quad(CursorX, CursorY, CursorWidth, CursorHeight, CursorColor, ColorShader, WindowSize.W, WindowSize.H);
 	}
-	draw_2d_with_color(&Vertices);
+//	draw_2d_with_color(&Vertices);
 
 
 	// MAKE TEXT

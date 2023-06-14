@@ -11,6 +11,7 @@ CMakeFiles/MyGlfwTest.dir/drawing.cpp.o
  /home/eero/all/no-gtk-text-editor/glfw/text-editor/drawing.cpp
  /home/eero/all/no-gtk-text-editor/glfw/text-editor/drawing.hpp
  /home/eero/all/no-gtk-text-editor/glfw/text-editor/lib.h
+ /home/eero/all/no-gtk-text-editor/glfw/text-editor/opengl.h
 CMakeFiles/MyGlfwTest.dir/lib.cpp.o
  /home/eero/all/no-gtk-text-editor/glfw/text-editor/lib.cpp
  /home/eero/all/no-gtk-text-editor/glfw/text-editor/lib.h

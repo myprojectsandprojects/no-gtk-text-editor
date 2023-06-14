@@ -101,6 +101,8 @@ struct editor
 	bitmapFont *Font8x16px;
 	bitmapFont *Font16x32px;
 	bitmapFont *Font32x64px;
+
+	GLuint ColorShader;
 } Editor;
 
 //void InitEditor(editor *Editor, GLFWwindow *AppWindow);
@@ -485,6 +487,9 @@ int main()
 //	glfwSwapInterval(0); // VSync off
 	gladLoadGL();
 
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 //	InitEditor(&Editor, window);
 	InitEditor(&Editor);
 
@@ -496,9 +501,6 @@ int main()
 	glfwSetCharCallback(window, OnCharEvent);
 	glfwSetKeyCallback(window, OnKeyEvent);
 //	glfwSetDropCallback(window, OnFileDrop);
-
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 //	glViewport(0, 0, WindowWidth, WindowHeight); // This happens by default
 
@@ -570,7 +572,6 @@ int main()
 
 //	GLuint TextShader = CreateShader("../text-vs", "../text-fs");
 //	GLuint QuadShader = CreateShader("../quad-vs", "../quad-fs");
-	GLuint ColorShader = make_color_shader();
 
 	array<float> TextVertices;
 	ArrayInit(&TextVertices);
@@ -667,9 +668,37 @@ int main()
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		glUseProgram(ColorShader);
+		{
+			int X = 10;
+			int Y = 10;
+			int W = 300;
+			int H = 200;
+			color Color = {0.2f, 0.2f, 0.2f, 1.0f};
+			make_quad(X, Y, W, H, Color, Editor.ColorShader, Editor.WindowWidth, Editor.WindowHeight);
+		}
+
+		{
+			int X = 10;
+			int Y = 10;
+			color Color = {1.0f, 0.0f, 0.0f, 1.0f};
+			draw_text("Hello world!", X, Y, Color, Editor.Font8x16px, Editor.WindowWidth, Editor.WindowHeight);
+		}
+		{
+			int X = 10;
+			int Y = 40;
+			color Color = {0.0f, 1.0f, 0.0f, 1.0f};
+			draw_text("Hello world!", X, Y, Color, Editor.Font16x32px, Editor.WindowWidth, Editor.WindowHeight);
+		}
+		{
+			int X = 10;
+			int Y = 50;
+			color Color = {0.0f, 0.0f, 1.0f, 0.5f};
+			draw_text("This\tis supposed to be a really long sentence...",
+				X, Y, Color, Editor.Font32x64px, Editor.WindowWidth, Editor.WindowHeight);
+		}
+
 		windowWH WindowSize = {Editor.WindowWidth, Editor.WindowHeight};
-		draw_editable_text(&Editor.EditableText, WindowSize);
+		draw_editable_text(&Editor.EditableText, WindowSize, Editor.ColorShader);
 
 //		glUseProgram(QuadShader);
 //		glUniform1f(glGetUniformLocation(QuadShader, "WindowWidth"), Editor.WindowWidth);
@@ -856,26 +885,6 @@ int main()
 //				Editor.Message = NONE;
 //			}
 //		}
-
-		{
-			int X = 10;
-			int Y = 10;
-			color Color = {1.0f, 0.0f, 0.0f, 1.0f};
-			draw_text("Hello world!", X, Y, Color, Editor.Font8x16px, Editor.WindowWidth, Editor.WindowHeight);
-		}
-		{
-			int X = 10;
-			int Y = 40;
-			color Color = {0.0f, 1.0f, 0.0f, 1.0f};
-			draw_text("Hello world!", X, Y, Color, Editor.Font16x32px, Editor.WindowWidth, Editor.WindowHeight);
-		}
-		{
-			int X = 10;
-			int Y = 70;
-			color Color = {0.0f, 0.0f, 1.0f, 1.0f};
-			draw_text("This\tis supposed to be a really long sentence...",
-				X, Y, Color, Editor.Font32x64px, Editor.WindowWidth, Editor.WindowHeight);
-		}
 
 		glfwSwapBuffers(window);
 
@@ -1362,6 +1371,9 @@ void InitEditor(editor *Editor)
 	Editor->Message = NONE;
 	Editor->MessageText[0] = '\0';
 	Editor->MessageStartTime = 0.0;
+
+//	Editor->ColorShader = make_color_shader();
+	Editor->ColorShader = make_color_shader_with_transform();
 
 	GLuint TextShader = make_text_shader();
 	GLuint TextShaderWithTransform = make_text_shader_with_transform();

@@ -99,6 +99,44 @@ GLuint make_color_shader()
 	return make_shader(VertexShader, FragmentShader);
 }
 
+GLuint make_color_shader_with_transform()
+{
+	const char *VertexShader = R"(
+		#version 330 core
+		
+		layout(location = 0) in vec2 Position;
+		layout(location = 1) in vec4 vColor;
+		
+		out vec4 fColor;
+
+		uniform float WindowWidth;
+		uniform float WindowHeight;
+		
+		void main()
+		{
+			gl_Position = vec4(
+				Position.x * 2.0 / WindowWidth - 1.0,
+				-(Position.y * 2.0 / WindowHeight) + 1.0,
+				0.0,
+				1.0);
+			fColor = vColor;
+		}
+	)";
+	const char *FragmentShader = R"(
+		#version 330 core
+		
+		in vec4 fColor;
+		out vec4 Color;
+		
+		void main()
+		{
+			Color = fColor;
+//			Color = vec4(0.0, 0.0, 1.0, 1.0);
+		}
+	)";
+	return make_shader(VertexShader, FragmentShader);
+}
+
 GLuint make_texture_shader()
 {
 	const char *VertexShader = R"(
