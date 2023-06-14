@@ -15,7 +15,7 @@ void init_editable_text(editableText *EditableText, textBuffer *TextBuffer, bitm
 	EditableText->Font = Font;
 }
 
-void draw_editable_text(editableText *EditableText, windowWH WindowSize, GLuint ColorShader)
+void draw_editable_text(editableText *EditableText, windowWH WindowSize)
 {
 	int X = EditableText->PosAndSize.X;
 	int Y = EditableText->PosAndSize.Y;
@@ -28,7 +28,9 @@ void draw_editable_text(editableText *EditableText, windowWH WindowSize, GLuint 
 	// MAKE BACKGROUND
 //	openglXYWH PosAndSize = transform_window_to_opengl(EditableText->PosAndSize, WindowSize);
 //	make_quad(&Vertices, PosAndSize, EditableText->BackgroundColor);
-	make_quad(X, Y, W, H, EditableText->BackgroundColor, ColorShader, WindowSize.W, WindowSize.H);
+
+//	make_quad(X, Y, W, H, EditableText->BackgroundColor, WindowSize.W, WindowSize.H);
+	make_quad(X, Y, W, H, EditableText->BackgroundColor);
 
 	// MAKE CURSOR
 	int CharWidth = EditableText->Font->Config.CharWidth;
@@ -60,7 +62,9 @@ void draw_editable_text(editableText *EditableText, windowWH WindowSize, GLuint 
 //		WindowCoord.H = CursorHeight;
 //		openglXYWH OpenglCoord = transform_window_to_opengl(WindowCoord, WindowSize);
 //		make_quad(&Vertices, OpenglCoord, CursorColor);
-		make_quad(CursorX, CursorY, CursorWidth, CursorHeight, CursorColor, ColorShader, WindowSize.W, WindowSize.H);
+
+//		make_quad(CursorX, CursorY, CursorWidth, CursorHeight, CursorColor, WindowSize.W, WindowSize.H);
+		make_quad(CursorX, CursorY, CursorWidth, CursorHeight, CursorColor);
 	}
 //	draw_2d_with_color(&Vertices);
 

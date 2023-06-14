@@ -20,6 +20,8 @@
 #include "text_drawing.hpp"
 #include "ui.hpp"
 
+extern shaders Shaders;
+
 const int MAX_FILE_PATH = 1000; //@ very random
 
 enum messageType
@@ -102,7 +104,7 @@ struct editor
 	bitmapFont *Font16x32px;
 	bitmapFont *Font32x64px;
 
-	GLuint ColorShader;
+//	GLuint ColorShader;
 } Editor;
 
 //void InitEditor(editor *Editor, GLFWwindow *AppWindow);
@@ -130,6 +132,10 @@ void OnWindowResized(GLFWwindow *Window, int Width, int Height)
 	glViewport(0, 0, Width, Height);
 	Editor.WindowWidth = Width;
 	Editor.WindowHeight = Height;
+
+	// Shaders is in drawing.cpp
+	Shaders.WindowWidth = Width;
+	Shaders.WindowHeight = Height;
 }
 
 void OnCharEvent(GLFWwindow *Window, unsigned int Codepoint)
@@ -490,12 +496,16 @@ int main()
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-//	InitEditor(&Editor, window);
-	InitEditor(&Editor);
-
 	// Dimensions given by glfwGetWindowSize() might not be in pixels
 	glfwGetFramebufferSize(window, &Editor.WindowWidth, &Editor.WindowHeight);
 	printf("window width: %d, window height: %d\n", Editor.WindowWidth, Editor.WindowHeight);
+
+	init_shaders(Editor.WindowWidth, Editor.WindowHeight);
+//	init_shaders();
+	printf("??? %d, %d\n", Shaders.WindowWidth, Shaders.WindowHeight);
+
+//	InitEditor(&Editor, window);
+	InitEditor(&Editor);
 
 	glfwSetFramebufferSizeCallback(window, OnWindowResized);
 	glfwSetCharCallback(window, OnCharEvent);
@@ -674,7 +684,8 @@ int main()
 			int W = 300;
 			int H = 200;
 			color Color = {0.2f, 0.2f, 0.2f, 1.0f};
-			make_quad(X, Y, W, H, Color, Editor.ColorShader, Editor.WindowWidth, Editor.WindowHeight);
+//			make_quad(X, Y, W, H, Color, Editor.WindowWidth, Editor.WindowHeight);
+			make_quad(X, Y, W, H, Color);
 		}
 
 		{
@@ -698,7 +709,7 @@ int main()
 		}
 
 		windowWH WindowSize = {Editor.WindowWidth, Editor.WindowHeight};
-		draw_editable_text(&Editor.EditableText, WindowSize, Editor.ColorShader);
+		draw_editable_text(&Editor.EditableText, WindowSize);
 
 //		glUseProgram(QuadShader);
 //		glUniform1f(glGetUniformLocation(QuadShader, "WindowWidth"), Editor.WindowWidth);
@@ -1372,8 +1383,8 @@ void InitEditor(editor *Editor)
 	Editor->MessageText[0] = '\0';
 	Editor->MessageStartTime = 0.0;
 
-//	Editor->ColorShader = make_color_shader();
-	Editor->ColorShader = make_color_shader_with_transform();
+////	Editor->ColorShader = make_color_shader();
+//	Editor->ColorShader = make_color_shader_with_transform();
 
 	GLuint TextShader = make_text_shader();
 	GLuint TextShaderWithTransform = make_text_shader_with_transform();

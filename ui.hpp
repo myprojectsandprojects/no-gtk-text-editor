@@ -23,7 +23,7 @@ struct editableText
 };
 
 void init_editable_text(editableText *Editable, textBuffer *TextBuffer, bitmapFont *Font, color BackgroundColor, windowXYWH PosAndSize);
-void draw_editable_text(editableText *EditableText, windowWH WindowSize, GLuint QuadShader);
+void draw_editable_text(editableText *EditableText, windowWH WindowSize);
 
 #endif
 

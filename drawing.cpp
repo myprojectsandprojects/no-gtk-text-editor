@@ -2,19 +2,31 @@
 
 #include <assert.h>
 
-openglXYWH transform_window_to_opengl(windowXYWH WindowCoord, windowWH WindowSize)
+//static shaders Shaders;
+shaders Shaders;
+
+void init_shaders(int WindowWidth, int WindowHeight)
+//void init_shaders()
 {
-	float PixelWidth = 2.0f / WindowSize.W;
-	float PixelHeight = 2.0f / WindowSize.H;
-
-	openglXYWH openglCoord;
-	openglCoord.X = WindowCoord.X * PixelWidth - 1.0f;
-	openglCoord.Y = 1.0f - WindowCoord.Y * PixelHeight;
-	openglCoord.W = WindowCoord.W * PixelWidth;
-	openglCoord.H = WindowCoord.H * PixelHeight;
-
-	return openglCoord;
+	Shaders.WindowWidth = WindowWidth;
+	Shaders.WindowHeight = WindowHeight;
+	Shaders.ColorShader = make_color_shader_with_transform();
+//	Shaders.TextShader = ;
 }
+
+//openglXYWH transform_window_to_opengl(windowXYWH WindowCoord, windowWH WindowSize)
+//{
+//	float PixelWidth = 2.0f / WindowSize.W;
+//	float PixelHeight = 2.0f / WindowSize.H;
+//
+//	openglXYWH openglCoord;
+//	openglCoord.X = WindowCoord.X * PixelWidth - 1.0f;
+//	openglCoord.Y = 1.0f - WindowCoord.Y * PixelHeight;
+//	openglCoord.W = WindowCoord.W * PixelWidth;
+//	openglCoord.H = WindowCoord.H * PixelHeight;
+//
+//	return openglCoord;
+//}
 
 //void make_quad(array<float> *Vertices, openglXYWH PosAndSize, color Color)
 //{
@@ -90,7 +102,8 @@ openglXYWH transform_window_to_opengl(windowXYWH WindowCoord, windowWH WindowSiz
 //	glDeleteVertexArrays(1, &VAO);
 //}
 
-void make_quad(int X, int Y, int W, int H, color Color, GLuint Shader, int WindowWidth, int WindowHeight)
+//void make_quad(int X, int Y, int W, int H, color Color, int WindowWidth, int WindowHeight)
+void make_quad(int X, int Y, int W, int H, color Color)
 {
 	float X0 = X;
 	float X1 = X + W;
@@ -107,9 +120,9 @@ void make_quad(int X, int Y, int W, int H, color Color, GLuint Shader, int Windo
 		/* upper-left*/  X0, Y0, Color.R, Color.G, Color.B, Color.A,
 	};
 
-	glUseProgram(Shader);
-	pass_to_shader(Shader, "WindowWidth", (float)WindowWidth);
-	pass_to_shader(Shader, "WindowHeight", (float)WindowHeight);
+	glUseProgram(Shaders.ColorShader);
+	pass_to_shader(Shaders.ColorShader, "WindowWidth", (float)Shaders.WindowWidth);
+	pass_to_shader(Shaders.ColorShader, "WindowHeight", (float)Shaders.WindowHeight);
 
 	GLuint VAO;
 	glGenVertexArrays(1, &VAO);
