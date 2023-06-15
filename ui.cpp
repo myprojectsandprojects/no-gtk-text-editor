@@ -1,12 +1,12 @@
 #include "ui.hpp"
 
-void init_editable_text(editableText *EditableText, textBuffer *TextBuffer, bitmapFont *Font, color BackgroundColor, windowXYWH PosAndSize)
+void init_editable_text(editableText *EditableText, textBuffer *TextBuffer, bitmapFont *Font, color BackgroundColor, rect PosAndSize)
 {
-//	EditableText->X = X;
-//	EditableText->Y = Y;
-//	EditableText->Width = Width;
-//	EditableText->Height = Height;
-	EditableText->PosAndSize = PosAndSize;
+	EditableText->X = PosAndSize.X;
+	EditableText->Y = PosAndSize.Y;
+	EditableText->W = PosAndSize.W;
+	EditableText->H = PosAndSize.H;
+//	EditableText->PosAndSize = PosAndSize;
 
 	EditableText->Cursor = GetStart(TextBuffer);
 	EditableText->TextBuffer = TextBuffer;
@@ -15,71 +15,53 @@ void init_editable_text(editableText *EditableText, textBuffer *TextBuffer, bitm
 	EditableText->Font = Font;
 }
 
-void draw_editable_text(editableText *EditableText, windowWH WindowSize)
+void draw_editable_text(editableText *EditableText, shaders *Shaders)
 {
-	int X = EditableText->PosAndSize.X;
-	int Y = EditableText->PosAndSize.Y;
-	int W = EditableText->PosAndSize.W;
-	int H = EditableText->PosAndSize.H;
+	// BACKGROUND
+	int X = EditableText->X;
+	int Y = EditableText->Y;
+	int W = EditableText->W;
+	int H = EditableText->H;
 
-//	array<float> Vertices; ArrayInit(&Vertices);
-	//@ Vertices.Count is misleading.
-
-	// MAKE BACKGROUND
-//	openglXYWH PosAndSize = transform_window_to_opengl(EditableText->PosAndSize, WindowSize);
-//	make_quad(&Vertices, PosAndSize, EditableText->BackgroundColor);
-
-//	make_quad(X, Y, W, H, EditableText->BackgroundColor, WindowSize.W, WindowSize.H);
 	make_quad(X, Y, W, H, EditableText->BackgroundColor);
 
-	// MAKE CURSOR
+	// CURSOR
 	int CharWidth = EditableText->Font->Config.CharWidth;
 	int CharHeight = EditableText->Font->Config.CharHeight;
 	int LineSpacing = EditableText->Font->Config.LineSpacing;
 	int CharSpacing = EditableText->Font->Config.CharSpacing;
 	int TabWidth = EditableText->Font->Config.TabWidth;
 
-	int CursorWidth = CharWidth;
-	int CursorHeight = CharHeight;
-
-	int Cursor = EditableText->Cursor;
 	textBuffer *Buffer = EditableText->TextBuffer;
+	int Cursor = EditableText->Cursor;
 	int CursorTBX = GetCharsIntoLine(Buffer, Cursor, TabWidth) * (CharWidth + CharSpacing);
 	int CursorTBY = GetLinesIntoBuffer(Buffer, Cursor) * (CharHeight + LineSpacing);
 
-	if(CursorTBX >= EditableText->OffsX && CursorTBX < EditableText->OffsX + EditableText->PosAndSize.W
-	&& CursorTBY >= EditableText->OffsY && CursorTBY < EditableText->OffsY + EditableText->PosAndSize.H)
+	if(CursorTBX >= EditableText->OffsX && CursorTBX < EditableText->OffsX + W
+	&& CursorTBY >= EditableText->OffsY && CursorTBY < EditableText->OffsY + H)
 	{
 		// Cursor visible
 		int CursorX = X + CursorTBX - EditableText->OffsX;
 		int CursorY = Y + CursorTBY - EditableText->OffsY;
+		int CursorW = CharWidth;
+		int CursorH = CharHeight;
 		color CursorColor = {1.0f, 0.0f, 0.0f, 1.0f};
-
-//		windowXYWH WindowCoord;
-//		WindowCoord.X = CursorX;
-//		WindowCoord.Y = CursorY;
-//		WindowCoord.W = CursorWidth;
-//		WindowCoord.H = CursorHeight;
-//		openglXYWH OpenglCoord = transform_window_to_opengl(WindowCoord, WindowSize);
-//		make_quad(&Vertices, OpenglCoord, CursorColor);
-
-//		make_quad(CursorX, CursorY, CursorWidth, CursorHeight, CursorColor, WindowSize.W, WindowSize.H);
-		make_quad(CursorX, CursorY, CursorWidth, CursorHeight, CursorColor);
+		make_quad(CursorX, CursorY, CursorW, CursorH, CursorColor);
 	}
 //	draw_2d_with_color(&Vertices);
 
 
-	// MAKE TEXT
+	// TEXT
 	draw_text_buffer(EditableText->TextBuffer, EditableText->Font,
-		X, Y, W, H, EditableText->OffsX, EditableText->OffsY, WindowSize.W, WindowSize.H);
+		X, Y, W, H, EditableText->OffsX, EditableText->OffsY, Shaders);
 }
 
 void AdjustViewportIfNotVisible(editableText *Editable, int Iter)
 {
 //	int X = Editable->PosAndSize.X;
 //	int Y = Editable->PosAndSize.Y;
-	int W = Editable->PosAndSize.W;
-	int H = Editable->PosAndSize.H;
+	int W = Editable->W;
+	int H = Editable->H;
 	int Col = GetCharsIntoLine(Editable->TextBuffer, Iter, Editable->Font->Config.TabWidth);
 	int Row = GetLinesIntoBuffer(Editable->TextBuffer, Iter);
 
@@ -90,6 +72,7 @@ void AdjustViewportIfNotVisible(editableText *Editable, int Iter)
 	// Iter's position relative to the editable text widget
 	CursorX1 = CursorX1 - Editable->OffsX;
 	CursorY1 = CursorY1 - Editable->OffsY;
+
 	int CursorX2 = CursorX1 + Editable->Font->Config.CharWidth;
 	int CursorY2 = CursorY1 + Editable->Font->Config.CharHeight;
 

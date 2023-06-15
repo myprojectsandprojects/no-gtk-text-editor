@@ -9,8 +9,8 @@
 // multiliner
 struct editableText
 {
-//	int X, Y, Width, Height;
-	windowXYWH PosAndSize;
+	int X, Y, W, H;
+//	rect PosAndSize;
 
 	textBuffer *TextBuffer;
 	int Cursor;
@@ -22,8 +22,8 @@ struct editableText
 	bitmapFont *Font;
 };
 
-void init_editable_text(editableText *Editable, textBuffer *TextBuffer, bitmapFont *Font, color BackgroundColor, windowXYWH PosAndSize);
-void draw_editable_text(editableText *EditableText, windowWH WindowSize);
+void init_editable_text(editableText *Editable, textBuffer *TextBuffer, bitmapFont *Font, color BackgroundColor, rect PosAndSize);
+void draw_editable_text(editableText *EditableText, shaders *Shaders);
 
 #endif
 

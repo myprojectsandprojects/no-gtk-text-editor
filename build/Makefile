@@ -314,33 +314,6 @@ main.cpp.s:
 	$(MAKE) -f CMakeFiles/MyGlfwTest.dir/build.make CMakeFiles/MyGlfwTest.dir/main.cpp.s
 .PHONY : main.cpp.s
 
-opengl.o: opengl.cpp.o
-
-.PHONY : opengl.o
-
-# target to build an object file
-opengl.cpp.o:
-	$(MAKE) -f CMakeFiles/MyGlfwTest.dir/build.make CMakeFiles/MyGlfwTest.dir/opengl.cpp.o
-.PHONY : opengl.cpp.o
-
-opengl.i: opengl.cpp.i
-
-.PHONY : opengl.i
-
-# target to preprocess a source file
-opengl.cpp.i:
-	$(MAKE) -f CMakeFiles/MyGlfwTest.dir/build.make CMakeFiles/MyGlfwTest.dir/opengl.cpp.i
-.PHONY : opengl.cpp.i
-
-opengl.s: opengl.cpp.s
-
-.PHONY : opengl.s
-
-# target to generate assembly for a file
-opengl.cpp.s:
-	$(MAKE) -f CMakeFiles/MyGlfwTest.dir/build.make CMakeFiles/MyGlfwTest.dir/opengl.cpp.s
-.PHONY : opengl.cpp.s
-
 text_buffer.o: text_buffer.cpp.o
 
 .PHONY : text_buffer.o
@@ -450,9 +423,6 @@ help:
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"
-	@echo "... opengl.o"
-	@echo "... opengl.i"
-	@echo "... opengl.s"
 	@echo "... text_buffer.o"
 	@echo "... text_buffer.i"
 	@echo "... text_buffer.s"

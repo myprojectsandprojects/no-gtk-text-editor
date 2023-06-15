@@ -5,7 +5,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
-bitmapFont *make_bitmap_font(bitmapFontImageMetrics IM, fontConfig Config, GLuint Shader)
+bitmapFont *make_bitmap_font(bitmapFontImageMetrics IM, fontConfig Config)
 {
 	int ImageWidth, ImageHeight, ImageNChannels;
 	stbi_set_flip_vertically_on_load(1);
@@ -61,8 +61,6 @@ bitmapFont *make_bitmap_font(bitmapFontImageMetrics IM, fontConfig Config, GLuin
 	}
 
 	bitmapFont *Font = (bitmapFont *)malloc(sizeof(bitmapFont));
-//	Font->Shader = make_text_shader();
-	Font->Shader = Shader;
 	Font->TextureAtlas = myTexture;
 	Font->TextureCoordinates = Chars;
 	Font->Config = Config;
@@ -70,11 +68,11 @@ bitmapFont *make_bitmap_font(bitmapFontImageMetrics IM, fontConfig Config, GLuin
 	return Font;
 }
 
-void draw_text(const char *Text, int X, int Y, color Color, bitmapFont *Font, int WindowWidth, int WindowHeight)
+void draw_text(const char *Text, int X, int Y, color Color, bitmapFont *Font, shaders *Shaders)
 {
 	int AdvanceX = Font->Config.CharWidth + Font->Config.CharSpacing;
 	int AdvanceY = Font->Config.CharHeight + Font->Config.LineSpacing;
-	int TabWidth = Font->Config.CharWidth * 3;
+	int TabWidth = Font->Config.CharWidth * 3; //@
 
 	int PenX = X;
 	int PenY = Y;
@@ -218,9 +216,9 @@ void draw_text(const char *Text, int X, int Y, color Color, bitmapFont *Font, in
 	// Do OpenGL rendering stuff.
 
 	glBindTexture(GL_TEXTURE_2D, Font->TextureAtlas);
-	glUseProgram(Font->Shader);
-	pass_to_shader(Font->Shader, "WindowWidth", (float)WindowWidth);
-	pass_to_shader(Font->Shader, "WindowHeight", (float)WindowHeight);
+	glUseProgram(Shaders->TextShader);
+	pass_to_shader(Shaders->TextShader, "WindowWidth", (float)Shaders->WindowWidth);
+	pass_to_shader(Shaders->TextShader, "WindowHeight", (float)Shaders->WindowHeight);
 
 //	GLuint VertexArray, VertexBuffer;
 	GLuint VertexArray;
@@ -262,8 +260,8 @@ void draw_text_buffer(
 	textBuffer *TextBuffer,
 	bitmapFont *Font,
 	int X, int Y, int W, int H,
-	int OffsH, int OffsV,
-	int WindowWidth, int WindowHeight)
+	int OffsX, int OffsY,
+	shaders *Shaders)
 {
 	color Color = {1.0f, 1.0f, 1.0f, 1.0f};
 
@@ -272,11 +270,11 @@ void draw_text_buffer(
 	// land inside the box.
 	// So this puts our box's top left corner at 0,0
 	// Then we render char if: 0 < PenX && PenX < W && 0 < PenY && PenY < H
-	int PenX = -OffsH;
-	int PenY = -OffsV;
+	int PenX = -OffsX;
+	int PenY = -OffsY;
 
-	float PixelWidth = 2.0f / WindowWidth;
-	float PixelHeight = 2.0f / WindowHeight;
+//	float PixelWidth = 2.0f / WindowWidth;
+//	float PixelHeight = 2.0f / WindowHeight;
 
 	int NumFloatsPerVertex = 8;
 	int NumVerticesPerChar = 6;
@@ -304,12 +302,12 @@ void draw_text_buffer(
 		if(Ch == '\n'/* || PenX > WindowWidth*/)
 		{
 //			PenY += 16;
-			PenY += Font->Config.CharHeight;
+			PenY += Font->Config.CharHeight + Font->Config.LineSpacing;
 //			if(PenY > WindowHeight)
 //			{
 //				break;
 //			}
-			PenX = -OffsH;
+			PenX = -OffsX;
 
 			continue;
 		}
@@ -324,20 +322,20 @@ void draw_text_buffer(
 			int Index = Ch - ' ';
 			textureCoordinates TexCoord = Font->TextureCoordinates[Index];
 
-			int WindowX = X + PenX;
-			int WindowY = Y + PenY;
-			int Width = Font->Config.CharWidth;
-			int Height = Font->Config.CharHeight;
+			int _X = X + PenX;
+			int _Y = Y + PenY;
+			int _W = Font->Config.CharWidth;
+			int _H = Font->Config.CharHeight;
 
-			float _X = WindowX * PixelWidth - 1.0f;
-			float _Y = 1.0f - WindowY * PixelHeight;
-			float _Width = Width * PixelWidth;
-			float _Height = Height * PixelHeight;
+//			float _X = WindowX * PixelWidth - 1.0f;
+//			float _Y = 1.0f - WindowY * PixelHeight;
+//			float _Width = Width * PixelWidth;
+//			float _Height = Height * PixelHeight;
 
 			float X0 = _X;
-			float X1 = _X + _Width;
+			float X1 = _X + _W;
 			float Y0 = _Y;
-			float Y1 = _Y - _Height;
+			float Y1 = _Y + _H;
 	//		printf("[%c] x0: %f, x1: %f, y0: %f, y1: %f\n", Text[i], X0, X1, Y0, Y1);
 	//		printf("[%c] tx0: %f, tx1: %f, ty0: %f, ty1: %f\n",
 	//			Text[i], Glyph.TexX0, Glyph.TexX1, Glyph.TexY0, Glyph.TexY1);
@@ -415,15 +413,13 @@ void draw_text_buffer(
 	// Do OpenGL rendering stuff.
 
 	glBindTexture(GL_TEXTURE_2D, Font->TextureAtlas);
-	glUseProgram(Font->Shader);
+	glUseProgram(Shaders->TextShader);
+	pass_to_shader(Shaders->TextShader, "WindowWidth", (float)Shaders->WindowWidth);
+	pass_to_shader(Shaders->TextShader, "WindowHeight", (float)Shaders->WindowHeight);
 
-//	GLuint VertexArray, VertexBuffer;
 	GLuint VertexArray;
 	glGenVertexArrays(1, &VertexArray);
-//	glGenBuffers(1, &VertexBuffer);
-
 	glBindVertexArray(VertexArray);
-//	glBindBuffer(GL_ARRAY_BUFFER, VertexBuffer);
 
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (const void *)0);
 	glEnableVertexAttribArray(0);

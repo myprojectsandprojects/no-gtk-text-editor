@@ -1,6 +1,6 @@
 /*
 	* ~/textdb (over million lines) is very slow. Why?
-	Should cursor be part of the text-buffer?
+	* things shaking when resizing the window
 */
 
 #include <stdio.h>
@@ -20,7 +20,7 @@
 #include "text_drawing.hpp"
 #include "ui.hpp"
 
-extern shaders Shaders;
+extern shaders Shaders; // should probably be in editor
 
 const int MAX_FILE_PATH = 1000; //@ very random
 
@@ -68,12 +68,7 @@ struct fontImage
 
 struct editor
 {
-	fontImage FontImage;
-
 	int WindowWidth, WindowHeight;
-	int ViewportX, ViewportY;
-	int CharWidth, CharHeight;
-	int CharSpacing, LineSpacing;
 
 	color TextColor;
 	color CursorColor;
@@ -103,26 +98,20 @@ struct editor
 	bitmapFont *Font8x16px;
 	bitmapFont *Font16x32px;
 	bitmapFont *Font32x64px;
-
-//	GLuint ColorShader;
 } Editor;
 
 //void InitEditor(editor *Editor, GLFWwindow *AppWindow);
 void InitEditor(editor *Editor);
 
-GLuint CreateShader(const char *VertexShaderFile, const char *FragmentShaderFile);
-//void RenderText(const char *text, int X, int Y, int FontHeight, array<float> *Vertices);
-//void RenderCharacter(char CharAscii, int CharX, int CharY, int CharWidth, int CharHeight, array<float> *Vertices);
 //void CreateTextVertices
 //(const char *Text, array<float> *Vertices, array<unsigned int> *Indices, textureCoordinates Chars[], editor *Editor);
-void MakeTextVertices(array<float> *Vertices, textBuffer *Buffer, textureCoordinatesOld Chars[], int NumChars, editor *Editor);
+//void MakeTextVertices(array<float> *Vertices, textBuffer *Buffer, textureCoordinatesOld Chars[], int NumChars, editor *Editor);
 void MakeTextVertices(array<float> *Vertices, const char *Text, int OriginalX, int OriginalY, color TextColor, textMetrics TextMetrics, textureCoordinatesOld Chars[], int NumChars, editor *Editor);
 //void CreateTextVertices(array<float> *Vertices, const char *Text, textureCoordinates Chars[]);
 //void MakeCursorVertices(array<float> *CursorVertices, textBuffer *Buffer, editor *Editor);
 void MakeQuad(array<float> *Vertices, int X, int Y, int Width, int Height, color Color);
 
-//void PossiblyUpdateViewportPosition(textBuffer *Buffer, editor *Editor);
-void AdjustViewportIfNotVisible(editor *Editor, int CharIndex, int LineIndex);
+//void AdjustViewportIfNotVisible(editor *Editor, int CharIndex, int LineIndex);
 void AdjustViewportIfNotVisible(editableText *Editable, int Iter);
 float Lerp(float From, float To, float Progress);
 void DisplayMessage(messageType MessageType, const char *MessageText, editor *Editor);
@@ -277,7 +266,7 @@ void OnKeyEvent(GLFWwindow *Window, int Key, int Scancode, int Action, int Mods)
 		}
 		else
 		{
-			printf("NO PREV LINE\n");
+			// no previous line
 		}
 	}
 	if (Key == GLFW_KEY_DOWN && (Action == GLFW_PRESS || Action == GLFW_REPEAT))
@@ -501,10 +490,7 @@ int main()
 	printf("window width: %d, window height: %d\n", Editor.WindowWidth, Editor.WindowHeight);
 
 	init_shaders(Editor.WindowWidth, Editor.WindowHeight);
-//	init_shaders();
-	printf("??? %d, %d\n", Shaders.WindowWidth, Shaders.WindowHeight);
 
-//	InitEditor(&Editor, window);
 	InitEditor(&Editor);
 
 	glfwSetFramebufferSizeCallback(window, OnWindowResized);
@@ -692,24 +678,23 @@ int main()
 			int X = 10;
 			int Y = 10;
 			color Color = {1.0f, 0.0f, 0.0f, 1.0f};
-			draw_text("Hello world!", X, Y, Color, Editor.Font8x16px, Editor.WindowWidth, Editor.WindowHeight);
+			draw_text("Hello world!", X, Y, Color, Editor.Font8x16px, &Shaders);
 		}
 		{
 			int X = 10;
 			int Y = 40;
 			color Color = {0.0f, 1.0f, 0.0f, 1.0f};
-			draw_text("Hello world!", X, Y, Color, Editor.Font16x32px, Editor.WindowWidth, Editor.WindowHeight);
+			draw_text("Hello world!", X, Y, Color, Editor.Font16x32px, &Shaders);
 		}
 		{
 			int X = 10;
 			int Y = 50;
 			color Color = {0.0f, 0.0f, 1.0f, 0.5f};
 			draw_text("This\tis supposed to be a really long sentence...",
-				X, Y, Color, Editor.Font32x64px, Editor.WindowWidth, Editor.WindowHeight);
+				X, Y, Color, Editor.Font32x64px, &Shaders);
 		}
 
-		windowWH WindowSize = {Editor.WindowWidth, Editor.WindowHeight};
-		draw_editable_text(&Editor.EditableText, WindowSize);
+		draw_editable_text(&Editor.EditableText, &Shaders);
 
 //		glUseProgram(QuadShader);
 //		glUniform1f(glGetUniformLocation(QuadShader, "WindowWidth"), Editor.WindowWidth);
@@ -968,93 +953,93 @@ void MakeTextVertices(array<float> *Vertices, const char *Text, int OriginalX, i
 	}
 }
 
-void MakeTextVertices(array<float> *Vertices, textBuffer *Buffer, textureCoordinatesOld Chars[], int NumChars, editor *Editor)
-{
-	int XAdvance = Editor->CharWidth + Editor->CharSpacing;
-	int YAdvance = Editor->CharHeight + Editor->LineSpacing;
-	int OriginalX = -Editor->ViewportX; // X and Y are going to be in window-coordinates (not in buffer-coordinates)
-	int OriginalY = -Editor->ViewportY;
-	int X = OriginalX;
-	int Y = OriginalY;
-
-	int TotalCharCount, VisibleCharCount;
-	TotalCharCount = 0;
-	VisibleCharCount = 0;
-	double TotalElapsedVisible = 0;
-
-	for(int i = GetStart(Buffer); !IsEnd(Buffer, i); MoveForward(Buffer, &i))
-//	for(int i = GetStart(Buffer); !IsEnd(Buffer, i); MoveForwardFast(Buffer, &i))
-	{
-		TotalCharCount += 1;
-		unsigned char Char = GetChar(Buffer, i);
-//		if(Char > '~')
+//void MakeTextVertices(array<float> *Vertices, textBuffer *Buffer, textureCoordinatesOld Chars[], int NumChars, editor *Editor)
+//{
+//	int XAdvance = Editor->CharWidth + Editor->CharSpacing;
+//	int YAdvance = Editor->CharHeight + Editor->LineSpacing;
+//	int OriginalX = -Editor->ViewportX; // X and Y are going to be in window-coordinates (not in buffer-coordinates)
+//	int OriginalY = -Editor->ViewportY;
+//	int X = OriginalX;
+//	int Y = OriginalY;
+//
+//	int TotalCharCount, VisibleCharCount;
+//	TotalCharCount = 0;
+//	VisibleCharCount = 0;
+//	double TotalElapsedVisible = 0;
+//
+//	for(int i = GetStart(Buffer); !IsEnd(Buffer, i); MoveForward(Buffer, &i))
+////	for(int i = GetStart(Buffer); !IsEnd(Buffer, i); MoveForwardFast(Buffer, &i))
+//	{
+//		TotalCharCount += 1;
+//		unsigned char Char = GetChar(Buffer, i);
+////		if(Char > '~')
+////		{
+////			printf("NON-ASCII CHARACTER\n");
+////		}
+//
+//		if(Y >= 0 && Y < Editor->WindowHeight && X >= 0 && X < Editor->WindowWidth
+//		   && ' ' <= Char && Char <= '~')
 //		{
-//			printf("NON-ASCII CHARACTER\n");
+//			VisibleCharCount += 1;
+//			double T1 = glfwGetTime();
+//
+//			float X1 = X;                      // upper left
+//			float Y1 = Y;                      // upper left
+//			float X2 = X + Editor->CharWidth;  // lower right
+//			float Y2 = Y + Editor->CharHeight; // lower right
+//
+//			float TextR = Editor->TextColor.R;
+//			float TextG = Editor->TextColor.G;
+//			float TextB = Editor->TextColor.B;
+//
+//			// if character should have an effect, use effect color
+////			for(int j = 0; j < Editor->CharsWithEffect.Count; ++j)
+////			{
+////				if(Editor->CharsWithEffect.Data[j].Index == i)
+////				{
+////					charColor *p = &Editor->CharsWithEffect.Data[j];
+////					TextR = Lerp(p->Color.R, Editor->TextColor.R, p->Progress);
+////					TextG = Lerp(p->Color.G, Editor->TextColor.G, p->Progress);
+////					TextB = Lerp(p->Color.B, Editor->TextColor.B, p->Progress);
+////					p->Progress += 0.01f;
+////					if(p->Progress >= 1.0f)
+////					{
+////						ArrayRemove(&Editor->CharsWithEffect, j);
+////					}
+////					break;
+////				}
+////			}
+//
+//			int Index = Char - ' ';
+//	
+//			float QuadVertices[] = {
+//				X1, Y1, Chars[Index].X1, Chars[Index].Y1, TextR, TextG, TextB, 1.0f, /*top-left*/
+//				X1, Y2, Chars[Index].X1, Chars[Index].Y2, TextR, TextG, TextB, 1.0f, /*bottom-left*/
+//				X2, Y2, Chars[Index].X2, Chars[Index].Y2, TextR, TextG, TextB, 1.0f, /*bottom-right*/
+//				X2, Y2, Chars[Index].X2, Chars[Index].Y2, TextR, TextG, TextB, 1.0f, /*bottom-right*/
+//				X2, Y1, Chars[Index].X2, Chars[Index].Y1, TextR, TextG, TextB, 1.0f, /*top-right*/
+//				X1, Y1, Chars[Index].X1, Chars[Index].Y1, TextR, TextG, TextB, 1.0f, /*top-left*/
+//			};
+//	
+//			ArrayAdd(Vertices, QuadVertices, COUNT(QuadVertices));
+//
+//			double T2 = glfwGetTime();
+//			TotalElapsedVisible += T2 - T1;
 //		}
-
-		if(Y >= 0 && Y < Editor->WindowHeight && X >= 0 && X < Editor->WindowWidth
-		   && ' ' <= Char && Char <= '~')
-		{
-			VisibleCharCount += 1;
-			double T1 = glfwGetTime();
-
-			float X1 = X;                      // upper left
-			float Y1 = Y;                      // upper left
-			float X2 = X + Editor->CharWidth;  // lower right
-			float Y2 = Y + Editor->CharHeight; // lower right
-
-			float TextR = Editor->TextColor.R;
-			float TextG = Editor->TextColor.G;
-			float TextB = Editor->TextColor.B;
-
-			// if character should have an effect, use effect color
-//			for(int j = 0; j < Editor->CharsWithEffect.Count; ++j)
-//			{
-//				if(Editor->CharsWithEffect.Data[j].Index == i)
-//				{
-//					charColor *p = &Editor->CharsWithEffect.Data[j];
-//					TextR = Lerp(p->Color.R, Editor->TextColor.R, p->Progress);
-//					TextG = Lerp(p->Color.G, Editor->TextColor.G, p->Progress);
-//					TextB = Lerp(p->Color.B, Editor->TextColor.B, p->Progress);
-//					p->Progress += 0.01f;
-//					if(p->Progress >= 1.0f)
-//					{
-//						ArrayRemove(&Editor->CharsWithEffect, j);
-//					}
-//					break;
-//				}
-//			}
-
-			int Index = Char - ' ';
-	
-			float QuadVertices[] = {
-				X1, Y1, Chars[Index].X1, Chars[Index].Y1, TextR, TextG, TextB, 1.0f, /*top-left*/
-				X1, Y2, Chars[Index].X1, Chars[Index].Y2, TextR, TextG, TextB, 1.0f, /*bottom-left*/
-				X2, Y2, Chars[Index].X2, Chars[Index].Y2, TextR, TextG, TextB, 1.0f, /*bottom-right*/
-				X2, Y2, Chars[Index].X2, Chars[Index].Y2, TextR, TextG, TextB, 1.0f, /*bottom-right*/
-				X2, Y1, Chars[Index].X2, Chars[Index].Y1, TextR, TextG, TextB, 1.0f, /*top-right*/
-				X1, Y1, Chars[Index].X1, Chars[Index].Y1, TextR, TextG, TextB, 1.0f, /*top-left*/
-			};
-	
-			ArrayAdd(Vertices, QuadVertices, COUNT(QuadVertices));
-
-			double T2 = glfwGetTime();
-			TotalElapsedVisible += T2 - T1;
-		}
-
-		if(Char == '\n')
-		{
-			Y += YAdvance;
-			X = OriginalX;
-		}
-		else
-		{
-			X += XAdvance;
-		}
-	}
-//	printf("VisibleCharCount: %d, TotalCharCount: %d\n", VisibleCharCount, TotalCharCount);
-//	printf("TotalElapsedOnVisible: %f\n", TotalElapsedVisible);
-}
+//
+//		if(Char == '\n')
+//		{
+//			Y += YAdvance;
+//			X = OriginalX;
+//		}
+//		else
+//		{
+//			X += XAdvance;
+//		}
+//	}
+////	printf("VisibleCharCount: %d, TotalCharCount: %d\n", VisibleCharCount, TotalCharCount);
+////	printf("TotalElapsedOnVisible: %f\n", TotalElapsedVisible);
+//}
 
 //void CreateTextVertices
 //(const char *Text, array<float> *Vertices, array<unsigned int> *Indices, textureCoordinates Chars[], editor *Editor)
@@ -1165,147 +1150,6 @@ void MakeTextVertices(array<float> *Vertices, textBuffer *Buffer, textureCoordin
 //	}
 //}
 
-//void RenderText(const char *Text, int X, int Y, int FontHeight, array<float> *Vertices)
-//{
-//	int CharHeight = FontHeight;
-////	int CharWidth = CharHeight * 5.0f / 7.0f; //@ ?
-//	int CharWidth = CAST_ROUND(CharHeight * 5.0f / 7.0f); //@ ?
-//
-//	int CharX = X;
-//	int CharY = Y;
-//	for (int i = 0; Text && Text[i]; ++i)
-//	{
-//		if (Text[i] == '\n')
-//		{
-//			CharY += FontHeight + 5;
-//			CharX = X;
-//			continue;
-//		}
-//		RenderCharacter(Text[i], CharX, CharY, CharWidth, CharHeight, Vertices);
-//		CharX += CharWidth + 5;
-//	}
-//}
-//
-//void RenderCharacter(char CharAscii, int CharX, int CharY, int CharWidth, int CharHeight, array<float> *Vertices)
-//{
-//	int CharsInRow = 18;
-//	int FontImageWidth = 128;
-//	int FontImageHeight = 64;
-//	int OrigCharWidth = 5;
-//	int OrigCharHeight = 7;
-//	int OrigCharWidthAndSome = OrigCharWidth + 2;
-//	int OrigCharHeightAndSome = OrigCharHeight + 2;
-//
-//	int Row = (CharAscii - 32) / CharsInRow;
-//	int Column = (CharAscii - 32) % CharsInRow;
-//
-//	float PixelWidthTex = 1.0f / FontImageWidth;
-//	float PixelHeightTex = 1.0f / FontImageHeight;
-//	float x1 = PixelWidthTex * (1 + Column * OrigCharWidthAndSome);
-//	float x2 = PixelWidthTex * ((1 + Column * OrigCharWidthAndSome) + OrigCharWidth);
-//	float y1 = PixelHeightTex * ((64 - 1) - Row * OrigCharHeightAndSome);
-//	float y2 = PixelHeightTex * ((64 - 1) - (Row * OrigCharHeightAndSome + OrigCharHeight));
-////	printf("x1: %f, x2: %f, y1: %f, y2: %f\n", x1, x2, y1, y2);
-//
-//	float PixelWidthGL = 2.0f / WindowWidth;
-//	float PixelHeightGL = 2.0f / WindowHeight;
-//	float Width = CharWidth * PixelWidthGL;
-//	float Height = CharHeight * PixelHeightGL;
-//	float X = PixelWidthGL * CharX - 1;
-//	float Y = 1 - PixelHeightGL * CharY;
-////	printf("x: %f, y: %f\n", X, Y);
-//
-//	const float vertices[] = {
-//		/* upper-left */     X, Y,                  x1, y1,
-//		/* upper-right */    X + Width, Y,          x2, y1,
-//		/* lower-right */    X + Width, Y - Height, x2, y2,
-//
-//		/* lower-right */    X + Width, Y - Height, x2, y2,
-//		/* lower-left */     X, Y - Height,         x1, y2,
-//		/* upper-left */     X, Y,                  x1, y1
-//	};
-//
-//	for(int i = 0; i < COUNT(vertices); ++i){
-//		ArrayAdd(Vertices, vertices[i]);
-//	}
-//}
-
-GLuint CreateShader(const char *VertexShaderFile, const char *FragmentShaderFile)
-{
-	int success;
-	char info_log[512];
-
-	char *vertexShaderText;
-	if(!ReadTextFile(VertexShaderFile, &vertexShaderText)){
-		fprintf(stderr, "Error: couldnt read shader file: %s\n", VertexShaderFile);
-		return 0; //@
-	}
-		
-	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertexShader, 1, &vertexShaderText, NULL);
-	glCompileShader(vertexShader);
-
-	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-	if (!success) {
-		glGetShaderInfoLog(vertexShader, sizeof(info_log), NULL, info_log);
-		printf("Shader error: %s: %s\n", VertexShaderFile, info_log);
-	}
-
-	char *fragmentShaderText;
-	if(!ReadTextFile(FragmentShaderFile, &fragmentShaderText)){
-		fprintf(stderr, "Error: couldnt read shader file: %s\n", fragmentShaderText);
-		return 0; //@
-	}
-		
-	GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShader, 1, &fragmentShaderText, NULL);
-	glCompileShader(fragmentShader);
-
-	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-	if (!success) {
-		glGetShaderInfoLog(fragmentShader, sizeof(info_log), NULL, info_log);
-		printf("Shader error: %s: %s\n", FragmentShaderFile, info_log);
-	}
-
-	GLuint shaderProgram = glCreateProgram();
-	glAttachShader(shaderProgram, vertexShader);
-	glAttachShader(shaderProgram, fragmentShader);
-	glLinkProgram(shaderProgram);
-
-	//@ delete shaders?
-	free(vertexShaderText);
-	free(fragmentShaderText);
-
-	return shaderProgram;
-}
-
-//// If the cursor has moved outside the viewport, adjust the viewport's offsets, so that cursor becomes visible again
-//void PossiblyUpdateViewportPosition(textBuffer *Buffer, editor *Editor)
-//{
-//	// Calculate the cursor's position relative to the viewport
-//	int CursorX1 = GetCursorCharIndex(Buffer) * (Editor->CharWidth + Editor->CharSpacing) - Editor->ViewportX;
-//	int CursorY1 = GetCursorLineIndex(Buffer) * (Editor->CharHeight + Editor->LineSpacing) - Editor->ViewportY;
-//	int CursorX2 = CursorX1 + Editor->CharWidth;
-//	int CursorY2 = CursorY1 + Editor->CharHeight;
-//
-//	if(CursorY2 > Editor->WindowHeight)
-//	{
-//		Editor->ViewportY += CursorY2 - Editor->WindowHeight;
-//	}
-//	else if(CursorY1 < 0)
-//	{
-//		Editor->ViewportY += CursorY1;
-//	}
-//	if(CursorX2 > Editor->WindowWidth)
-//	{
-//		Editor->ViewportX += CursorX2 - Editor->WindowWidth;
-//	}
-//	else if(CursorX1 < 0)
-//	{
-//		Editor->ViewportX += CursorX1;
-//	}
-//}
-
 //void MakeCursorVertices(array<float> *CursorVertices, textBuffer *Buffer, editor *Editor)
 //{
 //	int CursorWidth = Editor->CharWidth;
@@ -1329,7 +1173,6 @@ GLuint CreateShader(const char *VertexShaderFile, const char *FragmentShaderFile
 //	}
 //}
 
-//void InitEditor(editor *Editor, GLFWwindow *AppWindow)
 void InitEditor(editor *Editor)
 {
 ////	Editor->FontImage = {
@@ -1383,12 +1226,6 @@ void InitEditor(editor *Editor)
 	Editor->MessageText[0] = '\0';
 	Editor->MessageStartTime = 0.0;
 
-////	Editor->ColorShader = make_color_shader();
-//	Editor->ColorShader = make_color_shader_with_transform();
-
-	GLuint TextShader = make_text_shader();
-	GLuint TextShaderWithTransform = make_text_shader_with_transform();
-
 //	bitmapFontImageMetrics IM = {};
 //	IM.FilePath = "../charmap-oldschool_white.png";
 //	IM.Width = 128;
@@ -1434,7 +1271,7 @@ void InitEditor(editor *Editor)
 	Config.LineSpacing = 0;
 	Config.TabWidth = 3;
 
-	bitmapFont *TheFont = make_bitmap_font(IM, Config, TextShader);
+	bitmapFont *TheFont = make_bitmap_font(IM, Config);
 	if(!TheFont)
 	{
 		printf("ERROR: FAILED TO MAKE BITMAP FONT!\n");
@@ -1443,13 +1280,13 @@ void InitEditor(editor *Editor)
 	//@ dumbass way
 	Config.CharWidth = 8;
 	Config.CharHeight = 16;
-	bitmapFont *Font8x16px = make_bitmap_font(IM, Config, TextShaderWithTransform);
+	bitmapFont *Font8x16px = make_bitmap_font(IM, Config);
 	Config.CharWidth = 16;
 	Config.CharHeight = 32;
-	bitmapFont *Font16x32px = make_bitmap_font(IM, Config, TextShaderWithTransform);
+	bitmapFont *Font16x32px = make_bitmap_font(IM, Config);
 	Config.CharWidth = 32;
 	Config.CharHeight = 64;
-	bitmapFont *Font32x64px = make_bitmap_font(IM, Config, TextShaderWithTransform);
+	bitmapFont *Font32x64px = make_bitmap_font(IM, Config);
 	Editor->Font8x16px = Font8x16px;
 	Editor->Font16x32px = Font16x32px;
 	Editor->Font32x64px = Font32x64px;
@@ -1481,7 +1318,7 @@ void InitEditor(editor *Editor)
 //	int W = 300;
 //	int H = 300;
 	color BackgroundColor = {0.5f, 0.5f, 0.5f, 1.0f};
-	windowXYWH PosAndSize;
+	rect PosAndSize;
 	PosAndSize.X = 100;
 	PosAndSize.Y = 300;
 	PosAndSize.W = 300;
@@ -1524,30 +1361,30 @@ void DisplayMessage(messageType MessageType, const char *MessageText, editor *Ed
 
 // adjust viewport if CharWidth * CharHeight quad at (CharIndex, LineIndex) is not visible, so that it becomes visible again
 // returns true if actually adjusted the viewport?
-void AdjustViewportIfNotVisible(editor *Editor, int CharIndex, int LineIndex)
-{
-	// Calculate the cursor's position relative to the viewport
-	int CursorX1 = CharIndex * (Editor->CharWidth + Editor->CharSpacing) - Editor->ViewportX;
-	int CursorY1 = LineIndex * (Editor->CharHeight + Editor->LineSpacing) - Editor->ViewportY;
-	int CursorX2 = CursorX1 + Editor->CharWidth;
-	int CursorY2 = CursorY1 + Editor->CharHeight;
-
-	if(CursorY2 > Editor->WindowHeight)
-	{
-		Editor->ViewportY += CursorY2 - Editor->WindowHeight;
-	}
-	else if(CursorY1 < 0)
-	{
-		Editor->ViewportY += CursorY1;
-	}
-	if(CursorX2 > Editor->WindowWidth)
-	{
-		Editor->ViewportX += CursorX2 - Editor->WindowWidth;
-	}
-	else if(CursorX1 < 0)
-	{
-		Editor->ViewportX += CursorX1;
-	}
-}
+//void AdjustViewportIfNotVisible(editor *Editor, int CharIndex, int LineIndex)
+//{
+//	// Calculate the cursor's position relative to the viewport
+//	int CursorX1 = CharIndex * (Editor->CharWidth + Editor->CharSpacing) - Editor->ViewportX;
+//	int CursorY1 = LineIndex * (Editor->CharHeight + Editor->LineSpacing) - Editor->ViewportY;
+//	int CursorX2 = CursorX1 + Editor->CharWidth;
+//	int CursorY2 = CursorY1 + Editor->CharHeight;
+//
+//	if(CursorY2 > Editor->WindowHeight)
+//	{
+//		Editor->ViewportY += CursorY2 - Editor->WindowHeight;
+//	}
+//	else if(CursorY1 < 0)
+//	{
+//		Editor->ViewportY += CursorY1;
+//	}
+//	if(CursorX2 > Editor->WindowWidth)
+//	{
+//		Editor->ViewportX += CursorX2 - Editor->WindowWidth;
+//	}
+//	else if(CursorX1 < 0)
+//	{
+//		Editor->ViewportX += CursorX1;
+//	}
+//}
 
 

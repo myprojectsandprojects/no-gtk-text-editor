@@ -18,7 +18,6 @@ set(CMAKE_DEPENDS_CHECK_CXX
   "/home/eero/all/no-gtk-text-editor/glfw/text-editor/drawing.cpp" "/home/eero/all/no-gtk-text-editor/glfw/text-editor/build/CMakeFiles/MyGlfwTest.dir/drawing.cpp.o"
   "/home/eero/all/no-gtk-text-editor/glfw/text-editor/lib.cpp" "/home/eero/all/no-gtk-text-editor/glfw/text-editor/build/CMakeFiles/MyGlfwTest.dir/lib.cpp.o"
   "/home/eero/all/no-gtk-text-editor/glfw/text-editor/main.cpp" "/home/eero/all/no-gtk-text-editor/glfw/text-editor/build/CMakeFiles/MyGlfwTest.dir/main.cpp.o"
-  "/home/eero/all/no-gtk-text-editor/glfw/text-editor/opengl.cpp" "/home/eero/all/no-gtk-text-editor/glfw/text-editor/build/CMakeFiles/MyGlfwTest.dir/opengl.cpp.o"
   "/home/eero/all/no-gtk-text-editor/glfw/text-editor/text_buffer.cpp" "/home/eero/all/no-gtk-text-editor/glfw/text-editor/build/CMakeFiles/MyGlfwTest.dir/text_buffer.cpp.o"
   "/home/eero/all/no-gtk-text-editor/glfw/text-editor/text_drawing.cpp" "/home/eero/all/no-gtk-text-editor/glfw/text-editor/build/CMakeFiles/MyGlfwTest.dir/text_drawing.cpp.o"
   "/home/eero/all/no-gtk-text-editor/glfw/text-editor/ui.cpp" "/home/eero/all/no-gtk-text-editor/glfw/text-editor/build/CMakeFiles/MyGlfwTest.dir/ui.cpp.o"

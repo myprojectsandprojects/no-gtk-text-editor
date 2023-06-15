@@ -4,32 +4,11 @@
 #include <glad/glad.h>
 
 #include "lib.h"
-#include "opengl.h"
 
-// OpenGL coordinates and dimensions
-struct openglXYWH
-{
-	float X, Y, W, H;
-};
-
-// window coordinates and dimensions (in pixels)
-struct windowXYWH
+struct rect
 {
 	int X, Y, W, H;
 };
-
-//// would like to have this (in window coordinates) and never think about things in terms of opengl coordinates
-//struct rect
-//{
-//	int X, Y, W, H;
-//};
-
-struct windowWH
-{
-	int W, H;
-};
-
-//openglXYWH transform_window_to_opengl(windowXYWH WindowCoord, windowWH WindowSize);
 
 struct color
 {
@@ -43,9 +22,20 @@ struct shaders
 	GLuint TextShader;
 };
 
-void init_shaders(int WindowWidth, int WindowHeight);
-//void init_shaders();
+GLuint make_shader(const char *VertexSrc, const char *FragmentSrc, const char *GeometrySrc = NULL);
+void pass_to_shader(GLuint Shader, const char *Name, int Value);
+void pass_to_shader(GLuint Shader, const char *Name, float Value);
+//GLuint make_color_shader();
+GLuint make_color_shader_with_transform();
+//GLuint make_text_shader();
+GLuint make_text_shader_with_transform();
+GLuint make_texture_shader();
+GLuint make_text_shader_geometry_style();
+GLuint make_SDF_shader();
 
+void init_shaders(int WindowWidth, int WindowHeight);
+
+//GLuint CreateShader(const char *VertexShaderFile, const char *FragmentShaderFile);
 //void make_quad(array<float> *Vertices, openglXYWH PosAndSize, color Color); // pos/size opengl coordinates
 //void make_quad(array<float> *Vertices, int X, int Y, int W, int H, color Color, windowWH WindowSize); // makes vertices
 //void draw_2d_with_color(array<float> *Vertices);

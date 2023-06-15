@@ -2,7 +2,6 @@
 #define TEXT_DRAWING_HPP
 
 #include "lib.h"
-#include "opengl.h"
 #include "text_buffer.hpp"
 #include "drawing.hpp"
 
@@ -23,7 +22,7 @@ struct bitmapFont
 	fontConfig Config;
 	GLuint TextureAtlas;
 	textureCoordinates *TextureCoordinates;
-	GLuint Shader;
+//	GLuint Shader; // Maybe we want this later?
 };
 
 struct bitmapFontImageMetrics
@@ -36,16 +35,17 @@ struct bitmapFontImageMetrics
 	int LMargin, TMargin;
 };
 
-bitmapFont *make_bitmap_font(bitmapFontImageMetrics ImageMetrics, fontConfig Config, GLuint Shader);
-void draw_text(const char *Text, int X, int Y, color Color, bitmapFont *Font, int WindowWidth, int WindowHeight);
+bitmapFont *make_bitmap_font(bitmapFontImageMetrics ImageMetrics, fontConfig Config);
+void draw_text(const char *Text, int X, int Y, color Color, bitmapFont *Font, shaders *Shaders);
 // maybe draw_text() should take some kind of horizontal extent and once it reaches the end it wraps to a new line?
+// also maybe draw_text() should be part of drawing and draw_text_buffer() is a very specialized function that should be part of editable_text?
 
 void draw_text_buffer(
 	textBuffer *TextBuffer,
 	bitmapFont *Font,
 	int X, int Y, int W, int H,
 	int OffsH, int OffsV,
-	int WindowWidth, int WindowHeight);
+	shaders *Shaders);
 
 //void make_text(
 //	array<float> *TextVertices,

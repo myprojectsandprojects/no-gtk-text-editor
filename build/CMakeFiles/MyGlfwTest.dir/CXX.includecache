@@ -75,8 +75,6 @@ glad/glad.h
 -
 lib.h
 /home/eero/all/no-gtk-text-editor/glfw/text-editor/lib.h
-opengl.h
-/home/eero/all/no-gtk-text-editor/glfw/text-editor/opengl.h
 
 /home/eero/all/no-gtk-text-editor/glfw/text-editor/lib.cpp
 lib.h
@@ -111,16 +109,6 @@ text_drawing.hpp
 /home/eero/all/no-gtk-text-editor/glfw/text-editor/text_drawing.hpp
 ui.hpp
 /home/eero/all/no-gtk-text-editor/glfw/text-editor/ui.hpp
-
-/home/eero/all/no-gtk-text-editor/glfw/text-editor/opengl.cpp
-stdio.h
--
-opengl.h
-/home/eero/all/no-gtk-text-editor/glfw/text-editor/opengl.h
-
-/home/eero/all/no-gtk-text-editor/glfw/text-editor/opengl.h
-glad/glad.h
--
 
 /home/eero/all/no-gtk-text-editor/glfw/text-editor/stb_image.h
 stb_image.h
@@ -179,8 +167,6 @@ stb_image.h
 /home/eero/all/no-gtk-text-editor/glfw/text-editor/text_drawing.hpp
 lib.h
 /home/eero/all/no-gtk-text-editor/glfw/text-editor/lib.h
-opengl.h
-/home/eero/all/no-gtk-text-editor/glfw/text-editor/opengl.h
 text_buffer.hpp
 /home/eero/all/no-gtk-text-editor/glfw/text-editor/text_buffer.hpp
 drawing.hpp
