@@ -10,6 +10,7 @@ CMakeFiles/MyGlfwTest.dir/drawing.cpp.o: ../glad/include/glad/glad.h
 CMakeFiles/MyGlfwTest.dir/drawing.cpp.o: ../drawing.cpp
 CMakeFiles/MyGlfwTest.dir/drawing.cpp.o: ../drawing.hpp
 CMakeFiles/MyGlfwTest.dir/drawing.cpp.o: ../lib.h
+CMakeFiles/MyGlfwTest.dir/drawing.cpp.o: ../stb_image.h
 
 CMakeFiles/MyGlfwTest.dir/lib.cpp.o: ../lib.cpp
 CMakeFiles/MyGlfwTest.dir/lib.cpp.o: ../lib.h
@@ -20,7 +21,6 @@ CMakeFiles/MyGlfwTest.dir/main.cpp.o: ../glfw-3.3.8/include/GLFW/glfw3.h
 CMakeFiles/MyGlfwTest.dir/main.cpp.o: ../drawing.hpp
 CMakeFiles/MyGlfwTest.dir/main.cpp.o: ../lib.h
 CMakeFiles/MyGlfwTest.dir/main.cpp.o: ../main.cpp
-CMakeFiles/MyGlfwTest.dir/main.cpp.o: ../stb_image.h
 CMakeFiles/MyGlfwTest.dir/main.cpp.o: ../text_buffer.hpp
 CMakeFiles/MyGlfwTest.dir/main.cpp.o: ../text_drawing.hpp
 CMakeFiles/MyGlfwTest.dir/main.cpp.o: ../ui.hpp

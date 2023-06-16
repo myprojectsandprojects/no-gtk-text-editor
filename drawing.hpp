@@ -20,7 +20,17 @@ struct shaders
 	int WindowWidth, WindowHeight;
 	GLuint ColorShader;
 	GLuint TextShader;
+	GLuint TextureShader;
 };
+
+struct image
+{
+//	const char *FilePath;
+//	unsigned char *Data;
+	GLuint Tex;
+	int W, H, NumChannels;
+};
+image *make_image(const char *FilePath);
 
 GLuint make_shader(const char *VertexSrc, const char *FragmentSrc, const char *GeometrySrc = NULL);
 void pass_to_shader(GLuint Shader, const char *Name, int Value);
@@ -30,6 +40,7 @@ GLuint make_color_shader_with_transform();
 //GLuint make_text_shader();
 GLuint make_text_shader_with_transform();
 GLuint make_texture_shader();
+GLuint make_texture_shader_with_transform();
 GLuint make_text_shader_geometry_style();
 GLuint make_SDF_shader();
 
@@ -42,7 +53,8 @@ void init_shaders(int WindowWidth, int WindowHeight);
 //void draw_XYRGBA(array<float> *Vertices);
 
 //void make_quad(int X, int Y, int W, int H, color Color, int WindowWidth, int WindowHeight);
-void make_quad(int X, int Y, int W, int H, color Color);
+void draw_quad(int X, int Y, int W, int H, color Color);
+void draw_quad(int X, int Y, int W, int H, GLuint Texture);
 
 #endif
 

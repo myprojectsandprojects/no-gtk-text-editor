@@ -1,6 +1,7 @@
 /*
 	* ~/textdb (over million lines) is very slow. Why?
 	* things shaking when resizing the window
+	* Why is glfwSwapBuffers() taking ~1-3 ms if we are not even drawing anything besides the background?
 */
 
 #include <stdio.h>
@@ -12,7 +13,7 @@
 #include <GLFW/glfw3.h>
 
 //#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
+//#include "stb_image.h"
 
 #include "lib.h"
 
@@ -471,7 +472,13 @@ int main()
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	GLFWwindow *window = glfwCreateWindow(800, 600, "My Window", NULL, NULL);
+
+	GLFWmonitor *Monitor = glfwGetPrimaryMonitor();
+	const GLFWvidmode *VideoMode = glfwGetVideoMode(Monitor);
+	printf("screen width: %d, screen height: %d, screen refresh rate: %d\n", VideoMode->width, VideoMode->height, VideoMode->refreshRate);
+
+//	GLFWwindow *window = glfwCreateWindow(800, 600, "My Window", NULL, NULL);
+	GLFWwindow *window = glfwCreateWindow(VideoMode->width, VideoMode->height, "My Window", NULL, NULL);
 	if(window == NULL)
 	{
 		printf("error: glfwCreateWindow()\n");
@@ -484,6 +491,7 @@ int main()
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // some images need this to display correctly
 
 	// Dimensions given by glfwGetWindowSize() might not be in pixels
 	glfwGetFramebufferSize(window, &Editor.WindowWidth, &Editor.WindowHeight);
@@ -627,57 +635,77 @@ int main()
 //	array<double> Timings;
 //	ArrayInit(&Timings);
 
-//	int FrameCount = 0;
-//	double PreviousTime;
+	image *Image1 = make_image("/home/eero/Desktop/pics/desktop-wallpaper-mystic-for-computer-mystical-nature.jpg");
+//	image *TheImage = make_image("/home/eero/Desktop/pics/desktop-wallpaper-best-5-mystical-on-hip-mystical-landscape.png");
+	image *Image2 = make_image("/home/eero/Desktop/pics/desktop-wallpaper-best-5-mystical-on-hip-mystical-landscape.jpg");
+//	image *TheImage = make_image("/home/eero/Desktop/pics/ylad25oswrua1.png");
+
+	int FrameCount = 0;
+	double PreviousTime;
 
 	while(!glfwWindowShouldClose(window))
 	{
-//		if(FrameCount == 0)
-//		{
-//			PreviousTime = glfwGetTime();
-//		}
-//		else
-//		{
-//			double CurrentTime = glfwGetTime();
-//			double TimeElapsed = CurrentTime - PreviousTime;
-//			PreviousTime = CurrentTime;
+		if(FrameCount == 0)
+		{
+			PreviousTime = glfwGetTime();
+		}
+		else
+		{
+			double CurrentTime = glfwGetTime();
+			double TimeElapsed = CurrentTime - PreviousTime;
+			PreviousTime = CurrentTime;
 //			printf("elapsed: %.3f s\n", TimeElapsed);
-//////			printf("elapsed: %f us\n", TimeElapsed * 1000000.0);
-////
-//////			if(FrameCount == 1000)
-//////			{
-//////				double Sum = 0;
-//////				for(int i = 0; i < Timings.Count; ++i)
-//////				{
-//////					Sum += Timings.Data[i];
-//////				}
-//////				printf("average frame timing: %f us\n", Sum / Timings.Count * 1000000.0);
-//////				glfwSetWindowShouldClose(window, 1);
-//////			}
-//////			else
-//////			{
-//////				ArrayAdd(&Timings, TimeElapsed);
-//////			}
-//		}
-//		FrameCount += 1;
+			printf("elapsed: %.3f ms\n", TimeElapsed * 1000);
+////			printf("elapsed: %f us\n", TimeElapsed * 1000000.0);
+//
+////			if(FrameCount == 1000)
+////			{
+////				double Sum = 0;
+////				for(int i = 0; i < Timings.Count; ++i)
+////				{
+////					Sum += Timings.Data[i];
+////				}
+////				printf("average frame timing: %f us\n", Sum / Timings.Count * 1000000.0);
+////				glfwSetWindowShouldClose(window, 1);
+////			}
+////			else
+////			{
+////				ArrayAdd(&Timings, TimeElapsed);
+////			}
+		}
+		FrameCount += 1;
 
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		{
-			int X = 10;
-			int Y = 10;
-			int W = 300;
-			int H = 200;
-			color Color = {0.2f, 0.2f, 0.2f, 1.0f};
-//			make_quad(X, Y, W, H, Color, Editor.WindowWidth, Editor.WindowHeight);
-			make_quad(X, Y, W, H, Color);
+			int X = 0;
+			int Y = 0;
+			int W = Image1->W;
+			int H = Image1->H;
+			draw_quad(X, Y, W, H, Image1->Tex);
+		}
+		{
+			int W = Image2->W;
+			int H = Image2->H;
+			int X = Editor.WindowWidth - W;
+			int Y = Editor.WindowHeight - H;
+			draw_quad(X, Y, W, H, Image2->Tex);
 		}
 
 		{
 			int X = 10;
 			int Y = 10;
+			int W = 100;
+			int H = 100;
 			color Color = {1.0f, 0.0f, 0.0f, 1.0f};
+			draw_quad(X, Y, W, H, Color);
+		}
+
+		{
+			int X = 10;
+			int Y = 10;
+			color Color = {1.0f, 1.0f, 1.0f, 1.0f};
 			draw_text("Hello world!", X, Y, Color, Editor.Font8x16px, &Shaders);
 		}
 		{
@@ -690,8 +718,15 @@ int main()
 			int X = 10;
 			int Y = 50;
 			color Color = {0.0f, 0.0f, 1.0f, 0.5f};
-			draw_text("This\tis supposed to be a really long sentence...",
+			draw_text("This is supposed to be a really long sentence...",
 				X, Y, Color, Editor.Font32x64px, &Shaders);
+		}
+		{
+			int X = 10;
+			int Y = 150;
+			int W = 95 * 16;
+			int H = 32;
+			draw_quad(X, Y, W, H, Editor.Font16x32px->TextureAtlas->Tex);
 		}
 
 		draw_editable_text(&Editor.EditableText, &Shaders);
@@ -882,12 +917,18 @@ int main()
 //			}
 //		}
 
+//		double T1 = glfwGetTime();
 		glfwSwapBuffers(window);
+//		double T2 = glfwGetTime();
+//		printf("glfwSwapBuffers(): %.3f\n", (T2 - T1) * 1000);
 
+//		T1 = glfwGetTime();
 		glfwPollEvents();
+//		T2 = glfwGetTime();
+//		printf("glfwPollEvents(): %.3f\n", (T2 - T1) * 1000);
 
-		TextVertices.Count = 0;
-		QuadVertices.Count = 0;
+//		TextVertices.Count = 0;
+//		QuadVertices.Count = 0;
 //		TextIndices.Count = 0;
 	}
 
@@ -1263,10 +1304,10 @@ void InitEditor(editor *Editor)
 	IM.TMargin = 0;
 
 	fontConfig Config = {};
-//	Config.CharWidth = IM.CharWidth;
-	Config.CharWidth = IM.CharWidth * 2;
-//	Config.CharHeight = IM.CharHeight;
-	Config.CharHeight = IM.CharHeight * 2;
+	Config.CharWidth = IM.CharWidth;
+	Config.CharHeight = IM.CharHeight;
+//	Config.CharWidth = IM.CharWidth * 2;
+//	Config.CharHeight = IM.CharHeight * 2;
 	Config.CharSpacing = 0;
 	Config.LineSpacing = 0;
 	Config.TabWidth = 3;
@@ -1294,7 +1335,8 @@ void InitEditor(editor *Editor)
 	InitTextBuffer(&Editor->TextBuffer);
 
 	char *Contents;
-	const char *FilePath = "testfile.cpp";
+//	const char *FilePath = "testfile.cpp";
+	const char *FilePath = "../main.cpp";
 	if(!ReadTextFile(FilePath, &Contents))
 	{
 		fprintf(stderr, "error: failed to read a dropped file: %s\n", FilePath);
@@ -1317,12 +1359,14 @@ void InitEditor(editor *Editor)
 //	int Y = 100;
 //	int W = 300;
 //	int H = 300;
-	color BackgroundColor = {0.5f, 0.5f, 0.5f, 1.0f};
+	color BackgroundColor = {0.25f, 0.25f, 0.25f, 1.0f};
 	rect PosAndSize;
-	PosAndSize.X = 100;
+	PosAndSize.X = 300;
 	PosAndSize.Y = 300;
 	PosAndSize.W = 300;
-	PosAndSize.H = 200;
+	PosAndSize.H = 300;
+//	PosAndSize.W = Editor->WindowWidth;
+//	PosAndSize.H = Editor->WindowHeight;
 	init_editable_text(&Editor->EditableText, &Editor->TextBuffer, TheFont, BackgroundColor, PosAndSize);
 }
 

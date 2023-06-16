@@ -7,37 +7,39 @@
 
 bitmapFont *make_bitmap_font(bitmapFontImageMetrics IM, fontConfig Config)
 {
-	int ImageWidth, ImageHeight, ImageNChannels;
-	stbi_set_flip_vertically_on_load(1);
-	unsigned char *ImageData = stbi_load(IM.FilePath, &ImageWidth, &ImageHeight, &ImageNChannels, 0);
-	if(!ImageData)
-	{
-		fprintf(stderr, "error: stbi_load()\n");
-		return NULL;
-	}
-	else
-	{
-		printf("make_bitmap_font: width: %d, height: %d, num channels: %d\n", ImageWidth, ImageHeight, ImageNChannels);
-	}
+//	int ImageWidth, ImageHeight, ImageNChannels;
+//	stbi_set_flip_vertically_on_load(1);
+//	unsigned char *ImageData = stbi_load(IM.FilePath, &ImageWidth, &ImageHeight, &ImageNChannels, 0);
+//	if(!ImageData)
+//	{
+//		fprintf(stderr, "error: stbi_load()\n");
+//		return NULL;
+//	}
+//	else
+//	{
+//		printf("make_bitmap_font: width: %d, height: %d, num channels: %d\n", ImageWidth, ImageHeight, ImageNChannels);
+//	}
+//
+//	GLuint myTexture;
+//	glGenTextures(1, &myTexture);
+//	glBindTexture(GL_TEXTURE_2D, myTexture);
+//
+//	// What to do when texture coordinates are outside of the texture:
+//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+//
+//	// What to do when the texture is minified/magnified:
+//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+////	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+//
+////	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, ImageWidth, ImageHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, ImageData);
+//	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, ImageWidth, ImageHeight, 0, GL_RED, GL_UNSIGNED_BYTE, ImageData);
+////	glGenerateMipmap(GL_TEXTURE_2D);
+//
+//	stbi_image_free(ImageData);
 
-	GLuint myTexture;
-	glGenTextures(1, &myTexture);
-	glBindTexture(GL_TEXTURE_2D, myTexture);
-
-	// What to do when texture coordinates are outside of the texture:
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-	// What to do when the texture is minified/magnified:
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-//	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, ImageWidth, ImageHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, ImageData);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, ImageWidth, ImageHeight, 0, GL_RED, GL_UNSIGNED_BYTE, ImageData);
-//	glGenerateMipmap(GL_TEXTURE_2D);
-
-	stbi_image_free(ImageData);
+	image *FontBitmap = make_image(IM.FilePath);
 
 	const int NumChars = 127 - ' ';
 //	textureCoordinates Chars[NumChars];
@@ -61,7 +63,8 @@ bitmapFont *make_bitmap_font(bitmapFontImageMetrics IM, fontConfig Config)
 	}
 
 	bitmapFont *Font = (bitmapFont *)malloc(sizeof(bitmapFont));
-	Font->TextureAtlas = myTexture;
+//	Font->TextureAtlas = myTexture;
+	Font->TextureAtlas = FontBitmap;
 	Font->TextureCoordinates = Chars;
 	Font->Config = Config;
 
@@ -215,7 +218,8 @@ void draw_text(const char *Text, int X, int Y, color Color, bitmapFont *Font, sh
 
 	// Do OpenGL rendering stuff.
 
-	glBindTexture(GL_TEXTURE_2D, Font->TextureAtlas);
+//	glBindTexture(GL_TEXTURE_2D, Font->TextureAtlas);
+	glBindTexture(GL_TEXTURE_2D, Font->TextureAtlas->Tex);
 	glUseProgram(Shaders->TextShader);
 	pass_to_shader(Shaders->TextShader, "WindowWidth", (float)Shaders->WindowWidth);
 	pass_to_shader(Shaders->TextShader, "WindowHeight", (float)Shaders->WindowHeight);
@@ -265,16 +269,8 @@ void draw_text_buffer(
 {
 	color Color = {1.0f, 1.0f, 1.0f, 1.0f};
 
-	// The offsets keep track of how much our "text box" has been moved downwards and to the left relative to the buffer.
-	// So we start "laying out" characters from the beginning of the buffer, but we only actually draw them if they
-	// land inside the box.
-	// So this puts our box's top left corner at 0,0
-	// Then we render char if: 0 < PenX && PenX < W && 0 < PenY && PenY < H
 	int PenX = -OffsX;
 	int PenY = -OffsY;
-
-//	float PixelWidth = 2.0f / WindowWidth;
-//	float PixelHeight = 2.0f / WindowHeight;
 
 	int NumFloatsPerVertex = 8;
 	int NumVerticesPerChar = 6;
@@ -282,6 +278,7 @@ void draw_text_buffer(
 	int NumBytesPerChar = NumFloatsPerChar * sizeof(float);
 
 	//@ Just assume we render all characters in the text buffer. This is clearly a no-no in the long run.
+	// Maybe calculate some kind of estimate that is not going to be exceeded based on the area we render text on and character size?
 	int InitiallyAllocatedMemory = TextBuffer->OneAfterLast * NumBytesPerChar;
 
 	GLuint VB;
@@ -289,9 +286,8 @@ void draw_text_buffer(
 	glBindBuffer(GL_ARRAY_BUFFER, VB);
 	glBufferData(GL_ARRAY_BUFFER, InitiallyAllocatedMemory, 0, GL_DYNAMIC_DRAW);
 
-//	float *Ptr = (float *) glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+	float *Ptr = (float *) glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
 
-	int BufferOffset = 0;
 	int VerticesCount = 0;
 
 	for(int i = GetStart(TextBuffer); !IsEnd(TextBuffer, i); MoveForward(TextBuffer, &i))
@@ -303,10 +299,10 @@ void draw_text_buffer(
 		{
 //			PenY += 16;
 			PenY += Font->Config.CharHeight + Font->Config.LineSpacing;
-//			if(PenY > WindowHeight)
-//			{
-//				break;
-//			}
+			if(PenY > H)
+			{
+				break;
+			}
 			PenX = -OffsX;
 
 			continue;
@@ -317,7 +313,7 @@ void draw_text_buffer(
 			continue;
 		}
 
-		if(0 <= PenX && PenX <= W && 0 <= PenY && PenY <= H)
+		if(0 <= PenX && PenX <= W && 0 <= PenY && PenY + Font->Config.CharHeight <= H)
 		{
 			int Index = Ch - ' ';
 			textureCoordinates TexCoord = Font->TextureCoordinates[Index];
@@ -327,92 +323,48 @@ void draw_text_buffer(
 			int _W = Font->Config.CharWidth;
 			int _H = Font->Config.CharHeight;
 
-//			float _X = WindowX * PixelWidth - 1.0f;
-//			float _Y = 1.0f - WindowY * PixelHeight;
-//			float _Width = Width * PixelWidth;
-//			float _Height = Height * PixelHeight;
-
 			float X0 = _X;
 			float X1 = _X + _W;
 			float Y0 = _Y;
 			float Y1 = _Y + _H;
-	//		printf("[%c] x0: %f, x1: %f, y0: %f, y1: %f\n", Text[i], X0, X1, Y0, Y1);
-	//		printf("[%c] tx0: %f, tx1: %f, ty0: %f, ty1: %f\n",
-	//			Text[i], Glyph.TexX0, Glyph.TexX1, Glyph.TexY0, Glyph.TexY1);
 
-			float Vertices[] =
-			{
-	//			// upper-left
-	//			X0, Y0, TexCoord.X0, TexCoord.Y1, Color.R, Color.G, Color.B, Color.A,
-	//	
-	//			// upper-right
-	//			X1, Y0, TexCoord.X1, TexCoord.Y1, Color.R, Color.G, Color.B, Color.A,
-	//	
-	//			// lower-left
-	//			X0, Y1, TexCoord.X0, TexCoord.Y0, Color.R, Color.G, Color.B, Color.A,
-	//	
-	//			// lower-left
-	//			X0, Y1, TexCoord.X0, TexCoord.Y0, Color.R, Color.G, Color.B, Color.A,
-	//	
-	//			// lower-right
-	//			X1, Y1, TexCoord.X1, TexCoord.Y0, Color.R, Color.G, Color.B, Color.A,
-	//	
-	//			// upper-right
-	//			X1, Y0, TexCoord.X1, TexCoord.Y1, Color.R, Color.G, Color.B, Color.A,
-	
-				// upper-left
-				X0, Y0, TexCoord.X0, TexCoord.Y0, Color.R, Color.G, Color.B, Color.A,
-		
-				// upper-right
-				X1, Y0, TexCoord.X1, TexCoord.Y0, Color.R, Color.G, Color.B, Color.A,
-		
-				// lower-left
-				X0, Y1, TexCoord.X0, TexCoord.Y1, Color.R, Color.G, Color.B, Color.A,
-		
-				// lower-left
-				X0, Y1, TexCoord.X0, TexCoord.Y1, Color.R, Color.G, Color.B, Color.A,
+			// flip the y-axis
+			float Temp = TexCoord.Y0;
+			TexCoord.Y0 = TexCoord.Y1;
+			TexCoord.Y1 = Temp;
 
-				// lower-right
-				X1, Y1, TexCoord.X1, TexCoord.Y1, Color.R, Color.G, Color.B, Color.A,
-		
-				// upper-right
-				X1, Y0, TexCoord.X1, TexCoord.Y0, Color.R, Color.G, Color.B, Color.A,
-			};
-	//		int NumBytesPerChar = NumFloatsPerChar * sizeof(float);
-			glBufferSubData(GL_ARRAY_BUFFER, BufferOffset, NumBytesPerChar, Vertices);
-			BufferOffset += NumBytesPerChar;
+			// upper-left
+			Ptr[0]=X0; Ptr[1]=Y0; Ptr[2]=TexCoord.X0; Ptr[3]=TexCoord.Y1; Ptr[4]=Color.R; Ptr[5]=Color.G; Ptr[6]=Color.B; Ptr[7]=Color.A;
 	
-	//		// upper-left
-	//		Ptr[0]=X0; Ptr[1]=Y0; Ptr[2]=Glyph.TexX0; Ptr[3]=Glyph.TexY1; Ptr[4]=Color.R; Ptr[5]=Color.G; Ptr[6]=Color.B; Ptr[7]=Color.A;
-	//
-	//		// upper-right
-	//		Ptr[8]=X1; Ptr[9]=Y0; Ptr[10]=Glyph.TexX1; Ptr[11]=Glyph.TexY1; Ptr[12]=Color.R; Ptr[13]=Color.G; Ptr[14]=Color.B; Ptr[15]=Color.A;
-	//
-	//		// lower-left
-	//		Ptr[16]=X0; Ptr[17]=Y1; Ptr[18]=Glyph.TexX0; Ptr[19]=Glyph.TexY0; Ptr[20]=Color.R; Ptr[21]=Color.G; Ptr[22]=Color.B; Ptr[23]=Color.A;
-	//
-	//		// lower-left
-	//		Ptr[24]=X0; Ptr[25]=Y1; Ptr[26]=Glyph.TexX0; Ptr[27]=Glyph.TexY0; Ptr[28]=Color.R; Ptr[29]=Color.G; Ptr[30]=Color.B; Ptr[31]=Color.A;
-	//
-	//		// lower-right
-	//		Ptr[32]=X1; Ptr[33]=Y1; Ptr[34]=Glyph.TexX1; Ptr[35]=Glyph.TexY0; Ptr[36]=Color.R; Ptr[37]=Color.G; Ptr[38]=Color.B;  Ptr[39]=Color.A;
-	//
-	//		// upper-right
-	//		Ptr[40]=X1; Ptr[41]=Y0; Ptr[42]=Glyph.TexX1; Ptr[43]=Glyph.TexY1; Ptr[44]=Color.R; Ptr[45]=Color.G; Ptr[46]=Color.B; Ptr[47]=Color.A;
-	//
-	////		memcpy(Ptr, Vertices, sizeof(Vertices));
-	//		Ptr += NumFloatsPerChar;
+			// upper-right
+			Ptr[8]=X1; Ptr[9]=Y0; Ptr[10]=TexCoord.X1; Ptr[11]=TexCoord.Y1; Ptr[12]=Color.R; Ptr[13]=Color.G; Ptr[14]=Color.B; Ptr[15]=Color.A;
+	
+			// lower-left
+			Ptr[16]=X0; Ptr[17]=Y1; Ptr[18]=TexCoord.X0; Ptr[19]=TexCoord.Y0; Ptr[20]=Color.R; Ptr[21]=Color.G; Ptr[22]=Color.B; Ptr[23]=Color.A;
+	
+			// lower-left
+			Ptr[24]=X0; Ptr[25]=Y1; Ptr[26]=TexCoord.X0; Ptr[27]=TexCoord.Y0; Ptr[28]=Color.R; Ptr[29]=Color.G; Ptr[30]=Color.B; Ptr[31]=Color.A;
+	
+			// lower-right
+			Ptr[32]=X1; Ptr[33]=Y1; Ptr[34]=TexCoord.X1; Ptr[35]=TexCoord.Y0; Ptr[36]=Color.R; Ptr[37]=Color.G; Ptr[38]=Color.B;  Ptr[39]=Color.A;
+	
+			// upper-right
+			Ptr[40]=X1; Ptr[41]=Y0; Ptr[42]=TexCoord.X1; Ptr[43]=TexCoord.Y1; Ptr[44]=Color.R; Ptr[45]=Color.G; Ptr[46]=Color.B; Ptr[47]=Color.A;
+
+////		memcpy(Ptr, Vertices, sizeof(Vertices));
+			Ptr += NumFloatsPerChar;
 			VerticesCount += NumVerticesPerChar;
 		}
 		
 		PenX += Font->Config.CharWidth;
 	}
 
-//	glUnmapBuffer(GL_ARRAY_BUFFER);
+	glUnmapBuffer(GL_ARRAY_BUFFER);
 
 	// Do OpenGL rendering stuff.
 
-	glBindTexture(GL_TEXTURE_2D, Font->TextureAtlas);
+//	glBindTexture(GL_TEXTURE_2D, Font->TextureAtlas);
+	glBindTexture(GL_TEXTURE_2D, Font->TextureAtlas->Tex);
 	glUseProgram(Shaders->TextShader);
 	pass_to_shader(Shaders->TextShader, "WindowWidth", (float)Shaders->WindowWidth);
 	pass_to_shader(Shaders->TextShader, "WindowHeight", (float)Shaders->WindowHeight);
@@ -430,18 +382,11 @@ void draw_text_buffer(
 	glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (const void *) (sizeof(float) * 4));
 	glEnableVertexAttribArray(2);
 
-//	glBufferData(GL_ARRAY_BUFFER, VerticesToBeRendered.Count * sizeof(float), VerticesToBeRendered.Data, GL_STATIC_DRAW);
-//	glBufferData(GL_ARRAY_BUFFER, VerticesToBeRendered.Count * sizeof(float), VerticesToBeRendered.Data, GL_STREAM_DRAW);
-
-//	int NumVertices = VerticesToBeRendered.Count / 7;
-//	int NumVertices = BufferOffset / (NumFloatsPerVertex * sizeof(float));
 	int NumVertices = VerticesCount;
 	glDrawArrays(GL_TRIANGLES, 0, NumVertices);
 
-//	glDeleteBuffers(1, &VertexBuffer);
 	glDeleteBuffers(1, &VB);
 	glDeleteVertexArrays(1, &VertexArray);
-//	free(VerticesToBeRendered.Data);
 
 //	glBindTexture(GL_TEXTURE_2D, 0); // bind default texture (?)
 }

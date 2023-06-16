@@ -23,7 +23,7 @@ void draw_editable_text(editableText *EditableText, shaders *Shaders)
 	int W = EditableText->W;
 	int H = EditableText->H;
 
-	make_quad(X, Y, W, H, EditableText->BackgroundColor);
+	draw_quad(X, Y, W, H, EditableText->BackgroundColor);
 
 	// CURSOR
 	int CharWidth = EditableText->Font->Config.CharWidth;
@@ -46,7 +46,7 @@ void draw_editable_text(editableText *EditableText, shaders *Shaders)
 		int CursorW = CharWidth;
 		int CursorH = CharHeight;
 		color CursorColor = {1.0f, 0.0f, 0.0f, 1.0f};
-		make_quad(CursorX, CursorY, CursorW, CursorH, CursorColor);
+		draw_quad(CursorX, CursorY, CursorW, CursorH, CursorColor);
 	}
 //	draw_2d_with_color(&Vertices);
 

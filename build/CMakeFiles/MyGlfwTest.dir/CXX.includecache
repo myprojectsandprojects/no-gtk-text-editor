@@ -69,6 +69,8 @@ drawing.hpp
 /home/eero/all/no-gtk-text-editor/glfw/text-editor/drawing.hpp
 assert.h
 -
+stb_image.h
+/home/eero/all/no-gtk-text-editor/glfw/text-editor/stb_image.h
 
 /home/eero/all/no-gtk-text-editor/glfw/text-editor/drawing.hpp
 glad/glad.h
@@ -99,8 +101,6 @@ glad/glad.h
 -
 GLFW/glfw3.h
 -
-stb_image.h
-/home/eero/all/no-gtk-text-editor/glfw/text-editor/stb_image.h
 lib.h
 /home/eero/all/no-gtk-text-editor/glfw/text-editor/lib.h
 text_buffer.hpp

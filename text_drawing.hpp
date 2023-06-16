@@ -20,7 +20,8 @@ struct textureCoordinates
 struct bitmapFont
 {
 	fontConfig Config;
-	GLuint TextureAtlas;
+//	GLuint TextureAtlas;
+	image *TextureAtlas;
 	textureCoordinates *TextureCoordinates;
 //	GLuint Shader; // Maybe we want this later?
 };

@@ -11,6 +11,7 @@ void init_shaders(int WindowWidth, int WindowHeight)
 	Shaders.WindowHeight = WindowHeight;
 	Shaders.ColorShader = make_color_shader_with_transform();
 	Shaders.TextShader = make_text_shader_with_transform();
+	Shaders.TextureShader = make_texture_shader_with_transform();
 }
 
 GLuint make_shader(const char *VertexSrc, const char *FragmentSrc, const char *GeometrySrc/* = NULL*/)
@@ -244,19 +245,61 @@ GLuint make_text_shader_with_transform()
 	return make_shader(VertexShader, FragmentShader);
 }
 
-GLuint make_texture_shader()
+//GLuint make_texture_shader()
+//{
+//	const char *VertexShader = R"(
+//		#version 330 core
+//		
+//		layout(location = 0) in vec3 Position;
+//		layout(location = 1) in vec2 vTex;
+//		
+//		out vec2 fTex;
+//		
+//		void main()
+//		{
+//			gl_Position = vec4(Position, 1.0);
+//			fTex = vTex;
+//		}
+//	)";
+//	const char *FragmentShader = R"(
+//		#version 330 core
+//		
+//		in vec2 fTex;
+//		out vec4 Color;
+//		
+//		uniform sampler2D s;
+//		
+//		void main()
+//		{
+//			Color = texture(s, fTex);
+//		}
+//	)";
+//	return make_shader(VertexShader, FragmentShader);
+//}
+
+GLuint make_texture_shader_with_transform()
 {
 	const char *VertexShader = R"(
 		#version 330 core
 		
-		layout(location = 0) in vec3 Position;
+		layout(location = 0) in vec2 Position;
 		layout(location = 1) in vec2 vTex;
 		
 		out vec2 fTex;
+
+		uniform float WindowWidth;
+		uniform float WindowHeight;
+
+		vec2 transform_window_2_opengl(vec2 Pos)
+		{
+			Pos.x = Pos.x * 2.0 / WindowWidth - 1.0;
+			Pos.y = -(Pos.y * 2.0 / WindowHeight - 1.0);
+			return Pos;
+		}
 		
 		void main()
 		{
-			gl_Position = vec4(Position, 1.0);
+			gl_Position = vec4(transform_window_2_opengl(Position), 0.0, 1.0);
 			fTex = vTex;
 		}
 	)";
@@ -552,8 +595,7 @@ GLuint make_SDF_shader()
 //	glDeleteVertexArrays(1, &VAO);
 //}
 
-//void make_quad(int X, int Y, int W, int H, color Color, int WindowWidth, int WindowHeight)
-void make_quad(int X, int Y, int W, int H, color Color)
+void draw_quad(int X, int Y, int W, int H, color Color)
 {
 	float X0 = X;
 	float X1 = X + W;
@@ -584,6 +626,49 @@ void make_quad(int X, int Y, int W, int H, color Color)
 
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *) 0); // pos
 	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *) (2 * sizeof(float))); // color
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+
+	glBufferData(GL_ARRAY_BUFFER, sizeof(QuadVertices), QuadVertices, GL_STREAM_DRAW);
+
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+
+	glDeleteBuffers(1, &VBO);
+	glDeleteVertexArrays(1, &VAO);
+}
+
+void draw_quad(int X, int Y, int W, int H, GLuint Texture)
+{
+	float X0 = X;
+	float X1 = X + W;
+	float Y0 = Y;
+	float Y1 = Y + H;
+
+	float QuadVertices[] = {
+		/* upper-left*/  X0, Y0, 0.0f, 1.0f,
+		/* upper-right*/ X1, Y0, 1.0f, 1.0f,
+		/* lower-right*/ X1, Y1, 1.0f, 0.0f,
+
+		/* lower-right*/ X1, Y1, 1.0f, 0.0f,
+		/* lower-left*/  X0, Y1, 0.0f, 0.0f,
+		/* upper-left*/  X0, Y0, 0.0f, 1.0f,
+	};
+
+	glBindTexture(GL_TEXTURE_2D, Texture);
+	glUseProgram(Shaders.TextureShader);
+	pass_to_shader(Shaders.TextureShader, "WindowWidth", (float)Shaders.WindowWidth);
+	pass_to_shader(Shaders.TextureShader, "WindowHeight", (float)Shaders.WindowHeight);
+
+	GLuint VAO;
+	glGenVertexArrays(1, &VAO);
+	glBindVertexArray(VAO);
+
+	GLuint VBO;
+	glGenBuffers(1, &VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *) 0); // position
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *) (2 * sizeof(float))); // texture
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
 
@@ -643,6 +728,58 @@ void make_quad(int X, int Y, int W, int H, color Color)
 //
 //	return shaderProgram;
 //}
+
+#include "stb_image.h"
+image *make_image(const char *FilePath)
+{
+	int Width, Height, NumChannels;
+	stbi_set_flip_vertically_on_load(1);
+	unsigned char *Data = stbi_load(FilePath, &Width, &Height, &NumChannels, 0);
+	if(!Data)
+	{
+		fprintf(stderr, "error: make_image(): stbi_load(): %s\n", FilePath);
+		return NULL;
+	}
+	else
+	{
+		printf("make_image(): width: %d, height: %d, num channels: %d, file: %s\n",
+			Width, Height, NumChannels, FilePath);
+	}
+
+	GLuint Tex;
+	glGenTextures(1, &Tex);
+	glBindTexture(GL_TEXTURE_2D, Tex);
+
+	// What to do when texture coordinates are outside of the texture:
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	// What to do when the texture is minified/magnified:
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	assert(NumChannels == 1 || NumChannels == 3);
+	if(NumChannels == 1)
+	{
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, Width, Height, 0, GL_RED, GL_UNSIGNED_BYTE, Data);
+	}
+	else if(NumChannels == 3)
+	{
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, Width, Height, 0, GL_RGB, GL_UNSIGNED_BYTE, Data);
+	}
+//	glGenerateMipmap(GL_TEXTURE_2D);
+
+	stbi_image_free(Data);
+
+	image *Image = (image *)malloc(sizeof(image));
+	Image->Tex = Tex;
+	Image->W = Width;
+	Image->H = Height;
+	Image->NumChannels = NumChannels;
+
+	return Image;
+}
 
 
 
