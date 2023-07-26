@@ -95,6 +95,7 @@ struct editor
 	textBuffer TextBuffer;
 
 	editableText EditableText;
+	editableText EditableText2;
 
 //	font *TheFont;
 	font *FontSmall;
@@ -176,15 +177,9 @@ void OnCharEvent(GLFWwindow *Window, unsigned int Codepoint)
 //			printf("BUFFER IS FULL\n");
 //		}
 
-		if(Insert(Buffer, (char)Codepoint, Editor.EditableText.Cursor))
-		{
-			MoveForward(Buffer, &Editor.EditableText.Cursor);
-			adjust_viewport_if_not_visible(&Editor.EditableText, Editor.EditableText.Cursor);
-		}
-		else
-		{
-			printf("BUFFER IS FULL\n");
-		}
+		Insert(Buffer, (char)Codepoint, Editor.EditableText.Cursor);
+		MoveForward(Buffer, &Editor.EditableText.Cursor);
+		adjust_viewport_if_not_visible(&Editor.EditableText, Editor.EditableText.Cursor);
 	}
 	else
 	{
@@ -283,15 +278,9 @@ void OnKeyEvent(GLFWwindow *Window, int Key, int Scancode, int Action, int Mods)
 
 	if(Key == GLFW_KEY_ENTER && (Action == GLFW_PRESS || Action == GLFW_REPEAT))
 	{
-		if(Insert(Buffer, '\n', Editable->Cursor))
-		{
-			MoveForward(Buffer, &Editable->Cursor);
-			adjust_viewport_if_not_visible(Editable, Editable->Cursor);
-		}
-		else
-		{
-			printf("BUFFER IS FULL\n");
-		}
+		Insert(Buffer, '\n', Editable->Cursor);
+		MoveForward(Buffer, &Editable->Cursor);
+		adjust_viewport_if_not_visible(Editable, Editable->Cursor);
 	}
 	if(Key == GLFW_KEY_BACKSPACE && (Action == GLFW_PRESS || Action == GLFW_REPEAT))
 	{
@@ -1223,51 +1212,55 @@ void InitEditor(editor *Editor)
 
 	InitTextBuffer(&Editor->TextBuffer);
 
-	char *Contents;
-//	const char *FilePath = "testfile.cpp";
-	const char *FilePath = "../main.cpp";
-	if(!ReadTextFile(FilePath, &Contents))
-	{
-		fprintf(stderr, "error: failed to read file: %s\n", FilePath);
-		return;
-	}
-	printf("Read file \"%s\" successfully\n", FilePath);
-	textBuffer *Buffer = &Editor->TextBuffer;
-	int NumCharsInBuffer = Buffer->OneAfterLast;
-	Delete(Buffer, GetStart(Buffer), NumCharsInBuffer);
-	if(Insert(Buffer, Contents, GetStart(Buffer)))
-	{
-		printf("Loaded file successfully\n");
-	}
-	else
-	{
-		printf("File too large!\n");
-	}
-	free(Contents);
+//	char *Contents;
+//	const char *FilePath = "../main.cpp";
+//	if(!ReadTextFile(FilePath, &Contents))
+//	{
+//		fprintf(stderr, "error: failed to read file: %s\n", FilePath);
+//		return;
+//	}
+//	printf("Read file \"%s\" successfully\n", FilePath);
+//	textBuffer *Buffer = &Editor->TextBuffer;
+//	int NumCharsInBuffer = Buffer->OneAfterLast;
+//	Delete(Buffer, GetStart(Buffer), NumCharsInBuffer);
+//	Insert(Buffer, Contents, GetStart(Buffer));
+//	free(Contents);
+
+//	{
+//		editableTextConfig Config = {};
+//		Config.X = 16;
+//		Config.Y = 16;
+//		Config.W = Editor->WindowWidth - 32;
+//		Config.H = Editor->WindowHeight - 32;
+//		Config.TextColor = {1.0f, 1.0f, 1.0f, 1.0f};
+//		Config.BackgroundColor = {0.1f, 0.1f, 0.1f, 1.0f};
+//		Config.CursorColor = {0.0f, 1.0f, 0.0f, 1.0f};
+//		init_editable_text(&Editor->EditableText, &Editor->TextBuffer, Editor->FontMedium, Editor->Font8x16px, Config);
+//	}
 
 	{
 		editableTextConfig Config = {};
 		Config.X = 16;
 		Config.Y = 16;
-		Config.W = Editor->WindowWidth - 32;
-		Config.H = Editor->WindowHeight - 32;
+		Config.W = 300;
+		Config.H = 300;
 		Config.TextColor = {1.0f, 1.0f, 1.0f, 1.0f};
 		Config.BackgroundColor = {0.1f, 0.1f, 0.1f, 1.0f};
 		Config.CursorColor = {0.0f, 1.0f, 0.0f, 1.0f};
 		init_editable_text(&Editor->EditableText, &Editor->TextBuffer, Editor->FontMedium, Editor->Font8x16px, Config);
 	}
 
-//	{
-//		editableTextConfig Config = {};
-//		Config.X = 10;
-//		Config.Y = 10;
-//		Config.W = Editor->WindowWidth - 20;
-//		Config.H = Editor->WindowHeight - 20;
-//		Config.TextColor = {1.0f, 1.0f, 1.0f, 1.0f};
-//		Config.BackgroundColor = {0.1f, 0.1f, 0.1f, 1.0f};
-//		Config.CursorColor = {0.0f, 1.0f, 0.0f, 1.0f};
-//		init_editable_text(&Editor->EditableText, &Editor->TextBuffer, Editor->FontMedium, Editor->Font8x16px, Config);
-//	}
+	{
+		editableTextConfig Config = {};
+		Config.X = 10;
+		Config.Y = 10;
+		Config.W = Editor->WindowWidth - 20;
+		Config.H = Editor->WindowHeight - 20;
+		Config.TextColor = {1.0f, 1.0f, 1.0f, 1.0f};
+		Config.BackgroundColor = {0.1f, 0.1f, 0.1f, 1.0f};
+		Config.CursorColor = {0.0f, 1.0f, 0.0f, 1.0f};
+		init_editable_text(&Editor->EditableText2, &Editor->TextBuffer, Editor->FontMedium, Editor->Font8x16px, Config);
+	}
 }
 
 void MakeQuad(array<float> *Vertices, int X, int Y, int Width, int Height, color Color)

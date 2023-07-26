@@ -6,12 +6,11 @@
 
 void InitTextBuffer(textBuffer *Buffer)
 {
-	Buffer->Size = 3;
+	Buffer->Size = 1;
 //	Buffer->Size = 1024;	
 	Buffer->Data = (char *) malloc(Buffer->Size);
 	assert(Buffer->Data);
 	Buffer->OneAfterLast = 0;
-//	Buffer->Cursor = 0;
 
 //	memset(Buffer->Data, 'x', Buffer->Size);
 
@@ -246,36 +245,40 @@ bool MoveToNextLine(textBuffer *Buffer, int *Iter)
 	return FoundLine;
 }
 
-bool Insert(textBuffer *Buffer, char Char, int At)
+void Insert(textBuffer *Buffer, char Char, int At)
 {
 	assert(0 <= At && At <= Buffer->OneAfterLast);
 
-	bool Result = false; // Assume buffer is full
-
-	if(Buffer->OneAfterLast < Buffer->Size)
+	if(Buffer->OneAfterLast + 1 > Buffer->Size)
 	{
-		int i = Buffer->OneAfterLast;
-		while(i > At)
+		int NewDataSize = 2 * (Buffer->OneAfterLast + 1);
+		printf("ALLOCATING MEMORY: %d\n", NewDataSize);
+		char *NewData = (char *) malloc(NewDataSize);
+		assert(NewData);
+		for(int i = 0; i < Buffer->OneAfterLast; ++i)
 		{
-			Buffer->Data[i] = Buffer->Data[i-1];
-			--i;
+			NewData[i] = Buffer->Data[i];
 		}
-		Buffer->Data[At] = Char;
-		Buffer->OneAfterLast += 1;
-		Result = true;
+		free(Buffer->Data);
+		Buffer->Data = NewData;
+		Buffer->Size = NewDataSize;
 	}
 
-	return Result;
+	for(int i = Buffer->OneAfterLast; i > At; --i)
+	{
+		Buffer->Data[i] = Buffer->Data[i-1];
+	}
+	Buffer->Data[At] = Char;
+	Buffer->OneAfterLast += 1;
 }
 
-bool Insert(textBuffer *Buffer, const char *Text, int At)
+void Insert(textBuffer *Buffer, const char *Text, int At)
 {
 	assert(0 <= At && At <= Buffer->OneAfterLast);
 
-	bool Result = false; // Assume buffer is full
 	int TextLength = strlen(Text);
 
-	if(!((Buffer->OneAfterLast + TextLength) <= Buffer->Size))
+	if((Buffer->OneAfterLast + TextLength) > Buffer->Size)
 	{
 		int NewDataSize = 2 * (Buffer->OneAfterLast + TextLength);
 		char *NewData = (char *) malloc(NewDataSize);
@@ -287,7 +290,6 @@ bool Insert(textBuffer *Buffer, const char *Text, int At)
 		free(Buffer->Data);
 		Buffer->Data = NewData;
 		Buffer->Size = NewDataSize;
-		printf("ALLOCATED NEW MEMORY: %d\n", Buffer->Size);
 	}
 
 	int i = Buffer->OneAfterLast-1;
@@ -301,9 +303,6 @@ bool Insert(textBuffer *Buffer, const char *Text, int At)
 		Buffer->Data[At+i] = Text[i];
 	}
 	Buffer->OneAfterLast += TextLength;
-	Result = true;
-
-	return Result;
 }
 
 /*
