@@ -142,6 +142,32 @@ intrin.h
 arm_neon.h
 -
 
+/home/eero/all/no-gtk-text-editor/glfw/text-editor/stb_truetype.h
+stb_truetype.h
+/home/eero/all/no-gtk-text-editor/glfw/text-editor/stb_truetype.h
+stdio.h
+-
+stb_truetype.h
+/home/eero/all/no-gtk-text-editor/glfw/text-editor/stb_truetype.h
+math.h
+-
+math.h
+-
+math.h
+-
+math.h
+-
+math.h
+-
+stdlib.h
+-
+assert.h
+-
+string.h
+-
+string.h
+-
+
 /home/eero/all/no-gtk-text-editor/glfw/text-editor/text_buffer.cpp
 text_buffer.hpp
 /home/eero/all/no-gtk-text-editor/glfw/text-editor/text_buffer.hpp
@@ -163,6 +189,8 @@ stdio.h
 -
 stb_image.h
 /home/eero/all/no-gtk-text-editor/glfw/text-editor/stb_image.h
+stb_truetype.h
+/home/eero/all/no-gtk-text-editor/glfw/text-editor/stb_truetype.h
 
 /home/eero/all/no-gtk-text-editor/glfw/text-editor/text_drawing.hpp
 lib.h
@@ -175,6 +203,8 @@ drawing.hpp
 /home/eero/all/no-gtk-text-editor/glfw/text-editor/ui.cpp
 ui.hpp
 /home/eero/all/no-gtk-text-editor/glfw/text-editor/ui.hpp
+assert.h
+-
 
 /home/eero/all/no-gtk-text-editor/glfw/text-editor/ui.hpp
 text_buffer.hpp

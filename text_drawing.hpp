@@ -9,8 +9,30 @@ struct fontConfig
 {
 	int CharWidth, CharHeight;
 	int CharSpacing, LineSpacing;
-	int TabWidth; //@ work in progress. right now it's: space in pixels = TabWidth * (CharWidth + CharSpacing) so it should line up with other monospace characters.
 };
+
+#define NUM_ASCII_CHARS 95
+
+struct glyphInfo
+{
+	int W, H;
+	int XOffs, YOffs;
+	float Advance, LSB;
+	float TX0, TX1, TY0, TY1;
+};
+
+struct font
+{
+	GLuint Tex;
+	int W, H;
+	glyphInfo Glyphs[NUM_ASCII_CHARS];
+	float Ascent, Descent, LineGap;
+};
+
+font *make_font(const char *FilePath, int FontHeight);
+//void free_font(font *Font);
+void draw_font(font *Font);
+void draw_text(const char *Text, int X, int Y, color Color, font *Font, shaders *Shaders);
 
 struct textureCoordinates
 {
@@ -40,13 +62,6 @@ bitmapFont *make_bitmap_font(bitmapFontImageMetrics ImageMetrics, fontConfig Con
 void draw_text(const char *Text, int X, int Y, color Color, bitmapFont *Font, shaders *Shaders);
 // maybe draw_text() should take some kind of horizontal extent and once it reaches the end it wraps to a new line?
 // also maybe draw_text() should be part of drawing and draw_text_buffer() is a very specialized function that should be part of editable_text?
-
-void draw_text_buffer(
-	textBuffer *TextBuffer,
-	bitmapFont *Font,
-	int X, int Y, int W, int H,
-	int OffsH, int OffsV,
-	shaders *Shaders);
 
 //void make_text(
 //	array<float> *TextVertices,

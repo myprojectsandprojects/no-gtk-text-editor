@@ -34,6 +34,7 @@ CMakeFiles/MyGlfwTest.dir/text_drawing.cpp.o
  /home/eero/all/no-gtk-text-editor/glfw/text-editor/drawing.hpp
  /home/eero/all/no-gtk-text-editor/glfw/text-editor/lib.h
  /home/eero/all/no-gtk-text-editor/glfw/text-editor/stb_image.h
+ /home/eero/all/no-gtk-text-editor/glfw/text-editor/stb_truetype.h
  /home/eero/all/no-gtk-text-editor/glfw/text-editor/text_buffer.hpp
  /home/eero/all/no-gtk-text-editor/glfw/text-editor/text_drawing.cpp
  /home/eero/all/no-gtk-text-editor/glfw/text-editor/text_drawing.hpp

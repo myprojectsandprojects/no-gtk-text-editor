@@ -30,6 +30,7 @@ struct image
 	GLuint Tex;
 	int W, H, NumChannels;
 };
+image *make_image(unsigned char *Data, int Width, int Height, int NumChannels);
 image *make_image(const char *FilePath);
 
 GLuint make_shader(const char *VertexSrc, const char *FragmentSrc, const char *GeometrySrc = NULL);
@@ -54,7 +55,7 @@ void init_shaders(int WindowWidth, int WindowHeight);
 
 //void make_quad(int X, int Y, int W, int H, color Color, int WindowWidth, int WindowHeight);
 void draw_quad(int X, int Y, int W, int H, color Color);
-void draw_quad(int X, int Y, int W, int H, GLuint Texture);
+void draw_quad(int X, int Y, int W, int H, GLuint Texture, bool Flip = false);
 
 #endif
 

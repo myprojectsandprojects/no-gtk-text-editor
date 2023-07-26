@@ -33,6 +33,7 @@ CMakeFiles/MyGlfwTest.dir/text_drawing.cpp.o: ../glad/include/glad/glad.h
 CMakeFiles/MyGlfwTest.dir/text_drawing.cpp.o: ../drawing.hpp
 CMakeFiles/MyGlfwTest.dir/text_drawing.cpp.o: ../lib.h
 CMakeFiles/MyGlfwTest.dir/text_drawing.cpp.o: ../stb_image.h
+CMakeFiles/MyGlfwTest.dir/text_drawing.cpp.o: ../stb_truetype.h
 CMakeFiles/MyGlfwTest.dir/text_drawing.cpp.o: ../text_buffer.hpp
 CMakeFiles/MyGlfwTest.dir/text_drawing.cpp.o: ../text_drawing.cpp
 CMakeFiles/MyGlfwTest.dir/text_drawing.cpp.o: ../text_drawing.hpp

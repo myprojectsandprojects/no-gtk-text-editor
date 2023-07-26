@@ -21,7 +21,7 @@
 #include "text_drawing.hpp"
 #include "ui.hpp"
 
-extern shaders Shaders; // should probably be in editor
+extern shaders Shaders; // in drawing.cpp. (should probably be in editor)
 
 const int MAX_FILE_PATH = 1000; //@ very random
 
@@ -79,7 +79,7 @@ struct editor
 //	array<quad> EffectQuads;
 //	array<charColor> CharsWithEffect;
 
-	char OpenFile[MAX_FILE_PATH];
+//	char OpenFile[MAX_FILE_PATH];
 
 	GLFWwindow *AppWindow;
 
@@ -96,6 +96,10 @@ struct editor
 
 	editableText EditableText;
 
+//	font *TheFont;
+	font *FontSmall;
+	font *FontMedium;
+	font *FontBig;
 	bitmapFont *Font8x16px;
 	bitmapFont *Font16x32px;
 	bitmapFont *Font32x64px;
@@ -112,8 +116,6 @@ void MakeTextVertices(array<float> *Vertices, const char *Text, int OriginalX, i
 //void MakeCursorVertices(array<float> *CursorVertices, textBuffer *Buffer, editor *Editor);
 void MakeQuad(array<float> *Vertices, int X, int Y, int Width, int Height, color Color);
 
-//void AdjustViewportIfNotVisible(editor *Editor, int CharIndex, int LineIndex);
-void AdjustViewportIfNotVisible(editableText *Editable, int Iter);
 float Lerp(float From, float To, float Progress);
 void DisplayMessage(messageType MessageType, const char *MessageText, editor *Editor);
 
@@ -177,7 +179,7 @@ void OnCharEvent(GLFWwindow *Window, unsigned int Codepoint)
 		if(Insert(Buffer, (char)Codepoint, Editor.EditableText.Cursor))
 		{
 			MoveForward(Buffer, &Editor.EditableText.Cursor);
-			AdjustViewportIfNotVisible(&Editor.EditableText, Editor.EditableText.Cursor);
+			adjust_viewport_if_not_visible(&Editor.EditableText, Editor.EditableText.Cursor);
 		}
 		else
 		{
@@ -226,34 +228,9 @@ void OnKeyEvent(GLFWwindow *Window, int Key, int Scancode, int Action, int Mods)
 
 	if (Key == GLFW_KEY_UP && (Action == GLFW_PRESS || Action == GLFW_REPEAT))
 	{
-//		int Iter = GetCursor(Buffer);
-//		int CharsIntoLine = GetCharsIntoLine(Buffer, Iter);
-//		if(MoveToPrevLine(Buffer, &Iter))
-//		{
-//			// If there is a previous line (we are not on the first line)
-//			while(CharsIntoLine > 0)
-//			{
-//				if(GetChar(Buffer, Iter) == '\n')
-//				{
-//					break;
-//				}
-//				--CharsIntoLine;
-//				++Iter;
-//			}
-//			SetCursor(Buffer, Iter);
-//			int NewCharsIntoLine = GetCharsIntoLine(Buffer, Iter);
-//			int NewLinesIntoBuffer = GetLinesIntoBuffer(Buffer, Iter);
-//			AdjustViewportIfNotVisible(&Editor, NewCharsIntoLine, NewLinesIntoBuffer);
-//		}
-//		else
-//		{
-//			printf("NO PREV LINE\n");
-//		}
-
 		int CharsIntoLine = GetCharsIntoLine(Buffer, Editable->Cursor);
 		if(MoveToPrevLine(Buffer, &Editable->Cursor))
 		{
-			// If there is a previous line (we are not on the first line)
 			while(CharsIntoLine > 0)
 			{
 				if(GetChar(Buffer, Editable->Cursor) == '\n')
@@ -263,7 +240,7 @@ void OnKeyEvent(GLFWwindow *Window, int Key, int Scancode, int Action, int Mods)
 				--CharsIntoLine;
 				MoveForward(Buffer, &Editable->Cursor);
 			}
-			AdjustViewportIfNotVisible(Editable, Editable->Cursor);
+			adjust_viewport_if_not_visible(Editable, Editable->Cursor);
 		}
 		else
 		{
@@ -272,27 +249,6 @@ void OnKeyEvent(GLFWwindow *Window, int Key, int Scancode, int Action, int Mods)
 	}
 	if (Key == GLFW_KEY_DOWN && (Action == GLFW_PRESS || Action == GLFW_REPEAT))
 	{
-//		int Cursor = GetCursor(Buffer);
-//		int CharsIntoLine = GetCharsIntoLine(Buffer, Cursor);
-//		if(MoveToNextLine(Buffer, &Cursor))
-//		{
-//			// If there is a previous line (we are not on the first line)
-//			while(CharsIntoLine > 0)
-//			{
-//				char Char = GetChar(Buffer, Cursor);
-//				if(Char == '\n' || Char == '\0') //@ '\0'?
-//				{
-//					break;
-//				}
-//				--CharsIntoLine;
-//				MoveForward(Buffer, &Cursor);
-//			}
-//			SetCursor(Buffer, Cursor);
-//			int NewCharsIntoLine = GetCharsIntoLine(Buffer, Cursor);
-//			int NewLinesIntoBuffer = GetLinesIntoBuffer(Buffer, Cursor);
-//			AdjustViewportIfNotVisible(&Editor, NewCharsIntoLine, NewLinesIntoBuffer);
-//		}
-
 		int CharsIntoLine = GetCharsIntoLine(Buffer, Editable->Cursor);
 		if(MoveToNextLine(Buffer, &Editable->Cursor))
 		{
@@ -307,83 +263,30 @@ void OnKeyEvent(GLFWwindow *Window, int Key, int Scancode, int Action, int Mods)
 				--CharsIntoLine;
 				MoveForward(Buffer, &Editable->Cursor);
 			}
-			AdjustViewportIfNotVisible(Editable, Editable->Cursor);
+			adjust_viewport_if_not_visible(Editable, Editable->Cursor);
 		}
 	}
 	if (Key == GLFW_KEY_LEFT && (Action == GLFW_PRESS || Action == GLFW_REPEAT))
 	{
-////		int Cursor = GetCursor(Buffer);
-////		if(!IsStart(Buffer, Cursor))
-////		{
-////			int NewCursor = Cursor-1;
-////			SetCursor(Buffer, NewCursor);
-////			int CharsIntoLine = GetCharsIntoLine(Buffer, NewCursor);
-////			int LinesIntoBuffer = GetLinesIntoBuffer(Buffer, NewCursor);
-////			AdjustViewportIfNotVisible(&Editor, CharsIntoLine, LinesIntoBuffer);
-////		}
-//		int Cursor = GetCursor(Buffer);
-//		MoveBackward(Buffer, &Cursor);
-//		SetCursor(Buffer, Cursor);
-//
-//		int CharsIntoLine = GetCharsIntoLine(Buffer, Cursor);
-//		int LinesIntoBuffer = GetLinesIntoBuffer(Buffer, Cursor);
-//		AdjustViewportIfNotVisible(&Editor, CharsIntoLine, LinesIntoBuffer);
-
 		if(MoveBackward(Buffer, &Editable->Cursor))
 		{
-			AdjustViewportIfNotVisible(Editable, Editable->Cursor);
+			adjust_viewport_if_not_visible(Editable, Editable->Cursor);
 		}
 	}
 	if (Key == GLFW_KEY_RIGHT && (Action == GLFW_PRESS || Action == GLFW_REPEAT))
 	{
-////		int Cursor = GetCursor(Buffer);
-////		if(!IsEnd(Buffer, Cursor))
-////		{
-////			int NewCursor = Cursor+1;
-////			SetCursor(Buffer, NewCursor);
-////			int CharsIntoLine = GetCharsIntoLine(Buffer, NewCursor);
-////			int LinesIntoBuffer = GetLinesIntoBuffer(Buffer, NewCursor);
-////			AdjustViewportIfNotVisible(&Editor, CharsIntoLine, LinesIntoBuffer);
-////		}
-//		int Cursor = GetCursor(Buffer);
-//		if(MoveForward(Buffer, &Cursor))
-//		{
-//			int CharsIntoLine = GetCharsIntoLine(Buffer, Cursor);
-//			int LinesIntoBuffer = GetLinesIntoBuffer(Buffer, Cursor);
-//			AdjustViewportIfNotVisible(&Editor, CharsIntoLine, LinesIntoBuffer);
-//		}
-//		SetCursor(Buffer, Cursor);
-
 		if(MoveForward(Buffer, &Editable->Cursor))
 		{
-			AdjustViewportIfNotVisible(Editable, Editable->Cursor);
+			adjust_viewport_if_not_visible(Editable, Editable->Cursor);
 		}
 	}
 
 	if(Key == GLFW_KEY_ENTER && (Action == GLFW_PRESS || Action == GLFW_REPEAT))
 	{
-//		int Cursor = GetCursor(Buffer);
-//		if(Insert(Buffer, '\n', Cursor))
-//		{
-////			CursorForward(Buffer);
-////			int NewCursor = GetCursor(Buffer);
-////			int NewCursorCharIndex = GetCharsIntoLine(Buffer, NewCursor);
-////			int NewCursorLineIndex = GetLinesIntoBuffer(Buffer, NewCursor);
-//			MoveForward(Buffer, &Cursor);
-//			SetCursor(Buffer, Cursor);
-//			int CursorCharIndex = GetCharsIntoLine(Buffer, Cursor);
-//			int CursorLineIndex = GetLinesIntoBuffer(Buffer, Cursor);
-//			AdjustViewportIfNotVisible(&Editor, CursorCharIndex, CursorLineIndex);
-//		}
-//		else
-//		{
-//			printf("BUFFER IS FULL\n");
-//		}
-
 		if(Insert(Buffer, '\n', Editable->Cursor))
 		{
 			MoveForward(Buffer, &Editable->Cursor);
-			AdjustViewportIfNotVisible(Editable, Editable->Cursor);
+			adjust_viewport_if_not_visible(Editable, Editable->Cursor);
 		}
 		else
 		{
@@ -392,31 +295,13 @@ void OnKeyEvent(GLFWwindow *Window, int Key, int Scancode, int Action, int Mods)
 	}
 	if(Key == GLFW_KEY_BACKSPACE && (Action == GLFW_PRESS || Action == GLFW_REPEAT))
 	{
-//		// delete character before cursor
-//		int Iter = GetCursor(Buffer);
-//		if(!IsStart(Buffer, Iter))
-//		{
-//			MoveBackward(Buffer, &Iter);
-//			if(Delete(Buffer, Iter))
-//			{
-//				SetCursor(Buffer, Iter);
-//				int CharIndex = GetCharsIntoLine(Buffer, Iter);
-//				int LineIndex = GetLinesIntoBuffer(Buffer, Iter);
-//				AdjustViewportIfNotVisible(&Editor, CharIndex, LineIndex);
-//			}
-//			else
-//			{
-//				assert(false); // should never happen
-//			}
-//		}
-
 		// delete character before cursor
 		if(!IsStart(Buffer, Editable->Cursor))
 		{
 			MoveBackward(Buffer, &Editable->Cursor);
 			if(Delete(Buffer, Editable->Cursor))
 			{
-				AdjustViewportIfNotVisible(Editable, Editable->Cursor);
+				adjust_viewport_if_not_visible(Editable, Editable->Cursor);
 			}
 			else
 			{
@@ -424,6 +309,43 @@ void OnKeyEvent(GLFWwindow *Window, int Key, int Scancode, int Action, int Mods)
 			}
 		}
 	}
+}
+
+void OnMouseButtonEvent(GLFWwindow *Window, int Button, int Action, int Mods)
+{
+	if(Button == GLFW_MOUSE_BUTTON_LEFT && Action == GLFW_PRESS)
+	{
+		double MouseX, MouseY;
+		glfwGetCursorPos(Window, &MouseX, &MouseY);
+		if(((double)Editor.EditableText.X) <= MouseX && MouseX <= ((double)(Editor.EditableText.X + Editor.EditableText.W))
+		&& ((double)Editor.EditableText.Y) <= MouseY && MouseY <= ((double)(Editor.EditableText.Y + Editor.EditableText.H)))
+		{
+			printf("Inside\n");
+		}
+		else
+		{
+			printf("Outside\n");
+		}
+	}
+}
+
+void OnMouseMoveEvent(GLFWwindow *Window, double MouseX, double MouseY)
+{
+	if(((double)Editor.EditableText.X) <= MouseX && MouseX <= ((double)(Editor.EditableText.X + Editor.EditableText.W))
+	&& ((double)Editor.EditableText.Y) <= MouseY && MouseY <= ((double)(Editor.EditableText.Y + Editor.EditableText.H)))
+	{
+		printf("Hover\n");
+	}
+	else
+	{
+		printf("No Hover\n");
+	}
+}
+
+void OnScrollEvent(GLFWwindow *Window, double XOffset, double YOffset)
+{
+	Editor.EditableText.OffsX -= (int)(XOffset * 50.0);
+	Editor.EditableText.OffsY -= (int)(YOffset * 50.0);
 }
 
 //void OnFileDrop(GLFWwindow *Window, int Count, const char **Paths)
@@ -475,10 +397,12 @@ int main()
 
 	GLFWmonitor *Monitor = glfwGetPrimaryMonitor();
 	const GLFWvidmode *VideoMode = glfwGetVideoMode(Monitor);
-	printf("screen width: %d, screen height: %d, screen refresh rate: %d\n", VideoMode->width, VideoMode->height, VideoMode->refreshRate);
+	printf("screen width: %d, screen height: %d, screen refresh rate: %d\n",
+		VideoMode->width, VideoMode->height, VideoMode->refreshRate);
 
-//	GLFWwindow *window = glfwCreateWindow(800, 600, "My Window", NULL, NULL);
-	GLFWwindow *window = glfwCreateWindow(VideoMode->width, VideoMode->height, "My Window", NULL, NULL);
+	GLFWwindow *window = glfwCreateWindow(900, 600, "My Window", NULL, NULL);
+//	GLFWwindow *window =
+//		glfwCreateWindow(VideoMode->width, VideoMode->height, "My Window", NULL, NULL);
 	if(window == NULL)
 	{
 		printf("error: glfwCreateWindow()\n");
@@ -504,6 +428,9 @@ int main()
 	glfwSetFramebufferSizeCallback(window, OnWindowResized);
 	glfwSetCharCallback(window, OnCharEvent);
 	glfwSetKeyCallback(window, OnKeyEvent);
+//	glfwSetMouseButtonCallback(window, OnMouseButtonEvent);
+//	glfwSetCursorPosCallback(window, OnMouseMoveEvent);
+	glfwSetScrollCallback(window, OnScrollEvent);
 //	glfwSetDropCallback(window, OnFileDrop);
 
 //	glViewport(0, 0, WindowWidth, WindowHeight); // This happens by default
@@ -577,159 +504,165 @@ int main()
 //	GLuint TextShader = CreateShader("../text-vs", "../text-fs");
 //	GLuint QuadShader = CreateShader("../quad-vs", "../quad-fs");
 
-	array<float> TextVertices;
-	ArrayInit(&TextVertices);
-//	array<unsigned int> TextIndices;
-//	ArrayInit(&TextIndices);
-	
-	GLuint TextVAO; // Vertex Array Object
-	glGenVertexArrays(1, &TextVAO);
-	glBindVertexArray(TextVAO);
-
-	GLuint TextVBO; // Vertex Buffer Object
-	glGenBuffers(1, &TextVBO);
-	glBindBuffer(GL_ARRAY_BUFFER, TextVBO);
-
-//	GLuint TextEBO; // Element Buffer Object
-//	glGenBuffers(1, &TextEBO);
-//	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, TextEBO);
-	
-	// position
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) 0);
-	glEnableVertexAttribArray(0);
-
-	// texture coordinates
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) (2 * sizeof(float)));
-	glEnableVertexAttribArray(1);
-
-//	// foreground color
-//	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 10 * sizeof(float), (void *) (4 * sizeof(float)));
-//	glEnableVertexAttribArray(2);
+//	array<float> TextVertices;
+//	ArrayInit(&TextVertices);
+////	array<unsigned int> TextIndices;
+////	ArrayInit(&TextIndices);
+//	
+//	GLuint TextVAO; // Vertex Array Object
+//	glGenVertexArrays(1, &TextVAO);
+//	glBindVertexArray(TextVAO);
 //
-//	// background color
-//	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 10 * sizeof(float), (void *) (7 * sizeof(float)));
-//	glEnableVertexAttribArray(3);
+//	GLuint TextVBO; // Vertex Buffer Object
+//	glGenBuffers(1, &TextVBO);
+//	glBindBuffer(GL_ARRAY_BUFFER, TextVBO);
+//
+////	GLuint TextEBO; // Element Buffer Object
+////	glGenBuffers(1, &TextEBO);
+////	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, TextEBO);
+//	
+//	// position
+//	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) 0);
+//	glEnableVertexAttribArray(0);
+//
+//	// texture coordinates
+//	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) (2 * sizeof(float)));
+//	glEnableVertexAttribArray(1);
+//
+////	// foreground color
+////	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 10 * sizeof(float), (void *) (4 * sizeof(float)));
+////	glEnableVertexAttribArray(2);
+////
+////	// background color
+////	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 10 * sizeof(float), (void *) (7 * sizeof(float)));
+////	glEnableVertexAttribArray(3);
+//
+//	// color
+//	glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) (4 * sizeof(float)));
+//	glEnableVertexAttribArray(2);
 
-	// color
-	glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) (4 * sizeof(float)));
-	glEnableVertexAttribArray(2);
-
-	array<float> QuadVertices;
-	ArrayInit(&QuadVertices);
-
-	GLuint QuadVAO; // Vertex Array Object for cursor
-	glGenVertexArrays(1, &QuadVAO);
-	glBindVertexArray(QuadVAO);
-
-	GLuint QuadVBO; // Vertex Buffer Object
-	glGenBuffers(1, &QuadVBO);
-	glBindBuffer(GL_ARRAY_BUFFER, QuadVBO);
-	
-	// position
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *) 0);
-	glEnableVertexAttribArray(0);
-	// color
-	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *) (2 * sizeof(float)));
-	glEnableVertexAttribArray(1);
+//	array<float> QuadVertices;
+//	ArrayInit(&QuadVertices);
+//
+//	GLuint QuadVAO; // Vertex Array Object for cursor
+//	glGenVertexArrays(1, &QuadVAO);
+//	glBindVertexArray(QuadVAO);
+//
+//	GLuint QuadVBO; // Vertex Buffer Object
+//	glGenBuffers(1, &QuadVBO);
+//	glBindBuffer(GL_ARRAY_BUFFER, QuadVBO);
+//	
+//	// position
+//	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *) 0);
+//	glEnableVertexAttribArray(0);
+//	// color
+//	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *) (2 * sizeof(float)));
+//	glEnableVertexAttribArray(1);
 
 //	array<double> Timings;
 //	ArrayInit(&Timings);
 
-	image *Image1 = make_image("/home/eero/Desktop/pics/desktop-wallpaper-mystic-for-computer-mystical-nature.jpg");
-//	image *TheImage = make_image("/home/eero/Desktop/pics/desktop-wallpaper-best-5-mystical-on-hip-mystical-landscape.png");
-	image *Image2 = make_image("/home/eero/Desktop/pics/desktop-wallpaper-best-5-mystical-on-hip-mystical-landscape.jpg");
-//	image *TheImage = make_image("/home/eero/Desktop/pics/ylad25oswrua1.png");
+//	image *Image1 = make_image("/home/eero/Desktop/pics/desktop-wallpaper-mystic-for-computer-mystical-nature.jpg");
+////	image *TheImage = make_image("/home/eero/Desktop/pics/desktop-wallpaper-best-5-mystical-on-hip-mystical-landscape.png");
+//	image *Image2 = make_image("/home/eero/Desktop/pics/desktop-wallpaper-best-5-mystical-on-hip-mystical-landscape.jpg");
+////	image *TheImage = make_image("/home/eero/Desktop/pics/ylad25oswrua1.png");
 
-	int FrameCount = 0;
-	double PreviousTime;
+//	int FrameCount = 0;
+//	double PreviousTime;
 
 	while(!glfwWindowShouldClose(window))
 	{
-		if(FrameCount == 0)
-		{
-			PreviousTime = glfwGetTime();
-		}
-		else
-		{
-			double CurrentTime = glfwGetTime();
-			double TimeElapsed = CurrentTime - PreviousTime;
-			PreviousTime = CurrentTime;
-//			printf("elapsed: %.3f s\n", TimeElapsed);
-			printf("elapsed: %.3f ms\n", TimeElapsed * 1000);
-////			printf("elapsed: %f us\n", TimeElapsed * 1000000.0);
-//
-////			if(FrameCount == 1000)
-////			{
-////				double Sum = 0;
-////				for(int i = 0; i < Timings.Count; ++i)
-////				{
-////					Sum += Timings.Data[i];
-////				}
-////				printf("average frame timing: %f us\n", Sum / Timings.Count * 1000000.0);
-////				glfwSetWindowShouldClose(window, 1);
-////			}
-////			else
-////			{
-////				ArrayAdd(&Timings, TimeElapsed);
-////			}
-		}
-		FrameCount += 1;
+//		if(FrameCount == 0)
+//		{
+//			PreviousTime = glfwGetTime();
+//		}
+//		else
+//		{
+//			double CurrentTime = glfwGetTime();
+//			double TimeElapsed = CurrentTime - PreviousTime;
+//			PreviousTime = CurrentTime;
+////			printf("elapsed: %.3f s\n", TimeElapsed);
+//			printf("elapsed: %.3f ms\n", TimeElapsed * 1000);
+//////			printf("elapsed: %f us\n", TimeElapsed * 1000000.0);
+////
+//////			if(FrameCount == 1000)
+//////			{
+//////				double Sum = 0;
+//////				for(int i = 0; i < Timings.Count; ++i)
+//////				{
+//////					Sum += Timings.Data[i];
+//////				}
+//////				printf("average frame timing: %f us\n", Sum / Timings.Count * 1000000.0);
+//////				glfwSetWindowShouldClose(window, 1);
+//////			}
+//////			else
+//////			{
+//////				ArrayAdd(&Timings, TimeElapsed);
+//////			}
+//		}
+//		FrameCount += 1;
 
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		{
-			int X = 0;
-			int Y = 0;
-			int W = Image1->W;
-			int H = Image1->H;
-			draw_quad(X, Y, W, H, Image1->Tex);
-		}
-		{
-			int W = Image2->W;
-			int H = Image2->H;
-			int X = Editor.WindowWidth - W;
-			int Y = Editor.WindowHeight - H;
-			draw_quad(X, Y, W, H, Image2->Tex);
-		}
-
-		{
-			int X = 10;
-			int Y = 10;
-			int W = 100;
-			int H = 100;
-			color Color = {1.0f, 0.0f, 0.0f, 1.0f};
-			draw_quad(X, Y, W, H, Color);
-		}
-
-		{
-			int X = 10;
-			int Y = 10;
-			color Color = {1.0f, 1.0f, 1.0f, 1.0f};
-			draw_text("Hello world!", X, Y, Color, Editor.Font8x16px, &Shaders);
-		}
-		{
-			int X = 10;
-			int Y = 40;
-			color Color = {0.0f, 1.0f, 0.0f, 1.0f};
-			draw_text("Hello world!", X, Y, Color, Editor.Font16x32px, &Shaders);
-		}
-		{
-			int X = 10;
-			int Y = 50;
-			color Color = {0.0f, 0.0f, 1.0f, 0.5f};
-			draw_text("This is supposed to be a really long sentence...",
-				X, Y, Color, Editor.Font32x64px, &Shaders);
-		}
-		{
-			int X = 10;
-			int Y = 150;
-			int W = 95 * 16;
-			int H = 32;
-			draw_quad(X, Y, W, H, Editor.Font16x32px->TextureAtlas->Tex);
-		}
+//		{
+//			int X = 0;
+//			int Y = 0;
+//			int W = Image1->W;
+//			int H = Image1->H;
+//			draw_quad(X, Y, W, H, Image1->Tex, true);
+//		}
+//		{
+//			int W = Image2->W;
+//			int H = Image2->H;
+//			int X = Editor.WindowWidth - W;
+//			int Y = Editor.WindowHeight - H;
+//			draw_quad(X, Y, W, H, Image2->Tex, true);
+//		}
+//
+//		{
+//			int X = 10;
+//			int Y = 10;
+//			int W = 100;
+//			int H = 100;
+//			color Color = {1.0f, 0.0f, 0.0f, 1.0f};
+//			draw_quad(X, Y, W, H, Color);
+//		}
+//
+//		{
+//			int X = 10;
+//			int Y = 10;
+//			color Color = {1.0f, 1.0f, 1.0f, 1.0f};
+//			draw_text("Hello world!", X, Y, Color, Editor.Font8x16px, &Shaders);
+//		}
+//		{
+//			int X = 10;
+//			int Y = 40;
+//			color Color = {0.0f, 1.0f, 0.0f, 1.0f};
+//			draw_text("Hello world!", X, Y, Color, Editor.Font16x32px, &Shaders);
+//		}
+//		{
+//			int X = 10;
+//			int Y = 50;
+//			color Color = {0.0f, 0.0f, 1.0f, 0.5f};
+//			draw_text("This is supposed to be a really long sentence...",
+//				X, Y, Color, Editor.Font32x64px, &Shaders);
+//		}
+//		{
+//			int X = 10;
+//			int Y = 150;
+//			int W = 95 * 16;
+//			int H = 32;
+//			draw_quad(X, Y, W, H, Editor.Font16x32px->TextureAtlas->Tex, true);
+//		}
 
 		draw_editable_text(&Editor.EditableText, &Shaders);
+
+//		{
+//			draw_text("Hello, world!", 10, 25, {1.0f, 0.0f, 0.0f, 1.0f}, Editor.FontSmall, &Shaders);
+//			draw_text("Hello, world!", 10, 50, {0.0f, 1.0f, 0.0f, 1.0f}, Editor.FontMedium, &Shaders);
+//			draw_text("Hello, world!", 10, 500, {1.0f, 0.0f, 0.0f, 1.0f}, Editor.FontBig, &Shaders);
+//		}
 
 //		glUseProgram(QuadShader);
 //		glUniform1f(glGetUniformLocation(QuadShader, "WindowWidth"), Editor.WindowWidth);
@@ -932,10 +865,10 @@ int main()
 //		TextIndices.Count = 0;
 	}
 
-	glDeleteVertexArrays(1, &QuadVAO);
-	glDeleteBuffers(1, &QuadVBO);
-	glDeleteVertexArrays(1, &TextVAO);
-	glDeleteBuffers(1, &TextVBO);
+//	glDeleteVertexArrays(1, &QuadVAO);
+//	glDeleteBuffers(1, &QuadVBO);
+//	glDeleteVertexArrays(1, &TextVAO);
+//	glDeleteBuffers(1, &TextVBO);
 
 	glfwDestroyWindow(window);
 	glfwTerminate();
@@ -1216,50 +1149,7 @@ void MakeTextVertices(array<float> *Vertices, const char *Text, int OriginalX, i
 
 void InitEditor(editor *Editor)
 {
-////	Editor->FontImage = {
-////		.Width = 128,
-////		.Height = 64,
-////		.CharsInRow = 18,
-////		.CharWidth = 5,
-////		.CharHeight = 7,
-////		.HorizontalSpacing = 2,
-////		.VerticalSpacing = 2,
-////		.LeftMargin = 1,
-////		.TopMargin = 1
-////	};
-//	fontImage FontImage = {0};
-//	FontImage.Width = 128;
-//	FontImage.Height = 64;
-//	FontImage.CharsInRow = 18;
-//	FontImage.CharWidth = 5;
-//	FontImage.CharHeight = 7;
-//	FontImage.HorizontalSpacing = 2;
-//	FontImage.VerticalSpacing = 2;
-//	FontImage.LeftMargin = 1;
-//	FontImage.TopMargin = 1;
-//	Editor->FontImage = FontImage;
-//
-////	Editor->WindowWidth = 0;
-////	Editor->WindowHeight = 0;
-////	Editor->ViewportX = 0;
-////	Editor->ViewportY = 0;
-//	Editor->CharWidth = 3 * Editor->FontImage.CharWidth;
-//	Editor->CharHeight = 3 * Editor->FontImage.CharHeight;
-//	Editor->CharSpacing = 3;
-//	Editor->LineSpacing = 10;
-//
-//	color TextColor = {1.0f, 1.0f, 1.0f, 1.0f};
-//	Editor->TextColor = TextColor;
-//	color CursorColor = {0.0f, 1.0f, 0.0f, 1.0f};
-//	Editor->CursorColor = CursorColor;
-////	color CursorEffectColor = {0.0f, 0.0f, 0.0f, 1.0f};
-////	Editor->CursorEffectColor = CursorEffectColor;
-////	Editor->CursorEffectProgress = 1.0f;
-
-//	ArrayInit(&Editor->EffectQuads);
-//	ArrayInit(&Editor->CharsWithEffect);
-
-	Editor->OpenFile[0] = '\0';
+//	Editor->OpenFile[0] = '\0';
 
 //	Editor->AppWindow = AppWindow;
 
@@ -1309,14 +1199,7 @@ void InitEditor(editor *Editor)
 //	Config.CharWidth = IM.CharWidth * 2;
 //	Config.CharHeight = IM.CharHeight * 2;
 	Config.CharSpacing = 0;
-	Config.LineSpacing = 0;
-	Config.TabWidth = 3;
-
-	bitmapFont *TheFont = make_bitmap_font(IM, Config);
-	if(!TheFont)
-	{
-		printf("ERROR: FAILED TO MAKE BITMAP FONT!\n");
-	}
+	Config.LineSpacing = 6;
 
 	//@ dumbass way
 	Config.CharWidth = 8;
@@ -1332,6 +1215,12 @@ void InitEditor(editor *Editor)
 	Editor->Font16x32px = Font16x32px;
 	Editor->Font32x64px = Font32x64px;
 
+	Editor->FontMedium = make_font("/usr/share/fonts/truetype/ubuntu-font-family/UbuntuMono-R.ttf", 21);
+	Editor->FontSmall = make_font("/home/eero/.local/share/fonts/InputMono-Regular.ttf", 16);
+//	Editor->FontMedium = make_font("/home/eero/.local/share/fonts/InputMono-Regular.ttf", 21);
+	Editor->FontBig = make_font("/home/eero/.local/share/fonts/InputMono-Regular.ttf", 32);
+	assert(Editor->FontSmall && Editor->FontMedium && Editor->FontBig);
+
 	InitTextBuffer(&Editor->TextBuffer);
 
 	char *Contents;
@@ -1339,7 +1228,7 @@ void InitEditor(editor *Editor)
 	const char *FilePath = "../main.cpp";
 	if(!ReadTextFile(FilePath, &Contents))
 	{
-		fprintf(stderr, "error: failed to read a dropped file: %s\n", FilePath);
+		fprintf(stderr, "error: failed to read file: %s\n", FilePath);
 		return;
 	}
 	printf("Read file \"%s\" successfully\n", FilePath);
@@ -1354,20 +1243,31 @@ void InitEditor(editor *Editor)
 	{
 		printf("File too large!\n");
 	}
+	free(Contents);
 
-//	int X = 100;
-//	int Y = 100;
-//	int W = 300;
-//	int H = 300;
-	color BackgroundColor = {0.25f, 0.25f, 0.25f, 1.0f};
-	rect PosAndSize;
-	PosAndSize.X = 300;
-	PosAndSize.Y = 300;
-	PosAndSize.W = 300;
-	PosAndSize.H = 300;
-//	PosAndSize.W = Editor->WindowWidth;
-//	PosAndSize.H = Editor->WindowHeight;
-	init_editable_text(&Editor->EditableText, &Editor->TextBuffer, TheFont, BackgroundColor, PosAndSize);
+	{
+		editableTextConfig Config = {};
+		Config.X = 16;
+		Config.Y = 16;
+		Config.W = Editor->WindowWidth - 32;
+		Config.H = Editor->WindowHeight - 32;
+		Config.TextColor = {1.0f, 1.0f, 1.0f, 1.0f};
+		Config.BackgroundColor = {0.1f, 0.1f, 0.1f, 1.0f};
+		Config.CursorColor = {0.0f, 1.0f, 0.0f, 1.0f};
+		init_editable_text(&Editor->EditableText, &Editor->TextBuffer, Editor->FontMedium, Editor->Font8x16px, Config);
+	}
+
+//	{
+//		editableTextConfig Config = {};
+//		Config.X = 10;
+//		Config.Y = 10;
+//		Config.W = Editor->WindowWidth - 20;
+//		Config.H = Editor->WindowHeight - 20;
+//		Config.TextColor = {1.0f, 1.0f, 1.0f, 1.0f};
+//		Config.BackgroundColor = {0.1f, 0.1f, 0.1f, 1.0f};
+//		Config.CursorColor = {0.0f, 1.0f, 0.0f, 1.0f};
+//		init_editable_text(&Editor->EditableText, &Editor->TextBuffer, Editor->FontMedium, Editor->Font8x16px, Config);
+//	}
 }
 
 void MakeQuad(array<float> *Vertices, int X, int Y, int Width, int Height, color Color)

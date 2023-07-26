@@ -1,7 +1,6 @@
 #ifndef TEXT_BUFFER_HPP
 #define TEXT_BUFFER_HPP
 
-// Could keep an index of the last character instead of storing an actual '\0'?
 // Iterator can be equal to OneAfterLast even though there is no character at that location
 struct textBuffer
 {

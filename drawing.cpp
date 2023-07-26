@@ -637,21 +637,32 @@ void draw_quad(int X, int Y, int W, int H, color Color)
 	glDeleteVertexArrays(1, &VAO);
 }
 
-void draw_quad(int X, int Y, int W, int H, GLuint Texture)
+void draw_quad(int X, int Y, int W, int H, GLuint Texture, bool Flip)
 {
 	float X0 = X;
 	float X1 = X + W;
 	float Y0 = Y;
 	float Y1 = Y + H;
 
-	float QuadVertices[] = {
-		/* upper-left*/  X0, Y0, 0.0f, 1.0f,
-		/* upper-right*/ X1, Y0, 1.0f, 1.0f,
-		/* lower-right*/ X1, Y1, 1.0f, 0.0f,
+	float TX0 = 0.0f; // left
+	float TX1 = 1.0f; // right
+	float TY0 = 0.0f; // upper
+	float TY1 = 1.0f; // lower
 
-		/* lower-right*/ X1, Y1, 1.0f, 0.0f,
-		/* lower-left*/  X0, Y1, 0.0f, 0.0f,
-		/* upper-left*/  X0, Y0, 0.0f, 1.0f,
+	if(Flip)
+	{
+		TY0 = 1.0f;
+		TY1 = 0.0f;
+	}
+
+	float QuadVertices[] = {
+		/* upper-left*/  X0, Y0, TX0, TY0,
+		/* upper-right*/ X1, Y0, TX1, TY0,
+		/* lower-right*/ X1, Y1, TX1, TY1,
+
+		/* lower-right*/ X1, Y1, TX1, TY1,
+		/* lower-left*/  X0, Y1, TX0, TY1,
+		/* upper-left*/  X0, Y0, TX0, TY0,
 	};
 
 	glBindTexture(GL_TEXTURE_2D, Texture);
@@ -729,23 +740,8 @@ void draw_quad(int X, int Y, int W, int H, GLuint Texture)
 //	return shaderProgram;
 //}
 
-#include "stb_image.h"
-image *make_image(const char *FilePath)
+image *make_image(unsigned char *Data, int Width, int Height, int NumChannels)
 {
-	int Width, Height, NumChannels;
-	stbi_set_flip_vertically_on_load(1);
-	unsigned char *Data = stbi_load(FilePath, &Width, &Height, &NumChannels, 0);
-	if(!Data)
-	{
-		fprintf(stderr, "error: make_image(): stbi_load(): %s\n", FilePath);
-		return NULL;
-	}
-	else
-	{
-		printf("make_image(): width: %d, height: %d, num channels: %d, file: %s\n",
-			Width, Height, NumChannels, FilePath);
-	}
-
 	GLuint Tex;
 	glGenTextures(1, &Tex);
 	glBindTexture(GL_TEXTURE_2D, Tex);
@@ -770,13 +766,35 @@ image *make_image(const char *FilePath)
 	}
 //	glGenerateMipmap(GL_TEXTURE_2D);
 
-	stbi_image_free(Data);
-
 	image *Image = (image *)malloc(sizeof(image));
 	Image->Tex = Tex;
 	Image->W = Width;
 	Image->H = Height;
 	Image->NumChannels = NumChannels;
+
+	return Image;
+}
+
+#include "stb_image.h"
+image *make_image(const char *FilePath)
+{
+	int Width, Height, NumChannels;
+	stbi_set_flip_vertically_on_load(1);
+	unsigned char *Data = stbi_load(FilePath, &Width, &Height, &NumChannels, 0);
+	if(!Data)
+	{
+		fprintf(stderr, "error: make_image(): stbi_load(): %s\n", FilePath);
+		return NULL;
+	}
+	else
+	{
+		printf("make_image(): width: %d, height: %d, num channels: %d, file: %s\n",
+			Width, Height, NumChannels, FilePath);
+	}
+
+	image *Image = make_image(Data, Width, Height, NumChannels);
+
+	stbi_image_free(Data);
 
 	return Image;
 }
