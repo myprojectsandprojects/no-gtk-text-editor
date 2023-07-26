@@ -7,7 +7,6 @@ struct textBuffer
 	int Size;
 	char *Data;
 	int OneAfterLast; // also size of contents
-//	int Cursor; //@ probably shouldnt be part of the text buffer
 };
 
 void InitTextBuffer(textBuffer *Buffer);
@@ -26,8 +25,8 @@ int GetCharsIntoLine(textBuffer *Buffer, int At, int TabWidth);
 int GetLinesIntoBuffer(textBuffer *Buffer, int At);
 bool MoveToPrevLine(textBuffer *Buffer, int *Iter);
 bool MoveToNextLine(textBuffer *Buffer, int *Iter);
-bool Insert(textBuffer *Buffer, char Char, int At);
-bool Insert(textBuffer *Buffer, const char *Text, int At);
+void Insert(textBuffer *Buffer, char Char, int At);
+void Insert(textBuffer *Buffer, const char *Text, int At);
 bool Delete(textBuffer *Buffer, int At);
 bool Delete(textBuffer *Buffer, int At, int NumChars);
 bool MoveAtCharBackwards(textBuffer *Buffer, char Char, int *Iter);
