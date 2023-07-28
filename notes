@@ -30,3 +30,134 @@ TextBufferGetChar() vs GetChar() vs TextBuffer::GetChar()
 
 
 
+---
+
+enum widgetType
+{
+	BUTTON,
+	EDITABLE_TEXT
+};
+struct widget
+{
+	int X, Y, W, H;
+	widgetType Type;
+};
+struct button
+{
+	widget Widget;
+	// Other fields specific to button
+};
+struct editableText
+{
+	widget Widget;
+	// Other fields specific to editableText
+};
+
+
+widget *ActiveWidget = NULL;
+array<widget *> Widgets;
+
+for(int i = 0; i < Widgets.Count; ++i)
+{
+	if(is_hit(Widgets.Data[i], MouseCoordinates))
+	{
+		ActiveWidget = Widgets.Data[i];
+	}
+}
+
+// But what if I want to access type specific fields of ActiveWidget?
+
+---
+
+widget *ActiveWidget;
+
+void OnMouseEvent()
+{
+	// Call active widgets handlers
+	switch(ActiveWidget->Type)
+	{
+		case BUTTON:
+		{
+			ButtonOnMouseEvent((button *)ActiveWidget);
+		}
+		case TEXT_ENTRY:
+		{
+			TextEntryOnMouseEvent((textEntry *)ActiveWidget);
+		}
+	}
+}
+void OnKeyEvent()
+{
+	// Call active widgets handlers
+	switch(ActiveWidget->Type)
+	{
+		case TEXT_ENTRY:
+		{
+			TextEntryOnKeyEvent((textEntry *)ActiveWidget);
+		}
+	}
+}
+
+---
+Why widgets need representation?
+
+How to represent widgets?
+
+1) One big struct for all widgets.
+
+	struct widget
+	{
+		int Type; // button? text entry?
+		// All fields for all widgets follow.
+	};
+
+	- Waste of memory.
+	- Wouldn't it get confusing to sort out what fields what widgets use?
+	+ Simplicity?
+
+2) C++ inheritance
+
+	struct widget
+	{
+		// Things all widgets have.
+	}
+	struct button: public widget
+	{
+		// Button specific things.
+	}
+
+	- Have to be mindful of performance cost?
+	+ Very popular?
+
+3) Some kind of C-style inheritance. Like X11 events? Using unions somehow?
+
+	struct widget
+	{
+		// Things all widgets have.
+		int Type;
+		union
+		{
+			struct button Button;
+			struct textEntry TextEntry;
+		}
+	};
+
+4)
+	struct button
+	{
+		// Things all widgets have.
+		int Type;
+		// Button specific things.
+	}
+	struct textEntry
+	{
+		// Things all widgets have.
+		int Type;
+		// Text entry specific things.
+	}
+
+	// but then I cant store them in 1 array
+	// unless I store memory addresses as void pointers
+	// but then how do I access things all widgets have?
+
+

@@ -13,6 +13,7 @@ void init_editable_text(editableText *EditableText, textBuffer *TextBuffer, font
 	EditableText->TextColor = Config.TextColor;
 	EditableText->BackgroundColor = Config.BackgroundColor;
 	EditableText->CursorColor = Config.CursorColor;
+	EditableText->BorderColor = Config.BorderColor;
 
 	EditableText->TextBuffer = TextBuffer;
 	EditableText->Cursor = GetStart(TextBuffer);
@@ -319,16 +320,24 @@ static void draw_text_bitmap_font(editableText *EditableText, shaders *Shaders)
 //	glBindTexture(GL_TEXTURE_2D, 0); // bind default texture (?)
 }
 
-void draw_editable_text(editableText *EditableText, shaders *Shaders)
+void draw_editable_text(editableText *EditableText, shaders *Shaders, bool IsActive)
 {
-	// BACKGROUND
 	int X = EditableText->X;
 	int Y = EditableText->Y;
 	int W = EditableText->W;
 	int H = EditableText->H;
 
+	// BACKGROUND
 	draw_quad(X, Y, W, H, EditableText->BackgroundColor);
 
+	// BORDER
+	int BorderThickness = 9;
+	color ActiveColor = {1.0f, 0.0f, 0.0f, 1.0f};
+	color BorderColor = ((IsActive) ? (ActiveColor) : (EditableText->BorderColor));
+	draw_quad(X, Y - BorderThickness, W, BorderThickness, BorderColor);
+	draw_quad(X, Y + H, W, BorderThickness, BorderColor);
+	draw_quad(X - BorderThickness, Y - BorderThickness, BorderThickness, 2*BorderThickness + H, BorderColor);
+	draw_quad(X + W, Y - BorderThickness, BorderThickness, 2*BorderThickness + H, BorderColor);
 
 	// CURSOR
 

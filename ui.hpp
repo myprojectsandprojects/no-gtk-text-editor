@@ -8,7 +8,7 @@
 struct editableTextConfig
 {
 	int X, Y, W, H;
-	color TextColor, BackgroundColor, CursorColor;
+	color TextColor, BackgroundColor, CursorColor, BorderColor;
 };
 
 // oneliner
@@ -22,7 +22,7 @@ struct editableText
 
 	int OffsX, OffsY;
 
-	color BackgroundColor, TextColor, CursorColor;
+	color BackgroundColor, TextColor, CursorColor, BorderColor;
 
 	font *Font;
 	bitmapFont *BitmapFont;
@@ -31,7 +31,7 @@ struct editableText
 };
 
 void init_editable_text(editableText *EditableText, textBuffer *TextBuffer, font *Font, bitmapFont *BitmapFont, editableTextConfig Config);
-void draw_editable_text(editableText *EditableText, shaders *Shaders);
+void draw_editable_text(editableText *EditableText, shaders *Shaders, bool IsActive);
 void adjust_viewport_if_not_visible(editableText *Editable, int Iter);
 // void editable_text_on_key_event(editableText *EditableText)
 

@@ -252,7 +252,7 @@ void Insert(textBuffer *Buffer, char Char, int At)
 	if(Buffer->OneAfterLast + 1 > Buffer->Size)
 	{
 		int NewDataSize = 2 * (Buffer->OneAfterLast + 1);
-		printf("ALLOCATING MEMORY: %d\n", NewDataSize);
+//		printf("ALLOCATING MEMORY: %d\n", NewDataSize);
 		char *NewData = (char *) malloc(NewDataSize);
 		assert(NewData);
 		for(int i = 0; i < Buffer->OneAfterLast; ++i)

@@ -71,8 +71,8 @@ struct editor
 {
 	int WindowWidth, WindowHeight;
 
-	color TextColor;
-	color CursorColor;
+//	color TextColor;
+//	color CursorColor;
 //	color CursorEffectColor;
 //	float CursorEffectProgress;
 
@@ -88,14 +88,16 @@ struct editor
 //	bool MBShouldDisplay;
 //	double MBStartTime;
 
-	messageType Message;
-	char MessageText[1000];
-	double MessageStartTime;
+//	messageType Message;
+//	char MessageText[1000];
+//	double MessageStartTime;
 
 	textBuffer TextBuffer;
 
-	editableText EditableText;
-	editableText EditableText2;
+//	editableText EditableText;
+//	editableText EditableText2;
+	editableText EditableTexts[2];
+	editableText *Active;
 
 //	font *TheFont;
 	font *FontSmall;
@@ -159,27 +161,17 @@ void OnCharEvent(GLFWwindow *Window, unsigned int Codepoint)
 //		ArrayAdd(&Editor.CharsWithEffect, CharColor);
 
 //		InsertAtCursor(&Editor.TextBuffer, (char)Codepoint, &Editor);
+
 		textBuffer *Buffer = &Editor.TextBuffer;
-
-//		int Cursor = GetCursor(Buffer);
-//		if(Insert(Buffer, (char)Codepoint, Cursor))
-//		{
-////			CursorForward(Buffer);
-//			MoveForward(Buffer, &Cursor);
-//			SetCursor(Buffer, Cursor);
-//			int NewCursor = GetCursor(Buffer);
-//			int NewCursorCharIndex = GetCharsIntoLine(Buffer, NewCursor);
-//			int NewCursorLineIndex = GetLinesIntoBuffer(Buffer, NewCursor);
-//			AdjustViewportIfNotVisible(&Editor, NewCursorCharIndex, NewCursorLineIndex);
-//		}
-//		else
-//		{
-//			printf("BUFFER IS FULL\n");
-//		}
-
-		Insert(Buffer, (char)Codepoint, Editor.EditableText.Cursor);
-		MoveForward(Buffer, &Editor.EditableText.Cursor);
-		adjust_viewport_if_not_visible(&Editor.EditableText, Editor.EditableText.Cursor);
+//		editableText *Editable = &Editor.EditableText;
+//		editableText *Editable = &Editor.EditableTexts[0];
+		editableText *Editable = Editor.Active;
+		if(Editable)
+		{
+			Insert(Buffer, (char)Codepoint, Editable->Cursor);
+			MoveForward(Buffer, &Editable->Cursor);
+			adjust_viewport_if_not_visible(Editable, Editable->Cursor);
+		}
 	}
 	else
 	{
@@ -192,8 +184,13 @@ void OnKeyEvent(GLFWwindow *Window, int Key, int Scancode, int Action, int Mods)
 	// press -> repeat ... -> release
 
 	textBuffer *Buffer = &Editor.TextBuffer;
-	editableText *Editable = &Editor.EditableText;
-
+//	editableText *Editable = &Editor.EditableText;
+//	editableText *Editable = &Editor.EditableTexts[0];
+	editableText *Editable = Editor.Active;
+	if(!Editable)
+	{
+		return;
+	}
 //	// CTRL + S
 //	if(Key == GLFW_KEY_S && Mods == GLFW_MOD_CONTROL && Action == GLFW_PRESS)
 //	{
@@ -306,35 +303,42 @@ void OnMouseButtonEvent(GLFWwindow *Window, int Button, int Action, int Mods)
 	{
 		double MouseX, MouseY;
 		glfwGetCursorPos(Window, &MouseX, &MouseY);
-		if(((double)Editor.EditableText.X) <= MouseX && MouseX <= ((double)(Editor.EditableText.X + Editor.EditableText.W))
-		&& ((double)Editor.EditableText.Y) <= MouseY && MouseY <= ((double)(Editor.EditableText.Y + Editor.EditableText.H)))
+		bool FoundOne = false;
+		for(int i = 0; i < 2; ++i)
 		{
-			printf("Inside\n");
+			if(((double)Editor.EditableTexts[i].X) <= MouseX && MouseX <= ((double)(Editor.EditableTexts[i].X + Editor.EditableTexts[i].W))
+			&& ((double)Editor.EditableTexts[i].Y) <= MouseY && MouseY <= ((double)(Editor.EditableTexts[i].Y + Editor.EditableTexts[i].H)))
+			{
+				Editor.Active = &Editor.EditableTexts[i];
+				FoundOne = true;
+				break;
+			}
 		}
-		else
+		if(!FoundOne)
 		{
-			printf("Outside\n");
+			Editor.Active = NULL;
 		}
 	}
 }
 
-void OnMouseMoveEvent(GLFWwindow *Window, double MouseX, double MouseY)
-{
-	if(((double)Editor.EditableText.X) <= MouseX && MouseX <= ((double)(Editor.EditableText.X + Editor.EditableText.W))
-	&& ((double)Editor.EditableText.Y) <= MouseY && MouseY <= ((double)(Editor.EditableText.Y + Editor.EditableText.H)))
-	{
-		printf("Hover\n");
-	}
-	else
-	{
-		printf("No Hover\n");
-	}
-}
+//void OnMouseMoveEvent(GLFWwindow *Window, double MouseX, double MouseY)
+//{
+//	if(((double)Editor.EditableText.X) <= MouseX && MouseX <= ((double)(Editor.EditableText.X + Editor.EditableText.W))
+//	&& ((double)Editor.EditableText.Y) <= MouseY && MouseY <= ((double)(Editor.EditableText.Y + Editor.EditableText.H)))
+//	{
+//		printf("Hover\n");
+//	}
+//	else
+//	{
+//		printf("No Hover\n");
+//	}
+//}
 
 void OnScrollEvent(GLFWwindow *Window, double XOffset, double YOffset)
 {
-	Editor.EditableText.OffsX -= (int)(XOffset * 50.0);
-	Editor.EditableText.OffsY -= (int)(YOffset * 50.0);
+	editableText *Editable = &Editor.EditableTexts[0];
+	Editable->OffsX -= (int)(XOffset * 50.0);
+	Editable->OffsY -= (int)(YOffset * 50.0);
 }
 
 //void OnFileDrop(GLFWwindow *Window, int Count, const char **Paths)
@@ -417,7 +421,7 @@ int main()
 	glfwSetFramebufferSizeCallback(window, OnWindowResized);
 	glfwSetCharCallback(window, OnCharEvent);
 	glfwSetKeyCallback(window, OnKeyEvent);
-//	glfwSetMouseButtonCallback(window, OnMouseButtonEvent);
+	glfwSetMouseButtonCallback(window, OnMouseButtonEvent);
 //	glfwSetCursorPosCallback(window, OnMouseMoveEvent);
 	glfwSetScrollCallback(window, OnScrollEvent);
 //	glfwSetDropCallback(window, OnFileDrop);
@@ -645,7 +649,8 @@ int main()
 //			draw_quad(X, Y, W, H, Editor.Font16x32px->TextureAtlas->Tex, true);
 //		}
 
-		draw_editable_text(&Editor.EditableText, &Shaders);
+		draw_editable_text(&Editor.EditableTexts[0], &Shaders, (&Editor.EditableTexts[0] == Editor.Active) ? true : false);
+		draw_editable_text(&Editor.EditableTexts[1], &Shaders, (&Editor.EditableTexts[1] == Editor.Active) ? true : false);
 
 //		{
 //			draw_text("Hello, world!", 10, 25, {1.0f, 0.0f, 0.0f, 1.0f}, Editor.FontSmall, &Shaders);
@@ -1142,9 +1147,9 @@ void InitEditor(editor *Editor)
 
 //	Editor->AppWindow = AppWindow;
 
-	Editor->Message = NONE;
-	Editor->MessageText[0] = '\0';
-	Editor->MessageStartTime = 0.0;
+//	Editor->Message = NONE;
+//	Editor->MessageText[0] = '\0';
+//	Editor->MessageStartTime = 0.0;
 
 //	bitmapFontImageMetrics IM = {};
 //	IM.FilePath = "../charmap-oldschool_white.png";
@@ -1247,20 +1252,26 @@ void InitEditor(editor *Editor)
 		Config.TextColor = {1.0f, 1.0f, 1.0f, 1.0f};
 		Config.BackgroundColor = {0.1f, 0.1f, 0.1f, 1.0f};
 		Config.CursorColor = {0.0f, 1.0f, 0.0f, 1.0f};
-		init_editable_text(&Editor->EditableText, &Editor->TextBuffer, Editor->FontMedium, Editor->Font8x16px, Config);
+		Config.BorderColor = {0.3f, 0.3f, 0.3f, 1.0f};
+//		init_editable_text(&Editor->EditableText, &Editor->TextBuffer, Editor->FontMedium, Editor->Font8x16px, Config);
+		init_editable_text(&Editor->EditableTexts[0], &Editor->TextBuffer, Editor->FontMedium, Editor->Font8x16px, Config);
 	}
 
 	{
 		editableTextConfig Config = {};
-		Config.X = 10;
-		Config.Y = 10;
-		Config.W = Editor->WindowWidth - 20;
-		Config.H = Editor->WindowHeight - 20;
+		Config.X = 400;
+		Config.Y = 16;
+		Config.W = 300;
+		Config.H = 300;
 		Config.TextColor = {1.0f, 1.0f, 1.0f, 1.0f};
 		Config.BackgroundColor = {0.1f, 0.1f, 0.1f, 1.0f};
 		Config.CursorColor = {0.0f, 1.0f, 0.0f, 1.0f};
-		init_editable_text(&Editor->EditableText2, &Editor->TextBuffer, Editor->FontMedium, Editor->Font8x16px, Config);
+		Config.BorderColor = {0.3f, 0.3f, 0.3f, 1.0f};
+//		init_editable_text(&Editor->EditableText2, &Editor->TextBuffer, Editor->FontMedium, Editor->Font8x16px, Config);
+		init_editable_text(&Editor->EditableTexts[1], &Editor->TextBuffer, Editor->FontMedium, Editor->Font8x16px, Config);
 	}
+
+	Editor->Active = NULL;
 }
 
 void MakeQuad(array<float> *Vertices, int X, int Y, int Width, int Height, color Color)
@@ -1289,12 +1300,12 @@ float Lerp(float From, float To, float Progress)
 	return (1 - Progress) * From + Progress * To;
 }
 
-void DisplayMessage(messageType MessageType, const char *MessageText, editor *Editor)
-{
-	Editor->Message = MessageType;
-	strcpy(Editor->MessageText, MessageText); //@ bounds
-	Editor->MessageStartTime = glfwGetTime();
-}
+//void DisplayMessage(messageType MessageType, const char *MessageText, editor *Editor)
+//{
+//	Editor->Message = MessageType;
+//	strcpy(Editor->MessageText, MessageText); //@ bounds
+//	Editor->MessageStartTime = glfwGetTime();
+//}
 
 // adjust viewport if CharWidth * CharHeight quad at (CharIndex, LineIndex) is not visible, so that it becomes visible again
 // returns true if actually adjusted the viewport?
