@@ -1209,10 +1209,9 @@ void InitEditor(editor *Editor)
 	Editor->Font16x32px = Font16x32px;
 	Editor->Font32x64px = Font32x64px;
 
-	Editor->FontMedium = make_font("/usr/share/fonts/truetype/ubuntu-font-family/UbuntuMono-R.ttf", 21);
-	Editor->FontSmall = make_font("/home/eero/.local/share/fonts/InputMono-Regular.ttf", 16);
-//	Editor->FontMedium = make_font("/home/eero/.local/share/fonts/InputMono-Regular.ttf", 21);
-	Editor->FontBig = make_font("/home/eero/.local/share/fonts/InputMono-Regular.ttf", 32);
+	Editor->FontSmall =  make_font("../Sudo-Medium.ttf", 21);
+	Editor->FontMedium = make_font("../Sudo-Medium.ttf", 31);
+	Editor->FontBig =    make_font("../Sudo-Medium.ttf", 41);
 	assert(Editor->FontSmall && Editor->FontMedium && Editor->FontBig);
 
 	InitTextBuffer(&Editor->TextBuffer);
@@ -1254,7 +1253,7 @@ void InitEditor(editor *Editor)
 		Config.CursorColor = {0.0f, 1.0f, 0.0f, 1.0f};
 		Config.BorderColor = {0.3f, 0.3f, 0.3f, 1.0f};
 //		init_editable_text(&Editor->EditableText, &Editor->TextBuffer, Editor->FontMedium, Editor->Font8x16px, Config);
-		init_editable_text(&Editor->EditableTexts[0], &Editor->TextBuffer, Editor->FontMedium, Editor->Font8x16px, Config);
+		init_editable_text(&Editor->EditableTexts[0], &Editor->TextBuffer, Editor->FontSmall, Editor->Font8x16px, Config);
 	}
 
 	{
@@ -1268,7 +1267,7 @@ void InitEditor(editor *Editor)
 		Config.CursorColor = {0.0f, 1.0f, 0.0f, 1.0f};
 		Config.BorderColor = {0.3f, 0.3f, 0.3f, 1.0f};
 //		init_editable_text(&Editor->EditableText2, &Editor->TextBuffer, Editor->FontMedium, Editor->Font8x16px, Config);
-		init_editable_text(&Editor->EditableTexts[1], &Editor->TextBuffer, Editor->FontMedium, Editor->Font8x16px, Config);
+		init_editable_text(&Editor->EditableTexts[1], &Editor->TextBuffer, Editor->FontBig, Editor->Font8x16px, Config);
 	}
 
 	Editor->Active = NULL;
