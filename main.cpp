@@ -279,6 +279,7 @@ void OnKeyEvent(GLFWwindow *Window, int Key, int Scancode, int Action, int Mods)
 		MoveForward(Buffer, &Editable->Cursor);
 		adjust_viewport_if_not_visible(Editable, Editable->Cursor);
 	}
+
 	if(Key == GLFW_KEY_BACKSPACE && (Action == GLFW_PRESS || Action == GLFW_REPEAT))
 	{
 		// delete character before cursor
@@ -311,6 +312,19 @@ void OnMouseButtonEvent(GLFWwindow *Window, int Button, int Action, int Mods)
 			{
 				Editor.Active = &Editor.EditableTexts[i];
 				FoundOne = true;
+
+				// If multiple editable text widgets share the same text buffer, it's possible that the cursor has become invalid.
+				// It happens when enough text was deleted from the text buffer, so that OneAfterLast variable has moved before the cursor of the particular editable text widget.
+				// So if this happens, we just put the cursor at the end of the text buffer.
+//				if(Editor.Active->Cursor > Editor.Active->TextBuffer->OneAfterLast)
+//				{
+//					Editor.Active->Cursor = Editor.Active->TextBuffer->OneAfterLast;
+//				}
+				if(is_stray(Editor.Active->TextBuffer, Editor.Active->Cursor))
+				{
+					fix_stray_cursor(Editor.Active->TextBuffer, &Editor.Active->Cursor);
+				}
+
 				break;
 			}
 		}

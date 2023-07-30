@@ -27,6 +27,17 @@ void InitTextBuffer(textBuffer *Buffer)
 //	Buffer->OneAfterLast = 10;
 }
 
+bool is_stray(textBuffer *Buffer, int Iter)
+{
+	return (Iter > Buffer->OneAfterLast);
+}
+
+void fix_stray_cursor(textBuffer *Buffer, int *Iter)
+{
+	assert(*Iter > Buffer->OneAfterLast);
+	*Iter = Buffer->OneAfterLast;
+}
+
 char GetChar(textBuffer *Buffer, int At)
 {
 	// validate iterator
@@ -154,7 +165,9 @@ int GetCharsIntoLine(textBuffer *Buffer, int At)
 
 int GetLinesIntoBuffer(textBuffer *Buffer, int At)
 {
-	assert(0 <= At && At < Buffer->OneAfterLast+1);
+//	assert(0 <= At && At < Buffer->OneAfterLast+1);
+	assert(0 <= At);
+	assert(At < Buffer->OneAfterLast+1);
 
 	int LineCount = 0;
 	for(int i = At - 1; i >= 0; --i)

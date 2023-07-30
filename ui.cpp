@@ -339,37 +339,40 @@ void draw_editable_text(editableText *EditableText, shaders *Shaders, bool IsAct
 	draw_quad(X - BorderThickness, Y - BorderThickness, BorderThickness, 2*BorderThickness + H, BorderColor);
 	draw_quad(X + W, Y - BorderThickness, BorderThickness, 2*BorderThickness + H, BorderColor);
 
-	// CURSOR
-
-	// bitmap font:
-//	int CharWidth = EditableText->BitmapFont->Config.CharWidth;
-//	int CharHeight = EditableText->BitmapFont->Config.CharHeight;
-//	int LineSpacing = EditableText->BitmapFont->Config.LineSpacing;
-//	int CharSpacing = EditableText->BitmapFont->Config.CharSpacing;
-//	int TabWidth = EditableText->BitmapFont->Config.TabWidth;
-
-	// non-bitmap font:
-	int CharWidth = EditableText->Font->Glyphs[0].Advance;
-	int CharHeight = (int)(EditableText->Font->Ascent - EditableText->Font->Descent);
-	int LineSpacing = 0;
-	int CharSpacing = 0;
-	int TabWidth = EditableText->TabWidth;
-
-	textBuffer *Buffer = EditableText->TextBuffer;
-	int Cursor = EditableText->Cursor;
-	int CursorTBX = GetCharsIntoLine(Buffer, Cursor, TabWidth) * (CharWidth + CharSpacing);
-	int CursorTBY = GetLinesIntoBuffer(Buffer, Cursor) * (CharHeight + LineSpacing);
-
-	if(CursorTBX >= EditableText->OffsX && CursorTBX < EditableText->OffsX + W
-		&& CursorTBY >= EditableText->OffsY && CursorTBY < EditableText->OffsY + H)
+	if(IsActive)
 	{
-		// Cursor visible
-		int CursorX = X + CursorTBX - EditableText->OffsX;
-		int CursorY = Y + CursorTBY - EditableText->OffsY;
-		int CursorW = CharWidth;
-		int CursorH = CharHeight;
-		color CursorColor = EditableText->CursorColor;
-		draw_quad(CursorX, CursorY, CursorW, CursorH, CursorColor);
+		// CURSOR
+	
+		// bitmap font:
+//		int CharWidth = EditableText->BitmapFont->Config.CharWidth;
+//		int CharHeight = EditableText->BitmapFont->Config.CharHeight;
+//		int LineSpacing = EditableText->BitmapFont->Config.LineSpacing;
+//		int CharSpacing = EditableText->BitmapFont->Config.CharSpacing;
+//		int TabWidth = EditableText->BitmapFont->Config.TabWidth;
+	
+		// non-bitmap font:
+		int CharWidth = EditableText->Font->Glyphs[0].Advance;
+		int CharHeight = (int)(EditableText->Font->Ascent - EditableText->Font->Descent);
+		int LineSpacing = 0;
+		int CharSpacing = 0;
+		int TabWidth = EditableText->TabWidth;
+	
+		textBuffer *Buffer = EditableText->TextBuffer;
+		int Cursor = EditableText->Cursor;
+		int CursorTBX = GetCharsIntoLine(Buffer, Cursor, TabWidth) * (CharWidth + CharSpacing);
+		int CursorTBY = GetLinesIntoBuffer(Buffer, Cursor) * (CharHeight + LineSpacing);
+	
+		if(CursorTBX >= EditableText->OffsX && CursorTBX < EditableText->OffsX + W
+			&& CursorTBY >= EditableText->OffsY && CursorTBY < EditableText->OffsY + H)
+		{
+			// Cursor visible
+			int CursorX = X + CursorTBX - EditableText->OffsX;
+			int CursorY = Y + CursorTBY - EditableText->OffsY;
+			int CursorW = CharWidth;
+			int CursorH = CharHeight;
+			color CursorColor = EditableText->CursorColor;
+			draw_quad(CursorX, CursorY, CursorW, CursorH, CursorColor);
+		}
 	}
 
 	// TEXT

@@ -10,6 +10,8 @@ struct textBuffer
 };
 
 void InitTextBuffer(textBuffer *Buffer);
+bool is_stray(textBuffer *Buffer, int Iter);
+void fix_stray_cursor(textBuffer *Buffer, int *Iter);
 char GetChar(textBuffer *Buffer, int At);
 int GetStart(textBuffer *Buffer);
 int GetEnd(textBuffer *Buffer);
