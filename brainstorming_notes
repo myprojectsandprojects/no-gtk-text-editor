@@ -1,0 +1,14 @@
+
+Jumping from a function call site to function definition site.
+(Browsing through code should be really easy. Step into/out of functions?)
+Same with types, should be real easy to see definitions of things.
+I quess this requires editor/IDE to have an *understanding* of the whole project.
+
+Support for multiple languages?
+Extendability. Why not just write a codebase that is easy to understand and build, then extend by adding C/C++ source code... No scripting languages, no shared libraries. ? Have extendability in mind.
+
+Modes. Try out Vim-style modes.
+
+
+
+

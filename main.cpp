@@ -322,7 +322,7 @@ void OnMouseButtonEvent(GLFWwindow *Window, int Button, int Action, int Mods)
 //				}
 				if(is_stray(Editor.Active->TextBuffer, Editor.Active->Cursor))
 				{
-					fix_stray_cursor(Editor.Active->TextBuffer, &Editor.Active->Cursor);
+					fix_stray_iter(Editor.Active->TextBuffer, &Editor.Active->Cursor);
 				}
 
 				break;
@@ -1223,9 +1223,9 @@ void InitEditor(editor *Editor)
 	Editor->Font16x32px = Font16x32px;
 	Editor->Font32x64px = Font32x64px;
 
-	Editor->FontSmall =  make_font("../Sudo-Medium.ttf", 21);
-	Editor->FontMedium = make_font("../Sudo-Medium.ttf", 31);
-	Editor->FontBig =    make_font("../Sudo-Medium.ttf", 41);
+	Editor->FontSmall =  make_font("../fonts/Sudo-Medium.ttf", 21);
+	Editor->FontMedium = make_font("../fonts/Sudo-Medium.ttf", 31);
+	Editor->FontBig =    make_font("../fonts/Sudo-Medium.ttf", 41);
 	assert(Editor->FontSmall && Editor->FontMedium && Editor->FontBig);
 
 	InitTextBuffer(&Editor->TextBuffer);

@@ -160,4 +160,22 @@ How to represent widgets?
 	// unless I store memory addresses as void pointers
 	// but then how do I access things all widgets have?
 
+---
+
+BUILDING FOR MULTIPLE PLATFORMS (Linux and Windows)
+
+Building on Linux for Linux and Windows.
+Building on Windows for Linux and Windows.
+
+Building on Linux for Linux.
+	GCC defines __GNUC__.
+	https://sourceforge.net/p/predef/wiki/Compilers/
+
+Building on Windows for Windows.
+	Visual Studio defines _WIN32.
+	https://learn.microsoft.com/en-us/cpp/preprocessor/predefined-macros?view=msvc-170&redirectedfrom=MSDN
+
+GCC (on Linux) and TDM GCC (on Windows), because MSVC is not free (?)
+most pedantic compiler flags everywhere
+
 

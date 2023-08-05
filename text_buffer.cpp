@@ -32,7 +32,7 @@ bool is_stray(textBuffer *Buffer, int Iter)
 	return (Iter > Buffer->OneAfterLast);
 }
 
-void fix_stray_cursor(textBuffer *Buffer, int *Iter)
+void fix_stray_iter(textBuffer *Buffer, int *Iter)
 {
 	assert(*Iter > Buffer->OneAfterLast);
 	*Iter = Buffer->OneAfterLast;
