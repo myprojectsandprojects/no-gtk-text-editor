@@ -3,7 +3,8 @@
 
 #include <glad/glad.h>
 
-#include "lib.h"
+//#include "lib.h"
+#include "lib/lib.hpp"
 
 struct rect
 {

@@ -1,7 +1,8 @@
 #ifndef TEXT_DRAWING_HPP
 #define TEXT_DRAWING_HPP
 
-#include "lib.h"
+//#include "lib.h"
+#include "lib/lib.hpp"
 #include "text_buffer.hpp"
 #include "drawing.hpp"
 
