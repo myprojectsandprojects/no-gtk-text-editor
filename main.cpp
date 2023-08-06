@@ -15,8 +15,8 @@
 //#define STB_IMAGE_IMPLEMENTATION
 //#include "stb_image.h"
 
-//#include "lib.h"
 #include "lib/lib.hpp"
+#include "lib/array.hpp"
 
 #include "text_buffer.hpp"
 #include "text_drawing.hpp"

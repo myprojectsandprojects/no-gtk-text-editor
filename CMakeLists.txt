@@ -21,3 +21,5 @@ target_include_directories(MyGlfwTest PUBLIC glfw-3.3.8/include glad/include)
 
 target_compile_options(MyGlfwTest PRIVATE -Wall)
 target_compile_options(MyGlfwTest PRIVATE -std=c++11)
+
+
