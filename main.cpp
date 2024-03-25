@@ -418,7 +418,7 @@ int main()
 	}
 
 	glfwMakeContextCurrent(window);
-//	glfwSwapInterval(0); // VSync off
+	// glfwSwapInterval(0); // VSync off
 	gladLoadGL();
 
 	glEnable(GL_BLEND);
