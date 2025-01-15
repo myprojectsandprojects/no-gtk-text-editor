@@ -18,6 +18,9 @@
 #include "lib/lib.hpp"
 #include "lib/array.hpp"
 
+#define LINUX_LIB_INCLUDE_IMPLEMENTATION
+#include "lib/linux_lib.hpp"
+
 #include "text_buffer.hpp"
 #include "text_drawing.hpp"
 #include "ui.hpp"
@@ -610,8 +613,24 @@ int main()
 //		}
 //		FrameCount += 1;
 
+		{
+		struct timespec T = {}; clock_gettime(CLOCK_MONOTONIC, &T);
+
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
+
+		double elapsed_ms = elapsed_since(T, MS);
+		printf("clear: %.3f ms\n", elapsed_ms);
+		}
+
+		/*
+		Typing feels snappier if we handle events here (as opposed to immediately after glfwSwapBuffers()).
+		But I might be wrong.
+		Timing measurements suggest that "waiting for the VSync-signal" happens when we clear the color,
+		not when we are swapping buffers. Which means that we should definately handle events
+		immediately after clearing the screen to avoid lagging behind on input (?)
+		*/
+		glfwPollEvents();
 
 //		{
 //			int X = 0;
@@ -859,15 +878,15 @@ int main()
 //			}
 //		}
 
-//		double T1 = glfwGetTime();
-		glfwSwapBuffers(window);
-//		double T2 = glfwGetTime();
-//		printf("glfwSwapBuffers(): %.3f\n", (T2 - T1) * 1000);
 
-//		T1 = glfwGetTime();
-		glfwPollEvents();
-//		T2 = glfwGetTime();
-//		printf("glfwPollEvents(): %.3f\n", (T2 - T1) * 1000);
+		{
+		struct timespec T = {}; clock_gettime(CLOCK_MONOTONIC, &T);
+
+		glfwSwapBuffers(window);
+
+		double elapsed_ms = elapsed_since(T, MS);
+		printf("glfwSwapBuffers: %.3f ms\n", elapsed_ms);
+		}
 
 //		TextVertices.Count = 0;
 //		QuadVertices.Count = 0;
