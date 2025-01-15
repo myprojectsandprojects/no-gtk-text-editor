@@ -1,4 +1,7 @@
 
+#define LIB_INCLUDE_IMPLEMENTATION
+#include "lib/lib.hpp"
+
 #include "text_drawing.hpp"
 #include <stdio.h>
 
@@ -12,7 +15,7 @@ font *make_font(const char *FilePath, int FontHeight)
 {
 	u8 *Contents;
 	size_t NumBytes;
-	if(!ReadFile(FilePath, &Contents, &NumBytes))
+	if(!Lib::ReadFile(FilePath, &Contents, &NumBytes))
 	{
 		fprintf(stderr, "error: make_font(): ReadFile(): %s\n", FilePath);
 		return NULL;

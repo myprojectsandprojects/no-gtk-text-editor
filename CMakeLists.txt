@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.5.1)
 
 project(MyGlfwTest)
-add_executable(MyGlfwTest main.cpp glad/src/glad.c lib/lib.cpp text_drawing.cpp text_buffer.cpp ui.cpp drawing.cpp)
+add_executable(MyGlfwTest main.cpp glad/src/glad.c text_drawing.cpp text_buffer.cpp ui.cpp drawing.cpp)
 
 set(CMAKE_BUILD_TYPE Debug)
 
