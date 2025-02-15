@@ -178,4 +178,86 @@ Building on Windows for Windows.
 GCC (on Linux) and TDM GCC (on Windows), because MSVC is not free (?)
 most pedantic compiler flags everywhere
 
+---
+widget, gadget, uiElement, ...?
 
+widgets can be active/current/selected/...?
+input goes to active widget only?
+blackandwhite'ing/outfocus'ing/darken'ing all other widgets?
+
+are there different kinds of active?
+	file opener pops up above other widgets
+	file-edit/view widgets should be able to exist side by side?
+
+editableTextMultiline
+	left, right, up, down
+	enter -> editing feature
+	hor/ver scroll
+	textBuffer
+
+editableTextSingleline
+	left, right
+	enter -> process text input
+	hor scroll
+	textBuffer
+
+scrollableList
+	up, down
+	enter -> select list item
+	hor?/ver scroll
+	list of items
+
+fileOpener
+	input is a path (directories as 'chunks'?)
+
+---
+
+* file opener
+	adds a new file to a list of opened files
+* file selecter
+	(we have a list of opened files (with undo states etc.))
+* symbol search (?)
+	(search for files/functions/types/global variables?)
+* simple text search?
+* info bar/display?
+	(appear/disappear?)
+	line/column number, currently open file, programming language, tabs/spaces?, ascii/UTF8, current function/...?
+---
+
+multiple cursors seems like a good feature
+some kind of pattern-based (very interactive) search and replace? (mvim)
+
+placing the cursor with the mouse/touchpad
+selecting text with the mouse
+copy/cut/paste
+
+ctrl + left/right up/down?
+
+autocomplete?
+undo
+
+code highlighting
+
+git?
+
+---
+
+
+FASTER TO DRAW IN BATCHES (?):
+
+First, make vertices for all UIElements, then upload them all, then make a OpenGL(?) draw call.
+If they use different shaders, they need to be drawn separately. (?)
+So organize vertices into groups by shaders they use? Then make a separate draw call for each type of shader?
+Is that it?
+
+
+EFFICIENCY
+
+There is no need to draw frames all the time (60 FPS). Most of the time, at least, redraw only needs to happen when a user event occurs (user presses a key, moves a mouse) or when we want to play an animation.
+This means we could go sleep until next user-event comes in.
+sleep -> handle user event -> play animation -> sleep
+
+
+---
+
+subpixel rendering

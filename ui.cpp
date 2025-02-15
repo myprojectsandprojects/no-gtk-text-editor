@@ -1,7 +1,8 @@
 #include "ui.hpp"
 #include <assert.h>
 
-void init_editable_text(editableText *EditableText, textBuffer *TextBuffer, font *Font, bitmapFont *BitmapFont, editableTextConfig Config)
+
+void init(editableText *EditableText, textBuffer *TextBuffer, font *Font, bitmapFont *BitmapFont, editableTextConfig Config)
 {
 	EditableText->OffsX = 0;
 	EditableText->OffsY = 0;
@@ -10,6 +11,35 @@ void init_editable_text(editableText *EditableText, textBuffer *TextBuffer, font
 	EditableText->Y = Config.Y;
 	EditableText->W = Config.W;
 	EditableText->H = Config.H;
+	EditableText->BorderThickness = Config.BorderThickness;
+	EditableText->TextColor = Config.TextColor;
+	EditableText->BackgroundColor = Config.BackgroundColor;
+	EditableText->CursorColor = Config.CursorColor;
+	EditableText->BorderColor = Config.BorderColor;
+
+	EditableText->TextBuffer = TextBuffer;
+	EditableText->Cursor = GetStart(TextBuffer);
+
+	EditableText->Font = Font;
+	EditableText->BitmapFont = BitmapFont;
+
+	EditableText->TabWidth = 3; //@ hack
+}
+
+static int getTextHeight(font *Font) {
+	return (int)(Font->Ascent - Font->Descent);
+}
+
+void init(editableText *EditableText, textBuffer *TextBuffer, font *Font, bitmapFont *BitmapFont, singleLineEditableTextConfig Config)
+{
+	EditableText->OffsX = 0;
+	EditableText->OffsY = 0;
+
+	EditableText->X = Config.X;
+	EditableText->Y = Config.Y;
+	EditableText->W = Config.W;
+	EditableText->BorderThickness = Config.BorderThickness;
+	EditableText->H = getTextHeight(Font);
 	EditableText->TextColor = Config.TextColor;
 	EditableText->BackgroundColor = Config.BackgroundColor;
 	EditableText->CursorColor = Config.CursorColor;
@@ -320,65 +350,89 @@ static void draw_text_bitmap_font(editableText *EditableText, shaders *Shaders)
 //	glBindTexture(GL_TEXTURE_2D, 0); // bind default texture (?)
 }
 
-void draw_editable_text(editableText *EditableText, shaders *Shaders, bool IsActive)
-{
-	int X = EditableText->X;
-	int Y = EditableText->Y;
-	int W = EditableText->W;
-	int H = EditableText->H;
+//void draw(singleLineEditableText *EditableText, shaders *Shaders, bool IsActive)
+//{
+//	//
+//}
 
-	// BACKGROUND
-	draw_quad(X, Y, W, H, EditableText->BackgroundColor);
+void draw(editableText *Editable, shaders *Shaders, bool IsActive)
+{
+	int X = Editable->X;
+	int Y = Editable->Y;
+	int W = Editable->W;
+	int H = Editable->H;
 
 	// BORDER
-	int BorderThickness = 9;
+//	int BorderThickness = 9;
+	int BorderThickness = Editable->BorderThickness;
 	color ActiveColor = {1.0f, 0.0f, 0.0f, 1.0f};
-	color BorderColor = ((IsActive) ? (ActiveColor) : (EditableText->BorderColor));
-	draw_quad(X, Y - BorderThickness, W, BorderThickness, BorderColor);
-	draw_quad(X, Y + H, W, BorderThickness, BorderColor);
-	draw_quad(X - BorderThickness, Y - BorderThickness, BorderThickness, 2*BorderThickness + H, BorderColor);
-	draw_quad(X + W, Y - BorderThickness, BorderThickness, 2*BorderThickness + H, BorderColor);
+	color BorderColor = ((IsActive) ? (ActiveColor) : (Editable->BorderColor));
+	draw_quad(X, Y - BorderThickness, W, BorderThickness, BorderColor); // upper
+//	draw_quad(X, Y, W, BorderThickness, BorderColor); // upper
+	draw_quad(X, Y + H, W, BorderThickness, BorderColor); // lower
+	draw_quad(X - BorderThickness, Y - BorderThickness, BorderThickness, 2*BorderThickness + H, BorderColor); // left
+	draw_quad(X + W, Y - BorderThickness, BorderThickness, 2*BorderThickness + H, BorderColor); // right
+
+	// BACKGROUND
+	draw_quad(X, Y, W, H, Editable->BackgroundColor);
 
 	if(IsActive)
 	{
 		// CURSOR
-	
+
 		// bitmap font:
-//		int CharWidth = EditableText->BitmapFont->Config.CharWidth;
-//		int CharHeight = EditableText->BitmapFont->Config.CharHeight;
-//		int LineSpacing = EditableText->BitmapFont->Config.LineSpacing;
-//		int CharSpacing = EditableText->BitmapFont->Config.CharSpacing;
-//		int TabWidth = EditableText->BitmapFont->Config.TabWidth;
-	
+//		int CharWidth = Editable->BitmapFont->Config.CharWidth;
+//		int CharHeight = Editable->BitmapFont->Config.CharHeight;
+//		int LineSpacing = Editable->BitmapFont->Config.LineSpacing;
+//		int CharSpacing = Editable->BitmapFont->Config.CharSpacing;
+//		int TabWidth = Editable->BitmapFont->Config.TabWidth;
+
 		// non-bitmap font:
-		int CharWidth = EditableText->Font->Glyphs[0].Advance;
-		int CharHeight = (int)(EditableText->Font->Ascent - EditableText->Font->Descent);
+		int CharWidth = Editable->Font->Glyphs[0].Advance;
+		int CharHeight = (int)(Editable->Font->Ascent - Editable->Font->Descent);
 		int LineSpacing = 0;
 		int CharSpacing = 0;
-		int TabWidth = EditableText->TabWidth;
-	
-		textBuffer *Buffer = EditableText->TextBuffer;
-		int Cursor = EditableText->Cursor;
+		int TabWidth = Editable->TabWidth;
+
+		textBuffer *Buffer = Editable->TextBuffer;
+		int Cursor = Editable->Cursor;
 		int CursorTBX = GetCharsIntoLine(Buffer, Cursor, TabWidth) * (CharWidth + CharSpacing);
 		int CursorTBY = GetLinesIntoBuffer(Buffer, Cursor) * (CharHeight + LineSpacing);
-	
-		if(CursorTBX >= EditableText->OffsX && CursorTBX < EditableText->OffsX + W
-			&& CursorTBY >= EditableText->OffsY && CursorTBY < EditableText->OffsY + H)
+
+		if(CursorTBX >= Editable->OffsX && CursorTBX < Editable->OffsX + W
+			&& CursorTBY >= Editable->OffsY && CursorTBY < Editable->OffsY + H)
 		{
 			// Cursor visible
-			int CursorX = X + CursorTBX - EditableText->OffsX;
-			int CursorY = Y + CursorTBY - EditableText->OffsY;
+			int CursorX = X + CursorTBX - Editable->OffsX;
+			int CursorY = Y + CursorTBY - Editable->OffsY;
 			int CursorW = CharWidth;
 			int CursorH = CharHeight;
-			color CursorColor = EditableText->CursorColor;
+			color CursorColor = Editable->CursorColor;
 			draw_quad(CursorX, CursorY, CursorW, CursorH, CursorColor);
 		}
 	}
 
 	// TEXT
-//	draw_text_bitmap_font(EditableText, Shaders);
-	draw_text(EditableText, Shaders);
+//	draw_text_bitmap_font(Editable, Shaders);
+	draw_text(Editable, Shaders);
 }
+
+//void adjust_viewport_if_not_visible(singleLineEditableText *Editable, int Iter)
+//{
+//	int Col = GetCharsIntoLine(Editable->TextBuffer, Iter, Editable->TabWidth);
+//
+//	int CharWidth = Editable->Font->Glyphs[0].Advance;
+//	int CharSpacing = 0;
+//
+//	int CharAtIterX1 = Col * (CharWidth + CharSpacing);
+//	int CharAtIterX2 = CharAtIterX1 + CharWidth;
+//
+//	if (CharAtIterX2 > Editable->OffsX + Editable->W) {
+//		Editable->OffsX = CharAtIterX2 - Editable->W;
+//	} else if (CharAtIterX1 < Editable->OffsX) {
+//		Editable->OffsX = CharAtIterX1;
+//	}
+//}
 
 void adjust_viewport_if_not_visible(editableText *Editable, int Iter)
 {
@@ -389,9 +443,10 @@ void adjust_viewport_if_not_visible(editableText *Editable, int Iter)
 	// bitmap font version:
 //	int CursorX1 = Col * (Editable->BitmapFont->Config.CharWidth + Editable->BitmapFont->Config.CharSpacing);
 //	int CursorY1 = Row * (Editable->BitmapFont->Config.CharHeight + Editable->BitmapFont->Config.LineSpacing);
-	// bitmap non-font version:
+	// non-bitmap font version:
 	int CharWidth = Editable->Font->Glyphs[0].Advance;
-	int CharHeight = (int)(Editable->Font->Ascent - Editable->Font->Descent);
+//	int CharHeight = (int)(Editable->Font->Ascent - Editable->Font->Descent);
+	int CharHeight = getTextHeight(Editable->Font);
 	int LineSpacing = 0;
 	int CharSpacing = 0;
 	int CursorX1 = Col * (CharWidth + CharSpacing);
@@ -430,4 +485,98 @@ void adjust_viewport_if_not_visible(editableText *Editable, int Iter)
 	}
 }
 
+scrollableList make_scrollableList(int X, int Y, int W, int MaxHeight, font *Font, color BGColor, color SelectedItemColor, color TextColor)
+{
+	scrollableList List;
+	List.X = X;
+	List.Y = Y;
+	List.W = W;
+	List.H = 0;
+	List.MaxHeight = MaxHeight;
+	List.Font = Font;
+	List.BGColor = BGColor;
+	List.SelectedItemColor = SelectedItemColor;
+	List.TextColor = TextColor;
 
+	List.OffsY = 0;
+	ArrayInit(&List.Items);
+	List.SelectedItem = -1;
+
+	return List;
+}
+
+void append_item(scrollableList *List, const char *Item) {
+	if (List->SelectedItem == -1) {
+		assert(List->Items.Count == 0);
+		List->SelectedItem = 0;
+	}
+	*ArrayAppend(&List->Items) = strdup(Item);
+
+	int ItemHeight = List->Font->Ascent - List->Font->Descent;
+	int ListHeight = List->Items.Count * ItemHeight;
+	if (ListHeight > List->MaxHeight) {
+		ListHeight = List->MaxHeight;
+	}
+	List->H = ListHeight;
+}
+
+void removeAllItems(scrollableList *List) {
+	List->Items.Count = 0;//@ leak
+	List->SelectedItem = -1;
+	List->OffsY = 0;
+	List->H = 0;
+}
+
+void draw(scrollableList *List, array<dirEntryType> *DirEntryTypes, shaders *Shaders)
+{
+	if (List->Items.Count > 0) {
+		assert(List->SelectedItem != -1);
+
+		int ItemHeight = List->Font->Ascent - List->Font->Descent;
+
+		// list background
+		draw_quad(List->X, List->Y, List->W, List->H, List->BGColor);
+
+		// currently selected item background
+		draw_quad(List->X, List->Y + List->SelectedItem * ItemHeight - List->OffsY, List->W, ItemHeight, List->SelectedItemColor);
+
+		int Ascent = -List->Font->Ascent;
+		int Descent = -List->Font->Descent;
+
+	//	int X = List->X;
+	//	int Y = List->Y - Ascent - List->OffsY;
+	//
+	//	for(int i = 0; i < List->Items.Count; ++i)
+	//	{
+	//		const int MAX_TEXT_LENGTH = 64;//@
+	//		char Text[MAX_TEXT_LENGTH];
+	//		snprintf(Text, MAX_TEXT_LENGTH, "%s %s", DirEntryTypes->Data[i] == dirEntryType_UNKNOWN ? "u" : (DirEntryTypes->Data[i] == dirEntryType_DIRECTORY ? "d" : "r") , List->Items.Data[i]);
+	//		draw_text(Text, X, Y, List->TextColor, List->Font, Shaders);
+	//		Y += ItemHeight;
+	//	}
+
+		int FirstItemAtLeastPartiallyVisible = List->OffsY / ItemHeight;
+		int LabelY = List->Y - (List->OffsY - FirstItemAtLeastPartiallyVisible * ItemHeight);
+		int AbsAscent = (Ascent < 0) ? -Ascent : Ascent;
+		int X = List->X;
+		int Y = LabelY + AbsAscent;
+		for (int Index = FirstItemAtLeastPartiallyVisible; Index < List->Items.Count; ++Index) {
+			const int MAX_LENGTH = 128;
+			char Label[MAX_LENGTH];
+//			snprintf(Label, MAX_LENGTH, "%s", List->Items.Data[Index]);
+			snprintf(Label, MAX_LENGTH, "%s %s", DirEntryTypes->Data[Index] == dirEntryType_UNKNOWN ? "u" : (DirEntryTypes->Data[Index] == dirEntryType_DIRECTORY ? "d" : "r") , List->Items.Data[Index]);
+			draw_text(Label, X, Y, List->TextColor, List->Font, Shaders);
+
+			Y += ItemHeight;
+			if (Y > List->Y + List->H) {break;}
+		}
+
+		const int MAX_LENGTH = 128;
+		char Label[MAX_LENGTH];
+		const char *FormatStr = (List->Items.Count == 0) ? "no items" : "%d/%d";
+		snprintf(Label, MAX_LENGTH, FormatStr, List->SelectedItem + 1, List->Items.Count);
+		draw_text(Label, List->X, List->Y + List->H + AbsAscent, {1.0f, 1.0f, 1.0f, 1.0f}, List->Font, Shaders);
+	} else {
+		assert(List->SelectedItem == -1);
+	}
+}

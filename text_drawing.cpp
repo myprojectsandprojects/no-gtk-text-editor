@@ -10,7 +10,7 @@
 #define STB_TRUETYPE_IMPLEMENTATION
 #include "stb_truetype.h"
 
-//void make_font(font *Font, const char *FilePath)
+//@void make_font(font *Font, const char *FilePath, int FontHeight)
 font *make_font(const char *FilePath, int FontHeight)
 {
 	u8 *Contents;

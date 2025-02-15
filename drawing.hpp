@@ -6,10 +6,10 @@
 //#include "lib.h"
 #include "lib/lib.hpp"
 
-struct rect
-{
-	int X, Y, W, H;
-};
+//struct rect
+//{
+//	int X, Y, W, H;
+//};
 
 struct color
 {

@@ -4,10 +4,44 @@
 	* Why is glfwSwapBuffers() taking ~1-3 ms if we are not even drawing anything besides the background?
 */
 
+/*
+TODO:
+* Every valid path starts with '/'. Why allow user enter a path that doesnt if we know that it's not a valid path? (Just put '/' there and disallow deletion.)
+
+- On Linux, a valid (absolute) path starts with '/'
+- On Windows, I think 
+
+---
+
+* position -- border's, not contents, upper-left corner
+-> It's not that straightforward. Sometimes we need outer XYWH (when positioning UIElements), sometimes we need inner XYWH (when adjusting scroll-state).
+
+* commit "basic file opener"
+
+* subpixel antialiasing
+
+FILE-OPENER:
+* chunks
+* scrollbar
+* icons
+* effects?
+* creating files/directories?
+
+EDITABLE-TEXT:
+* UTF-8
+* text-wrapping?
+
+FILE-SWITCHER:
+* switch between files
+*/
+
+
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
 //#include <time.h>
+#include <dirent.h>
+#include <sys/stat.h>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -71,8 +105,12 @@ struct fontImage
 	int LeftMargin, TopMargin;
 };
 
-struct editor
-{
+struct fileOpener {
+	textBuffer InputFieldBuffer;
+	editableText InputField;
+	scrollableList AutocompleteList;
+};
+struct editor {
 	int WindowWidth, WindowHeight;
 
 //	color TextColor;
@@ -85,7 +123,7 @@ struct editor
 
 //	char OpenFile[MAX_FILE_PATH];
 
-	GLFWwindow *AppWindow;
+//	GLFWwindow *AppWindow;
 
 //	// Message-box
 //	double MBDuration;
@@ -96,12 +134,16 @@ struct editor
 //	char MessageText[1000];
 //	double MessageStartTime;
 
-	textBuffer TextBuffer;
+//	widget Widgets[3];
 
-//	editableText EditableText;
-//	editableText EditableText2;
+	textBuffer TextBuffer;
 	editableText EditableTexts[2];
 	editableText *Active;
+
+	bool InFileOpeningMode;
+	fileOpener FileOpener;
+
+	array<dirEntryType> ListItemTypes; //@Get rid!
 
 //	font *TheFont;
 	font *FontSmall;
@@ -126,6 +168,8 @@ void MakeQuad(array<float> *Vertices, int X, int Y, int Width, int Height, color
 float Lerp(float From, float To, float Progress);
 void DisplayMessage(messageType MessageType, const char *MessageText, editor *Editor);
 
+static void FileOpenerUpdateAutocompleteList(textBuffer *Buffer, scrollableList *List, array<dirEntryType> *ListItemTypes);
+
 void OnWindowResized(GLFWwindow *Window, int Width, int Height)
 {
 	glViewport(0, 0, Width, Height);
@@ -139,8 +183,9 @@ void OnWindowResized(GLFWwindow *Window, int Width, int Height)
 
 void OnCharEvent(GLFWwindow *Window, unsigned int Codepoint)
 {
+//	if(isASCII(Codepoint))
 //	if(Codepoint >= ' ' && Codepoint <= '~')
-	if( ' ' <= Codepoint && Codepoint <= '~')
+	if(' ' <= Codepoint && Codepoint <= '~')
 	{
 		// dont calculate positions relative to the window(viewport) because window might change
 		// calculate relative to text-buffer
@@ -166,15 +211,26 @@ void OnCharEvent(GLFWwindow *Window, unsigned int Codepoint)
 
 //		InsertAtCursor(&Editor.TextBuffer, (char)Codepoint, &Editor);
 
-		textBuffer *Buffer = &Editor.TextBuffer;
-//		editableText *Editable = &Editor.EditableText;
-//		editableText *Editable = &Editor.EditableTexts[0];
-		editableText *Editable = Editor.Active;
-		if(Editable)
-		{
-			Insert(Buffer, (char)Codepoint, Editable->Cursor);
-			MoveForward(Buffer, &Editable->Cursor);
-			adjust_viewport_if_not_visible(Editable, Editable->Cursor);
+		if(Editor.InFileOpeningMode) {
+		 	editableText *InputField = &Editor.FileOpener.InputField;
+		 	textBuffer *Buffer = &Editor.FileOpener.InputFieldBuffer;
+
+		 	Insert(Buffer, (char)Codepoint, InputField->Cursor);
+			MoveForward(Buffer, &InputField->Cursor);
+			adjust_viewport_if_not_visible(InputField, InputField->Cursor);
+
+			FileOpenerUpdateAutocompleteList(Buffer, &Editor.FileOpener.AutocompleteList, &Editor.ListItemTypes);
+		} else {
+			if(Editor.Active) {
+			 	editableText *Editable = Editor.Active;
+			 	textBuffer *Buffer = &Editor.TextBuffer;
+
+			 	Insert(Buffer, (char)Codepoint, Editable->Cursor);
+				MoveForward(Buffer, &Editable->Cursor);
+				adjust_viewport_if_not_visible(Editable, Editable->Cursor);
+			} else {
+				// no active widget
+			}
 		}
 	}
 	else
@@ -183,9 +239,181 @@ void OnCharEvent(GLFWwindow *Window, unsigned int Codepoint)
 	}
 }
 
+//void handleKeyEvent(fileOpener *O, int Scancode, int Action, int Mods)
+//{
+//	//
+//}
+
 void OnKeyEvent(GLFWwindow *Window, int Key, int Scancode, int Action, int Mods)
 {
 	// press -> repeat ... -> release
+
+	/* Ctrl + O */
+	if (Key == GLFW_KEY_O && Mods == GLFW_MOD_CONTROL && Action == GLFW_PRESS) {
+//	if (Key == GLFW_KEY_O && Mods == GLFW_MOD_CONTROL && Action == GLFW_RELEASE) {
+		Editor.InFileOpeningMode = !Editor.InFileOpeningMode;
+		return;
+	}
+
+	if(Editor.InFileOpeningMode) {
+		editableText *Editable = &Editor.FileOpener.InputField;
+		textBuffer *Buffer = &Editor.FileOpener.InputFieldBuffer;
+		scrollableList *List = &Editor.FileOpener.AutocompleteList;
+
+		if (Key == GLFW_KEY_LEFT && (Action == GLFW_PRESS || Action == GLFW_REPEAT)) {
+			if(MoveBackward(Buffer, &Editable->Cursor)) {
+				adjust_viewport_if_not_visible(Editable, Editable->Cursor);
+			}
+		} else if (Key == GLFW_KEY_RIGHT && (Action == GLFW_PRESS || Action == GLFW_REPEAT)) {
+			if(MoveForward(Buffer, &Editable->Cursor)) {
+				adjust_viewport_if_not_visible(Editable, Editable->Cursor);
+			}
+		} else if (Key == GLFW_KEY_UP && (Action == GLFW_PRESS || Action == GLFW_REPEAT)) {
+			if(List->SelectedItem != -1) {
+				List->SelectedItem -= 1;
+				if(List->SelectedItem < 0) {
+					List->SelectedItem = List->Items.Count - 1;
+				}
+
+				int ItemHeight = List->Font->Ascent - List->Font->Descent;
+				int ItemUpper = List->SelectedItem * ItemHeight;
+				int ItemLower = ItemUpper + ItemHeight;
+				int VisibleUpper = List->OffsY;
+				int VisibleLower = List->OffsY + List->H;
+				if(ItemLower > VisibleLower) {
+					List->OffsY = ItemLower - List->H;
+				} else if(ItemUpper < VisibleUpper) {
+					List->OffsY = ItemUpper;
+				}
+			} else {
+				assert(List->Items.Count == 0);
+			}
+		} else if (Key == GLFW_KEY_DOWN && (Action == GLFW_PRESS || Action == GLFW_REPEAT)) {
+			if(List->SelectedItem != -1) {
+				List->SelectedItem += 1;
+				List->SelectedItem %= List->Items.Count;
+
+				int ItemHeight = List->Font->Ascent - List->Font->Descent;
+				int ItemUpper = List->SelectedItem * ItemHeight;
+				int ItemLower = ItemUpper + ItemHeight;
+				int VisibleUpper = List->OffsY;
+				int VisibleLower = List->OffsY + List->H;
+				if(ItemLower > VisibleLower) {
+					List->OffsY = ItemLower - List->H;
+				} else if(ItemUpper < VisibleUpper) {
+					List->OffsY = ItemUpper;
+				}
+			} else {
+				assert(List->Items.Count == 0);
+			}
+		} else if(Key == GLFW_KEY_BACKSPACE && (Action == GLFW_PRESS || Action == GLFW_REPEAT)) {
+//			if (moveBackward(B, &E->Cursor)) {
+//				deleteCharacter(B, E->Cursor);
+//
+//				rowCol CursorPos = getRowCol(B, E->Cursor); // row/col assumes monospace font
+//				scrollToMakeVisible(E, CursorPos);
+//
+//				updateFileOpener(&Editor.FileOpener);
+//			} else {
+//				assert(isAtStart(B, E->Cursor));
+//			}
+
+			if(GetCharIndex(Buffer, Editable->Cursor) != 1) { //@ hack
+				if(MoveBackward(Buffer, &Editable->Cursor)) {
+					Delete(Buffer, Editable->Cursor);
+					adjust_viewport_if_not_visible(Editable, Editable->Cursor);
+	
+					FileOpenerUpdateAutocompleteList(Buffer, List, &Editor.ListItemTypes);
+				}
+			}
+		} else if(Key == GLFW_KEY_TAB && (Action == GLFW_PRESS || Action == GLFW_REPEAT)) {
+			if(List->Items.Count) {
+				assert(List->Items.Count == Editor.ListItemTypes.Count);
+
+				char *InputText = GetText(Buffer, GetStart(Buffer), Buffer->OneAfterLast);
+				printf("file opener user input: %s\n", InputText);
+
+				int InputLength = Buffer->OneAfterLast;
+//				while(Input[InputLength] != '\0')
+//				{
+//					InputLength += 1;
+//				}
+
+				/*
+					split input into 'parent directory' and 'basename'
+					/a/b/c0 -> /a/b0c0
+					/abc -> 0abc
+				*/
+				assert(InputText[0] == '/');
+
+				int i;
+				for(i = InputLength-1; InputText[i] != '/'; --i);
+				assert(InputText[i] == '/');
+				InputText[i] = '\0';
+
+				const char *Parent = InputText[0] == '\0' ? "/" : InputText;
+				const char *Base = &InputText[i+1];
+				printf("autocomplete: parent: \"%s\", base: \"%s\"\n", Parent, Base);
+
+				int BaseLength = InputLength - (int)(Base - InputText);//@
+				printf("BaseLength: %d\n", BaseLength);
+				const char *CompleteWith = &List->Items.Data[List->SelectedItem][BaseLength];
+
+				char CompleteWithFinal[64];
+//				snprintf(CompleteWithFinal, 64, "%s%s", CompleteWith, Editor.ListItemTypes.Data[0] == dirEntryType_DIRECTORY ? "/" : "");
+				snprintf(CompleteWithFinal, 64, "%s%s", CompleteWith, Editor.ListItemTypes.Data[List->SelectedItem] == dirEntryType_DIRECTORY ? "/" : "");
+				printf("CompleteWithFinal: \"%s\"\n", CompleteWithFinal);
+				Insert(Buffer, CompleteWithFinal, GetEnd(Buffer));
+
+				Editable->Cursor = GetEnd(Buffer);
+				adjust_viewport_if_not_visible(Editable, Editable->Cursor);
+				FileOpenerUpdateAutocompleteList(Buffer, List, &Editor.ListItemTypes);
+			} else {
+				printf("no completions\n");
+			}
+		} else if(Key == GLFW_KEY_ENTER && Action == GLFW_PRESS) {
+			char *InputText = GetText(Buffer, GetStart(Buffer), Buffer->OneAfterLast);
+			printf("Text: %s\n", InputText);
+			/*@
+			maybe if it's not a regular file we shouldn't try to read it?
+			Perhaps we also want to implement "create new empty file" here?
+			So if the thing doesn't exist, we'll just take 'Enter' as a file creation attempt? Make a new empty file?
+			And if the name has a '/' at the end, we'll create a directory?
+			/abc -> create file called 'abc' in root dir
+			/abc/ -> create directory called 'abc' in root dir (?)
+			Should we warn the user that we are about to create a file/directory?
+			/a/b/c/file -> if 'a' doesn't exist inside root dir. then: 1) create 'a' in root, 2) create 'b' in 'a', 3) create 'c' in 'b' and finally create a file 'file' in 'c'??? Should all this happen when user presses 'enter' or step by step somehow?
+			*/
+			char *Contents;
+			if(Lib::ReadTextFile(InputText, &Contents)) {
+				Delete(&Editor.TextBuffer, GetStart(&Editor.TextBuffer), Editor.TextBuffer.OneAfterLast);
+				Insert(&Editor.TextBuffer, Contents, GetStart(&Editor.TextBuffer));
+				free(Contents);
+
+				Editor.EditableTexts[0].Cursor = 0;
+				Editor.EditableTexts[1].Cursor = 0;
+
+				Editor.EditableTexts[0].OffsX = 0;
+				Editor.EditableTexts[0].OffsY = 0;
+				Editor.EditableTexts[1].OffsX = 0;
+				Editor.EditableTexts[1].OffsY = 0;
+
+				removeAllItems(List);
+
+				Delete(Buffer, GetStart(Buffer), Buffer->OneAfterLast);
+				Editable->Cursor = 0;
+				Editable->OffsX = 0;
+//				void adjust_viewport_if_not_visible(editableText *Editable, int Iter);
+
+				Editor.InFileOpeningMode = false;
+			} else {
+				fprintf(stderr, "error: failed to read a file: %s\n", InputText);
+			}
+			free(InputText);
+		}
+
+		return;
+	}
 
 	textBuffer *Buffer = &Editor.TextBuffer;
 //	editableText *Editable = &Editor.EditableText;
@@ -396,6 +624,30 @@ void OnScrollEvent(GLFWwindow *Window, double XOffset, double YOffset)
 
 int main()
 {
+//	free(0); //Oh wow, that's perfectly fine huh...
+
+//	using namespace Lib;
+//
+//	const char *path = "/path/to/ultimate/food/experience";
+////	const char *path = "/home/eero";
+////	const char *path = "homeeero";
+////	const char *path = "/homeeero";
+//	stringSlice slice = make_stringSlice(path);
+//	stringSlice parent;
+//	if(get_parent_as_if_path(slice, &parent)){
+//		// could be a path
+////		printf("'%s' can not be a path\n", stringSlice_C(parent));
+//		print_stringSlice(slice);
+//		printf(" -> ");
+//		print_stringSlice(parent);
+//		printf("\n");
+//	}else{
+//		// nope
+//		printf("'%s' can not be a path\n", path);
+//	}
+//
+//	return 0;
+
 	if(glfwInit() == GLFW_FALSE)
 	{
 		printf("error: glfwInit()\n");
@@ -614,13 +866,13 @@ int main()
 //		FrameCount += 1;
 
 		{
-		struct timespec T = {}; clock_gettime(CLOCK_MONOTONIC, &T);
+//		struct timespec T = {}; clock_gettime(CLOCK_MONOTONIC, &T);
 
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		double elapsed_ms = elapsed_since(T, MS);
-		printf("clear: %.3f ms\n", elapsed_ms);
+//		double elapsed_ms = elapsed_since(T, MS);
+//		printf("clear: %.3f ms\n", elapsed_ms);
 		}
 
 		/*
@@ -683,8 +935,13 @@ int main()
 //			draw_quad(X, Y, W, H, Editor.Font16x32px->TextureAtlas->Tex, true);
 //		}
 
-		draw_editable_text(&Editor.EditableTexts[0], &Shaders, (&Editor.EditableTexts[0] == Editor.Active) ? true : false);
-		draw_editable_text(&Editor.EditableTexts[1], &Shaders, (&Editor.EditableTexts[1] == Editor.Active) ? true : false);
+		if (Editor.InFileOpeningMode) {
+			draw(&Editor.FileOpener.InputField, &Shaders, true);
+			draw(&Editor.FileOpener.AutocompleteList, &Editor.ListItemTypes, &Shaders);
+		} else {
+			draw(&Editor.EditableTexts[0], &Shaders, (&Editor.EditableTexts[0] == Editor.Active) ? true : false);
+			draw(&Editor.EditableTexts[1], &Shaders, (&Editor.EditableTexts[1] == Editor.Active) ? true : false);
+		}
 
 //		{
 //			draw_text("Hello, world!", 10, 25, {1.0f, 0.0f, 0.0f, 1.0f}, Editor.FontSmall, &Shaders);
@@ -880,12 +1137,12 @@ int main()
 
 
 		{
-		struct timespec T = {}; clock_gettime(CLOCK_MONOTONIC, &T);
+//		struct timespec T = {}; clock_gettime(CLOCK_MONOTONIC, &T);
 
 		glfwSwapBuffers(window);
 
-		double elapsed_ms = elapsed_since(T, MS);
-		printf("glfwSwapBuffers: %.3f ms\n", elapsed_ms);
+//		double elapsed_ms = elapsed_since(T, MS);
+//		printf("glfwSwapBuffers: %.3f ms\n", elapsed_ms);
 		}
 
 //		TextVertices.Count = 0;
@@ -1243,9 +1500,18 @@ void InitEditor(editor *Editor)
 	Editor->Font16x32px = Font16x32px;
 	Editor->Font32x64px = Font32x64px;
 
-	Editor->FontSmall =  make_font("../fonts/Sudo-Medium.ttf", 21);
-	Editor->FontMedium = make_font("../fonts/Sudo-Medium.ttf", 31);
-	Editor->FontBig =    make_font("../fonts/Sudo-Medium.ttf", 41);
+//	Editor->FontSmall =  make_font("../fonts/Sudo-Medium.ttf", 21);
+//	Editor->FontMedium = make_font("../fonts/Sudo-Medium.ttf", 31);
+//	Editor->FontBig =    make_font("../fonts/Sudo-Medium.ttf", 41);
+//	Editor->FontSmall =  make_font("../fonts/CoolMono.ttf", 15);
+//	Editor->FontSmall =  make_font("/home/eero/no-gtk-text-editor/fonts/BlexMonoNerdFont-Regular.ttf", 15);
+	Editor->FontSmall =  make_font("/home/eero/no-gtk-text-editor/fonts/JetBrainsMonoNL-Regular.ttf", 15);
+//	Editor->FontMedium = make_font("../fonts/CoolMono.ttf", 21);
+//	Editor->FontMedium =  make_font("/home/eero/no-gtk-text-editor/fonts/BlexMonoNerdFont-Regular.ttf", 21);
+	Editor->FontMedium =  make_font("/home/eero/no-gtk-text-editor/fonts/JetBrainsMonoNL-Regular.ttf", 21);
+//	Editor->FontBig =    make_font("../fonts/CoolMono.ttf", 27);
+//	Editor->FontBig =  make_font("/home/eero/no-gtk-text-editor/fonts/BlexMonoNerdFont-Regular.ttf", 27);
+	Editor->FontBig =  make_font("/home/eero/no-gtk-text-editor/fonts/JetBrainsMonoNL-Regular.ttf", 27);
 	assert(Editor->FontSmall && Editor->FontMedium && Editor->FontBig);
 
 	InitTextBuffer(&Editor->TextBuffer);
@@ -1282,12 +1548,13 @@ void InitEditor(editor *Editor)
 		Config.Y = 16;
 		Config.W = 300;
 		Config.H = 300;
+		Config.BorderThickness = 1;
 		Config.TextColor = {1.0f, 1.0f, 1.0f, 1.0f};
 		Config.BackgroundColor = {0.1f, 0.1f, 0.1f, 1.0f};
 		Config.CursorColor = {0.0f, 1.0f, 0.0f, 1.0f};
 		Config.BorderColor = {0.3f, 0.3f, 0.3f, 1.0f};
 //		init_editable_text(&Editor->EditableText, &Editor->TextBuffer, Editor->FontMedium, Editor->Font8x16px, Config);
-		init_editable_text(&Editor->EditableTexts[0], &Editor->TextBuffer, Editor->FontSmall, Editor->Font8x16px, Config);
+		init(&Editor->EditableTexts[0], &Editor->TextBuffer, Editor->FontSmall, Editor->Font8x16px, Config);
 	}
 
 	{
@@ -1296,15 +1563,60 @@ void InitEditor(editor *Editor)
 		Config.Y = 16;
 		Config.W = 300;
 		Config.H = 300;
+		Config.BorderThickness = 1;
 		Config.TextColor = {1.0f, 1.0f, 1.0f, 1.0f};
 		Config.BackgroundColor = {0.1f, 0.1f, 0.1f, 1.0f};
 		Config.CursorColor = {0.0f, 1.0f, 0.0f, 1.0f};
 		Config.BorderColor = {0.3f, 0.3f, 0.3f, 1.0f};
 //		init_editable_text(&Editor->EditableText2, &Editor->TextBuffer, Editor->FontMedium, Editor->Font8x16px, Config);
-		init_editable_text(&Editor->EditableTexts[1], &Editor->TextBuffer, Editor->FontBig, Editor->Font8x16px, Config);
+		init(&Editor->EditableTexts[1], &Editor->TextBuffer, Editor->FontBig, Editor->Font8x16px, Config);
 	}
 
 	Editor->Active = NULL;
+
+	{
+		singleLineEditableTextConfig Config = {};
+		Config.BorderThickness = 1;
+		Config.X = Config.BorderThickness;
+		Config.Y = Config.BorderThickness;
+		Config.W = 600;
+		Config.TextColor = {1.0f, 1.0f, 1.0f, 1.0f};
+		Config.BackgroundColor = {0.1f, 0.1f, 0.1f, 1.0f};
+		Config.BorderColor = {0.3f, 0.3f, 0.3f, 1.0f};
+		Config.CursorColor = {0.0f, 1.0f, 0.0f, 1.0f};
+//		init(&Editor->FileOpener, &Editor->FileOpenerBuffer, Editor->FontBig, Editor->Font8x16px, Config);
+//		init(&Editor->FileOpener, &Editor->FileOpenerBuffer, Editor->FontSmall, Editor->Font8x16px, Config);
+		InitTextBuffer(&Editor->FileOpener.InputFieldBuffer);
+		init(&Editor->FileOpener.InputField, &Editor->FileOpener.InputFieldBuffer, Editor->FontMedium, Editor->Font8x16px, Config);
+//		init_singleLineEditableText(&Editor->FileOpener, &Editor->FileOpenerBuffer, Editor->FontBig, Config);
+//		init_singleLineEditableText(&Editor->FileOpener, &Editor->FileOpenerBuffer, Editor->FontSmall, Config);
+	}
+
+//	scrollableList List = make_scrollableList(10, Editor->FileOpener.Y, 100, 100, Editor->FontSmall);
+	color BGColor = {0.1f, 0.1f, 0.1f, 1.0f};
+	color SelectedItemColor = {0.2f, 0.2f, 0.2f, 1.0f};
+	color TextColor = {1.0f, 1.0f, 1.0f, 1.0f};
+	int Y = Editor->FileOpener.InputField.Y + Editor->FileOpener.InputField.H + 16;
+	scrollableList List = make_scrollableList(Editor->FileOpener.InputField.X, Y, Editor->FileOpener.InputField.W, 699, Editor->FontSmall, BGColor, SelectedItemColor, TextColor);
+//	scrollableList List = make_scrollableList(10, Editor->FileOpener.Y, 200, 100, Editor->FontSmall, BGColor, SelectedItemColor, TextColor);
+//	scrollableList List = make_scrollableList(10, Editor->FileOpener.Y, 0, 0, Editor->FontMedium);
+//	scrollableList List = make_scrollableList(10, 5, 0, 0, Editor->FontBig);
+//	(*ArrayAppend(&List.Items)) = "Meaning";
+//	(*ArrayAppend(&List.Items)) = "Of";
+//	(*ArrayAppend(&List.Items)) = "Life";
+//	(*ArrayAppend(&List.Items)) = "=";
+//	(*ArrayAppend(&List.Items)) = "42";
+	Editor->FileOpener.AutocompleteList = List;
+	ArrayInit(&Editor->ListItemTypes);
+
+	Editor->InFileOpeningMode = false;
+
+	textBuffer *Buffer = &Editor->FileOpener.InputFieldBuffer;
+	editableText *InputField = &Editor->FileOpener.InputField;
+	Insert(Buffer, '/', GetStart(Buffer));
+	MoveForward(Buffer, &InputField->Cursor);
+	adjust_viewport_if_not_visible(InputField, InputField->Cursor);
+	FileOpenerUpdateAutocompleteList(Buffer, &Editor->FileOpener.AutocompleteList, &Editor->ListItemTypes);
 }
 
 void MakeQuad(array<float> *Vertices, int X, int Y, int Width, int Height, color Color)
@@ -1368,4 +1680,79 @@ float Lerp(float From, float To, float Progress)
 //	}
 //}
 
+//static void fileOpenerUpdateAutocompleteList(...)?
+static void FileOpenerUpdateAutocompleteList(textBuffer *Buffer, scrollableList *List, array<dirEntryType> *ListItemTypes)
+{
+	removeAllItems(List);
+	ListItemTypes->Count = 0;
+
+	char *InputText = GetText(Buffer, GetStart(Buffer), Buffer->NumCharacters);
+//	Lib::string InputText = GetText(Buffer, GetStart(Buffer), GetNumCharacters(Buffer));
+//	printf("file opener user input: %s\n", InputText);
+
+/*
+	split input into 'parent directory' and 'basename'
+	/a/b/c0 -> /a/b0c0
+	/abc -> 0abc
+*/
+	if(InputText[0] == '/') {
+		//Buffer->OneAfterLast?
+		int InputTextL = 0; while(InputText[InputTextL] != '\0') {InputTextL += 1;}
+		assert(InputTextL != 0);
+
+		int IndexSlash;
+		for(IndexSlash = InputTextL-1; InputText[IndexSlash] != '/'; --IndexSlash);
+		assert(InputText[IndexSlash] == '/');
+
+		InputText[IndexSlash] = '\0';
+		const char *Parent = (InputText[0] == '\0') ? "/" : InputText;
+		const char *Base = &InputText[IndexSlash+1];
+		printf("parent: \"%s\", base: \"%s\"\n", Parent, Base);
+
+		DIR *Dir = opendir(Parent); assert(Dir);
+		struct dirent *Entry;
+		READ_DIR: while ((Entry = readdir(Dir)) != NULL) {
+//			for(int i = 0; Base[i] != '\0'; ++i) {
+//				if(Base[i] != Entry->d_name[i]) {
+//					goto READ_DIR;
+//				}
+//			}
+			for(int Index = 0; ; ++Index) {
+				if(Base[Index] == '\0') {
+					if(Entry->d_name[Index] == '\0') {
+						goto READ_DIR;
+					}
+					break;
+				}
+
+				if(Base[Index] != Entry->d_name[Index]) {
+					goto READ_DIR;
+				}
+			}
+			append_item(List, Entry->d_name);
+
+//			const int MAX_FULL_PATH = 64;//@
+			const int MAX_FULL_PATH = 128;//@
+			char EntryPath[MAX_FULL_PATH];
+			snprintf(EntryPath, MAX_FULL_PATH, "%s/%s", Parent, Entry->d_name);
+			printf("\tentry path: \"%s\"\n", EntryPath);
+
+			struct stat EntryInfo;
+			if(lstat(EntryPath, &EntryInfo) == -1) {
+				fprintf(stderr, "Error: Cant lstat \"%s\"!\n", EntryPath); assert(false);
+			}
+
+			if(S_ISDIR(EntryInfo.st_mode)) {
+				*ArrayAppend(ListItemTypes) = dirEntryType_DIRECTORY;
+			} else if(S_ISREG(EntryInfo.st_mode)) {
+				*ArrayAppend(ListItemTypes) = dirEntryType_REGULAR_FILE;
+			} else {
+				*ArrayAppend(ListItemTypes) = dirEntryType_UNKNOWN;
+			}
+		}
+		closedir(Dir);
+	}
+
+	free(InputText);
+}
 

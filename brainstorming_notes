@@ -9,6 +9,33 @@ Extendability. Why not just write a codebase that is easy to understand and buil
 
 Modes. Try out Vim-style modes.
 
+* small codebase
+* code easy to understand (learning resource for beginners?)
+* easy and fast to build
+* cross platform (Linux, Windows, ...?)
+* extendability? like DWM? no scripting languages! simple and straightforward.
+* fast (on older machines)
+* efficient (no wasting of computer resources)
+
+small, easy, fast, efficient
+
+---
+
+TODO:
+- See if Treesitter and/or language servers can do something for us.
+
+---
+
+IMMEDIATE MODE UI?
+
+{
+	// event/render loop
+
+	make_textBoxSingleLine(MyBuffer, MyCursor, MyScrollState);
+	make_listBox(MyFilelist.Items, MyFilelist.CurrentlySelectedItem, MyFilelist.ScrollState);
+	// event?
+}
+
 
 
 

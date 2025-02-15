@@ -6,6 +6,7 @@
 
 void InitTextBuffer(textBuffer *Buffer)
 {
+	printf("InitTextBuffer called\n");
 	Buffer->Size = 1;
 //	Buffer->Size = 1024;	
 	Buffer->Data = (char *) malloc(Buffer->Size);
@@ -51,6 +52,25 @@ char GetChar(textBuffer *Buffer, int At)
 	{
 		return Buffer->Data[At];
 	}
+}
+
+char *GetText(textBuffer *Buffer, int At, int NumChars)
+{
+	// validate an iterator
+	assert(0 <= At && At <= Buffer->OneAfterLast);
+
+//	// cant delete more characters than there are
+//	assert(NumChars <= Buffer->OneAfterLast);
+	assert(NumChars <= Buffer->OneAfterLast - At);
+
+	char *Text = (char *)malloc(NumChars + 1);
+	for(int Count = 0; Count < NumChars; ++Count)
+	{
+		Text[Count] = Buffer->Data[At + Count];
+	}
+	Text[NumChars] = '\0';
+
+	return Text;
 }
 
 int GetStart(textBuffer *Buffer)
@@ -215,7 +235,7 @@ bool MoveToPrevLine(textBuffer *Buffer, int *Iter)
 //	return Result;
 
 	bool Result = false;
-	if(MoveAtCharBackwards(Buffer, '\n', Iter))
+	if(MoveToCharBackwards(Buffer, '\n', Iter))
 	{
 		// go to the beginning of the line
 		while(!IsStart(Buffer, *Iter))
@@ -264,14 +284,14 @@ void Insert(textBuffer *Buffer, char Char, int At)
 
 	if(Buffer->OneAfterLast + 1 > Buffer->Size)
 	{
-		int NewDataSize = 2 * (Buffer->OneAfterLast + 1);
-//		printf("ALLOCATING MEMORY: %d\n", NewDataSize);
+		int NewDataSize = 2 * (Buffer->OneAfterLast + 1); //@ why 'Buffer->OneAfterLast + 1'? We need to insert 1 character! Why not simply ensure that we have space for at least 1 more character?! Just double the current size (which is at least 1).
 		char *NewData = (char *) malloc(NewDataSize);
 		assert(NewData);
 		for(int i = 0; i < Buffer->OneAfterLast; ++i)
 		{
 			NewData[i] = Buffer->Data[i];
 		}
+		assert(Buffer->Data);
 		free(Buffer->Data);
 		Buffer->Data = NewData;
 		Buffer->Size = NewDataSize;
@@ -293,7 +313,7 @@ void Insert(textBuffer *Buffer, const char *Text, int At)
 
 	if((Buffer->OneAfterLast + TextLength) > Buffer->Size)
 	{
-		int NewDataSize = 2 * (Buffer->OneAfterLast + TextLength);
+		int NewDataSize = 2 * (Buffer->OneAfterLast + TextLength); //@ 'max(Buffer->OneAfterLast, TextLength) * 2' makes more sense to me maybe.
 		char *NewData = (char *) malloc(NewDataSize);
 		assert(NewData);
 		for(int i = 0; i < Buffer->OneAfterLast; ++i)
@@ -329,7 +349,8 @@ bool Delete(textBuffer *Buffer, int At)
 	// validate an iterator
 	assert(0 <= At && At <= Buffer->OneAfterLast);
 
-	if(Buffer->OneAfterLast > 0)
+//	if(Buffer->OneAfterLast > 0)
+	if(At < Buffer->OneAfterLast)
 	{
 //		do
 //		{
@@ -381,7 +402,7 @@ bool Delete(textBuffer *Buffer, int At, int NumChars)
 
 //bool MoveAtCharForwards(textBuffer *Buffer, char Char, int *Iter)
 //{}
-bool MoveAtCharBackwards(textBuffer *Buffer, char Char, int *Iter)
+bool MoveToCharBackwards(textBuffer *Buffer, char Char, int *Iter)
 {
 	assert(0 <= *Iter && *Iter < Buffer->OneAfterLast+1);
 
@@ -472,5 +493,8 @@ bool MoveAtCharBackwards(textBuffer *Buffer, char Char, int *Iter)
 //	return LineCount;
 //}
 
+int GetCharIndex(textBuffer *Buffer, int At) {
+	return At; //@ hmm... user of the buffer shouldnt make assumptions about the iterator
+}
 
 
